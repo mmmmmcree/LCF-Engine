@@ -1,0 +1,11 @@
+Model Information:
+* title:	Shiba Deadpool
+* source:	https://sketchfab.com/3d-models/shiba-deadpool-c2b3c2a3786047c0b36ce38aec2c2f09
+* author:	Quickhatch_art (https://sketchfab.com/Quickhatch_art)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Shiba Deadpool" (https://sketchfab.com/3d-models/shiba-deadpool-c2b3c2a3786047c0b36ce38aec2c2f09) by Quickhatch_art (https://sketchfab.com/Quickhatch_art) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

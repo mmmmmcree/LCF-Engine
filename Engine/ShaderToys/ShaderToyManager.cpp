@@ -1,0 +1,36 @@
+#include "ShaderToyManager.h"
+
+ShaderToy *ShaderToyManager::add(const std::string &name, int width, int height, const QStringList &frag_paths)
+{
+    if (s_shader_toys.find(name) != s_shader_toys.end()) { return nullptr; }
+    s_shader_toys.emplace(name, std::make_unique<ShaderToy>(width, height, frag_paths));
+    return s_shader_toys[name].get();
+}
+
+void ShaderToyManager::updateActivated()
+{
+    for (auto &[name, shader_toy] : s_activated_shader_toys) {
+        shader_toy->update();
+    }
+}
+
+void ShaderToyManager::activate(const std::string &name)
+{
+    auto iter = s_shader_toys.find(name);
+    if (iter == s_shader_toys.end()) { return; }
+    auto activated_iter = s_activated_shader_toys.find(name);
+    if (activated_iter != s_activated_shader_toys.end()) { return; }
+    s_activated_shader_toys.emplace(name, iter->second.get());
+}
+
+void ShaderToyManager::deactivate(const std::string &name)
+{
+    auto activated_iter = s_activated_shader_toys.find(name);
+    if (activated_iter == s_activated_shader_toys.end()) { return; }
+    s_activated_shader_toys.erase(activated_iter);
+}
+
+ShaderToy *ShaderToyManager::get(const std::string &name)
+{
+    return s_shader_toys[name].get();
+}

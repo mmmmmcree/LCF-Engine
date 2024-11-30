@@ -1,0 +1,35 @@
+#pragma once
+
+#include <QMatrix4x4>
+#include <QQuaternion>
+#include "assimp/matrix4x4.h"
+#include "assimp/vector3.h"
+#include "assimp/quaternion.h"
+
+namespace lcf {
+    using Matrix4x4 = QMatrix4x4;
+    using Vector3D = QVector3D;
+    using Vector4D = QVector4D;
+    using Quaternion = QQuaternion;
+
+    Matrix4x4 toMatrix4x4(const aiMatrix4x4& at_mat);
+
+    Vector3D toVector3D(const aiVector3D& ai_vec);
+
+    Quaternion toQuaternion(const aiQuaternion& ai_quat);
+
+    struct DecomposedTransform
+    {
+        DecomposedTransform() = default;
+        DecomposedTransform(const Vector3D &t, const Vector3D &s, const Quaternion &r);
+        DecomposedTransform(Vector3D &&t, Vector3D &&s, Quaternion &&r);
+        DecomposedTransform &operator=(const DecomposedTransform &other) = default;
+        DecomposedTransform &operator=(DecomposedTransform &&other);
+        Matrix4x4 toTransform() const;
+        Vector3D translation;
+        Vector3D scale = Vector3D(1.0, 1.0, 1.0);
+        Quaternion rotation;
+    };
+
+   DecomposedTransform decompose(const Matrix4x4& mat); 
+}
