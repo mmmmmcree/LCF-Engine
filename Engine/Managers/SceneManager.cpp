@@ -4,7 +4,6 @@
 #include "ShaderManager.h"
 #include "Constants.h"
 #include "utils.h"
-#include "MModelManager.h"
 
 lcf::SceneManager *lcf::SceneManager::instance()
 {
@@ -43,20 +42,20 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
     texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
     scene->setSkyboxTexture(std::move(texture));
 
-    Model::SharedPtr dinasour = MModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
+    Model::SharedPtr dinasour = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
     scene->addSharedChild(dinasour);
     dinasour->scale(0.3f);
     dinasour->translate(3.0f, 0.0f, 0.0f);
     dinasour->setShader(ShaderManager::instance()->get("animation_debug_3D"));
     dinasour->playAnimation(0, 1.0f);
-    Model::SharedPtr dinasour2 = MModelManager::instance()->clone(dinasour.get());
+    Model::SharedPtr dinasour2 = ModelManager::instance()->clone(dinasour.get());
     scene->addSharedChild(dinasour2);
     dinasour2->scale(0.3f);
     dinasour2->setShader(ShaderManager::instance()->get("animation_debug_3D"));
     dinasour2->playAnimation(1, 2.0f);
 
 
-    Model::SharedPtr grass = MModelManager::instance()->load(path::source_dir + "models/grassNew.obj");
+    Model::SharedPtr grass = ModelManager::instance()->load(path::source_dir + "models/grassNew.obj");
     scene->addSharedChild(grass);
     Matrix4x4 grass_mat;
     grass_mat.translate(-16.0f, 0.0f, 16.0f);
@@ -91,7 +90,7 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
     });
     grass->setShader(std::move(shader));
 
-    Model::SharedPtr ground = MModelManager::instance()->load(path::source_dir + "models/grassland.glb");
+    Model::SharedPtr ground = ModelManager::instance()->load(path::source_dir + "models/grassland.glb");
     scene->addSharedChild(ground);
     material = Material::newCreatedShared();
     material->addTexture(grass_color);
@@ -104,7 +103,7 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
     });
     ground->setShader(std::move(shader));
 
-    Model::SharedPtr house1 = MModelManager::instance()->load(path::source_dir + "models/house.fbx");
+    Model::SharedPtr house1 = ModelManager::instance()->load(path::source_dir + "models/house.fbx");
     scene->addSharedChild(house1);
     house1->translate(4.0f, 0.9f, 0.0f);
     house1->setShader(ShaderManager::instance()->get("sampler2D_debug_3D"));

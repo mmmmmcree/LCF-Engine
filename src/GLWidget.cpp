@@ -14,7 +14,6 @@
 #include "InstanceHelper.h"
 #include "utils.h"
 #include "SceneManager.h"
-#include "MModelManager.h"
 
 using namespace lcf;
 
@@ -35,7 +34,7 @@ void GLWidget::initializeGL()
     Camera::get()->initialize();
     TextureManager::instance()->initialize(this->context());
     SceneManager::instance()->initialize(this->context());
-    MModelManager::instance()->initialize(this->context());
+    ModelManager::instance()->initialize(this->context());
     auto scene = SceneManager::instance()->makeGrassLand();
     Scene::setCurrent(scene);
 }

@@ -1,5 +1,5 @@
 .vscode/
 build/
-model/
+models/
 /test.cpp
 /test.exe

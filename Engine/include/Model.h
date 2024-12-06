@@ -9,12 +9,10 @@
 namespace lcf {
     class ModelManager;
     class AssimpLoader;
-    class MModelManager;
     class Model : public Object3D
     {
         friend class ModelManager;
         friend class AssimpLoader;
-        friend class MModelManager;
     public:
         using SharedPtr = std::shared_ptr<Model>;
         using UniquePtr = std::unique_ptr<Model>;
