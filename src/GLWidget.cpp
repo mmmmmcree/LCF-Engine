@@ -9,6 +9,12 @@
 #include "ModelManager.h"
 #include "ShaderManager.h"
 #include "Scene.h"
+#include "TextureManager.h"
+#include <QRandomGenerator>
+#include "InstanceHelper.h"
+#include "utils.h"
+#include "SceneManager.h"
+#include "MModelManager.h"
 
 using namespace lcf;
 
@@ -21,44 +27,25 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
     update_timer->start(1000 / 60);
 }
 
-
 void GLWidget::initializeGL()
 {
     this->initializeOpenGLFunctions();
+    glClearColor(1.0, 1.0, 0.0, 1.0);
     ShaderManager::instance()->initialize();
     Camera::get()->initialize();
-    glClearColor(1.0, 1.0, 0.0, 1.0);
-    connect(ModelManager::instance(), &ModelManager::initialModelLoaded, this, [this](Model *model) {
-        this->makeCurrent();
-        model->create();
-        this->doneCurrent();
-        Scene::current()->addChild(model);
-        if (model->hasAnimation()) {
-            model->setShader(ShaderManager::instance()->get("animation_debug_3D"));
-            model->playAnimation(0, 2.0f);
-        } else {
-            model->setShader(ShaderManager::instance()->get("texture_debug_3D"));
-        }
-        // Model *model_copy = model->clone();
-        // model_copy->translate(5.0f, 0.0f, 0.0f);
-        // model_copy->setScale(2.0f);
-        // Scene::current()->addChild(model_copy);
-        // model_copy->playAnimation(1, 0.5f);
-        // model->playAnimation(0, 2.0f);
-        // model_copy->setRotationX(30.0f);
-        // model_copy->setScale(2.0f);
-    });
+    TextureManager::instance()->initialize(this->context());
+    SceneManager::instance()->initialize(this->context());
+    MModelManager::instance()->initialize(this->context());
+    auto scene = SceneManager::instance()->makeGrassLand();
+    Scene::setCurrent(scene);
 }
 
 void GLWidget::paintGL()
 {
-    ShaderToyManager::updateActivated();
     Camera::get()->update();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    auto scene = Scene::current();
-    scene->draw();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    Scene::current()->draw();
     glDisable(GL_DEPTH_TEST);
 }
 

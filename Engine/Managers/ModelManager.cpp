@@ -12,33 +12,27 @@ lcf::ModelManager::ModelManager() : QObject()
 {
     QThread *thread = new QThread(nullptr);
     this->moveToThread(thread);
-    connect(this, &ModelManager::startInitialLoading, this, &ModelManager::initialLoad);
-    connect(this, &ModelManager::startLoading, this, &ModelManager::load);
+    connect(this, &ModelManager::startLoading, this, &ModelManager::loadSingleThread);
+    connect(this, &ModelManager::startLoadingWithModel, this, &ModelManager::loadSingleThreadWithModel);
     connect(this, &ModelManager::destroyed, this, [thread] {
         thread->quit();
         thread->wait();
         thread->deleteLater();
     });
     thread->start();
-    emit startInitialLoading(QString(SOURCE_DIR) + "/models/Vampire/vampire.dae");
-    emit startInitialLoading(QString(SOURCE_DIR) + "/models/dinosaur/source/Rampaging T-Rex.glb");
-    emit startInitialLoading(QString(SOURCE_DIR) + "/models/Deadpool 1/Source/deadpool.fbx");
-}
-
-void lcf::ModelManager::initialLoad(const QString &model_path)
-{
-    Model *model = this->loadSingleThread(model_path);
-    if (model) {
-        emit initialModelLoaded(model);
-    }
+    // connect(this, &ModelManager::loadingFinished, [this](const QString &model_path, Model *model) {
+    //     this->m_models.emplace(std::make_pair(model_path, model));
+    // });
 }
 
 void lcf::ModelManager::load(const QString &model_path)
 {
-    Model *model = this->loadSingleThread(model_path);
-    if (model) {
-        emit modelLoaded(model);
-    }
+    emit startLoading(model_path);
+}
+
+void lcf::ModelManager::load(Model *&model, const QString &model_path)
+{
+    emit startLoadingWithModel(model, model_path);
 }
 
 lcf::ModelManager *lcf::ModelManager::instance()
@@ -47,40 +41,43 @@ lcf::ModelManager *lcf::ModelManager::instance()
     return &s_instance;
 }
 
-void lcf::ModelManager::initialize()
+lcf::Model *lcf::ModelManager::loadSingleThread(const QString &model_path)
 {
-    instance();
+    Model *model = nullptr;
+    this->loadSingleThreadWithModel(model, model_path);
+    return model;
 }
 
-lcf::Model *lcf::ModelManager::loadSingleThread(const QString &model_path)
+void lcf::ModelManager::loadSingleThreadWithModel(Model *model, const QString &model_path)
 {
     QFileInfo file_info(model_path);
     if (not file_info.exists()) {
         qDebug() << "Model file does not exist:" << model_path;
-        return nullptr;
+        return;
     }
     const QString &path = file_info.path() + '/';
     Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(model_path.toStdString(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
     if (not scene or scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or not scene->mRootNode) {
         qDebug() << "Failed to load model:" << model_path;
-        return nullptr;
+        return;
     }
+    if (not model) { model = new Model; }
     Materials materials;
     for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
         materials.emplace_back(processMaterial(scene->mMaterials[i], scene, path));
     }
     BoneMap bone_map;
     Bone *root_bone = this->processSkeleton(scene->mRootNode, scene, nullptr, bone_map);
-    Model *model = new Model;
     this->processNode(model, scene->mRootNode, scene, materials, bone_map);
     this->processAnimations(model, scene, bone_map);
     model->setBones(root_bone, std::move(bone_map));
-    return model;
+    model->passSettingsToMeshes();
+    emit modelLoaded(model);
+    emit loadingFinished(model_path, model);
 }
 
-
-lcf::Material *lcf::ModelManager::processMaterial(aiMaterial *ai_material, const aiScene *scene, const QString &path)
+lcf::ModelManager::MaterialPtr lcf::ModelManager::processMaterial(aiMaterial *ai_material, const aiScene *scene, const QString &path)
 {
     Material *material = new Material;
     std::unordered_map<std::string, Image> image_map;
@@ -103,7 +100,7 @@ lcf::Material *lcf::ModelManager::processMaterial(aiMaterial *ai_material, const
             material->addImageData(image);
         }
     }
-    return material;
+    return MaterialPtr(material);
 }
 
 void lcf::ModelManager::processAnimations(Model *model, const aiScene *scene, const BoneMap &bone_map)
@@ -168,15 +165,18 @@ lcf::Mesh *lcf::ModelManager::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     std::vector<float> positions(num_vertices * 3);
     std::vector<float> normals(num_vertices * 3);
     std::vector<float> uvs(num_vertices * 2);
+    std::vector<float> colors(num_vertices * 4);
     std::vector<unsigned int> indices;
     for (int i = 0; i < num_vertices; ++i) {
         memcpy(positions.data() + i * 3, ai_mesh->mVertices + i, sizeof(float) * 3);
         memcpy(normals.data() + i * 3, ai_mesh->mNormals + i, sizeof(float) * 3); 
-        float uv[2] = {0.0f, 0.0f};
         if (ai_mesh->mTextureCoords[0]) {
-            memcpy(uv, ai_mesh->mTextureCoords[0] + i, sizeof(float) * 2);
+            memcpy(uvs.data() + i * 2, ai_mesh->mTextureCoords[0] + i, sizeof(float) * 2);
         }
-        memcpy(uvs.data() + i * 2, uv, sizeof(float) * 2);
+        if (ai_mesh->HasVertexColors(0)) {
+            memcpy(colors.data() + i * 4, ai_mesh->mColors[0] + i, sizeof(float) * 4);
+        }
+
     }
     for (unsigned int i = 0; i < ai_mesh->mNumFaces; ++i) {
         aiFace face = ai_mesh->mFaces[i];
@@ -187,8 +187,6 @@ lcf::Mesh *lcf::ModelManager::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     constexpr int max_bones_per_vertex = 4;
     std::vector<float> bone_ids(num_vertices * max_bones_per_vertex, -1.0f); // 如果是int传到gpu有bug，暂时用float
     std::vector<float> bone_weights(num_vertices * max_bones_per_vertex, 0.0f);
-    for (const auto &[name, _] : bone_map) {
-    }
     for (unsigned int i = 0; i < ai_mesh->mNumBones; ++i) {
         auto ai_bone = ai_mesh->mBones[i];
         auto iter = bone_map.find(ai_bone->mName.C_Str());
@@ -208,18 +206,19 @@ lcf::Mesh *lcf::ModelManager::processMesh(aiMesh *ai_mesh, const aiScene *scene,
             }
         }
     }
-    Material *material = materials[ai_mesh->mMaterialIndex];
+    const MaterialPtr &material = materials[ai_mesh->mMaterialIndex];
     Geometry *geometry = new Geometry;
     geometry->addAttribute(positions.data(), positions.size(), 3);
     geometry->addAttribute(normals.data(), normals.size(), 3);
     geometry->addAttribute(uvs.data(), uvs.size(), 2);
+    geometry->addAttribute(colors.data(), colors.size(), 4);
     geometry->setIndices(indices.data(), indices.size());
-    Mesh *mesh = new Mesh(Mesh::GeometryPtr(geometry), Mesh::MaterialPtr(material));
-    if (bones.empty()) { return mesh ; }
-    geometry->addAttribute(bone_ids.data(), bone_ids.size(), 4);
-    geometry->addAttribute(bone_weights.data(), bone_weights.size(), 4);
+    Mesh *mesh = new Mesh(Mesh::GeometryPtr(geometry), material);
     Skeleton::MatricesPtr matrices_ptr = std::make_shared<Skeleton::Matrices>(std::move(offset_matrices));
     mesh->setSkeleton(std::make_unique<Skeleton>(std::move(bones), matrices_ptr));
+    if (matrices_ptr->empty()) { return mesh ; }
+    geometry->addAttribute(bone_ids.data(), bone_ids.size(), 4);
+    geometry->addAttribute(bone_weights.data(), bone_weights.size(), 4);
     return mesh;
 }
 

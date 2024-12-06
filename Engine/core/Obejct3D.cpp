@@ -4,6 +4,7 @@ lcf::Object3D::Object3D(const Object3D &other) :
     m_local(other.m_local),
     m_world(other.m_world),
     m_world_need_update(other.m_world_need_update),
+    m_local_decomposed(other.m_local_decomposed),
     m_children(),
     m_parent(nullptr),
     m_name(other.m_name)
@@ -67,6 +68,21 @@ void lcf::Object3D::setLocalMatrix(const Matrix4x4 & matrix)
 void lcf::Object3D::translate(float x, float y, float z)
 {
     this->translate(Vector3D(x, y, z));
+}
+
+void lcf::Object3D::translateX(float x)
+{
+    this->translate(Vector3D(x, 0.0f, 0.0f));
+}
+
+void lcf::Object3D::translateY(float y)
+{
+    this->translate(Vector3D(0.0f, y, 0.0f));
+}
+
+void lcf::Object3D::translateZ(float z)
+{
+    this->translate(Vector3D(0.0f, 0.0f, z));
 }
 
 void lcf::Object3D::translate(const Vector3D &translation)

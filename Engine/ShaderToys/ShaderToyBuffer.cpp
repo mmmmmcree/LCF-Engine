@@ -27,7 +27,7 @@ void ShaderToyBuffer::update()
     }
     m_write_fbo->bind();
     m_shader->bind();
-    lcf::Geometry::drawQuad();
+    lcf::Geometry::quad()->draw();
     m_shader->release();
     m_write_fbo->release();
     std::swap(m_read_fbo, m_write_fbo);

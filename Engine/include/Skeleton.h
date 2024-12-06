@@ -14,9 +14,9 @@ namespace lcf {
         using MatricesPtr = std::shared_ptr<Matrices>;
         Skeleton(BonePtrs &&bones, const MatricesPtr &offset_matrices);
         Skeleton(const Skeleton &other);
-        void bind(GLShaderProgram *shader);
         const BonePtrs &bones() const;
         const MatricesPtr &offsetMatrices() const;
+        Matrices boneMatrices() const;
     private:
         BonePtrs m_bones;
         MatricesPtr m_offset_matrices;

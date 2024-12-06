@@ -7,6 +7,7 @@ namespace lcf {
     class Object3D
     {
     public:
+        using SharedPtr = std::shared_ptr<Object3D>;
         enum class Type
         {
             Group,
@@ -24,6 +25,9 @@ namespace lcf {
         void addChild(Object3D* child);
         void setLocalMatrix(const Matrix4x4 &matrix);
         void translate(float x, float y, float z);
+        void translateX(float x);
+        void translateY(float y);
+        void translateZ(float z);
         void translate(const Vector3D &translation);
         void setTranslation(float x, float y, float z);
         void setTranslation(const Vector3D &translation);

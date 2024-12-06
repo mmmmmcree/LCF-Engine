@@ -3,6 +3,7 @@
 
 lcf::TextureWrapper::TextureWrapper(GLTexture *texture) : m_texture(texture)
 {
+    qDebug() << texture << texture->textureId();
 }
 
 lcf::TextureWrapper::TextureWrapper(ShaderToy *texture) : m_texture(texture)

@@ -12,7 +12,7 @@ lcf::Geometry::Geometry() :
 
 void lcf::Geometry::setIndices(unsigned int *indices, size_t indices_size)
 {
-    m_indices.resize(indices_size * sizeof(unsigned int));
+    m_indices.resize(indices_size);
     memcpy(m_indices.data(), indices, indices_size * sizeof(unsigned int));
     m_indices_size = static_cast<int>(indices_size);
 }
@@ -27,10 +27,9 @@ void lcf::Geometry::create()
     if (m_created) { return; }
     m_created = true;
     if (m_indices.empty()) {
-        m_indices.resize(m_items_cnt * sizeof(unsigned int));
-        for (unsigned int i = 0; i < m_items_cnt; ++i) {
-            memcpy(m_indices.data() + i * sizeof(unsigned int), &i, sizeof(unsigned int));
-        }
+        m_indices.resize(m_items_cnt);
+        std::iota(m_indices.begin(), m_indices.end(), 0);
+        m_indices_size = static_cast<int>(m_items_cnt);
     }
     for (int i = 0; i < m_buffers.size(); ++i) {
         auto &vbo = m_buffers[i];
@@ -40,14 +39,12 @@ void lcf::Geometry::create()
         vbo.setUsagePattern(GLBuffer::StaticDraw);
         vbo.allocate(data.data(), static_cast<int>(data.size()));
         vbo.release();
-        data.clear();
     }
     m_ebo.create();
     m_ebo.bind();
     m_ebo.setUsagePattern(GLBuffer::StaticDraw);
-    m_ebo.allocate(m_indices.data(), static_cast<int>(m_indices.size()));
+    m_ebo.allocate(m_indices.data(), static_cast<int>(m_indices.size() * sizeof(unsigned int)));
     m_ebo.release();
-    m_indices.clear();
     auto gl = QOpenGLContext::currentContext()->functions();
     m_vao = std::make_unique<GLVAO>();
     m_vao->create();
@@ -88,64 +85,60 @@ void lcf::Geometry::draw()
 {
     if (not m_created) { return; }
     m_vao->bind();
-    QOpenGLContext::currentContext()->functions()->glDrawElements(m_mode, m_indices_size, GL_UNSIGNED_INT, nullptr);
+    auto gl = QOpenGLContext::currentContext()->functions();
+    gl->glDrawElements(m_mode, m_indices_size, GL_UNSIGNED_INT, nullptr);
     m_vao->release();
 }
 
-void lcf::Geometry::drawQuad()
+void lcf::Geometry::drawInstanced(int instance_count)
 {
+    if (not m_created) { return; }
+    m_vao->bind();
+    auto gl = QOpenGLContext::currentContext()->extraFunctions();
+    gl->glDrawElementsInstanced(m_mode, m_indices_size, GL_UNSIGNED_INT, nullptr, instance_count);
+    m_vao->release();
+}
+
+const lcf::Geometry::Ptr &lcf::Geometry::quad()
+{
+    static Ptr s_quad = nullptr;
     if (not s_quad) {
-        s_quad = std::make_unique<Geometry>();
+        s_quad = std::make_shared<Geometry>();
         s_quad->addInterleavedAttributes(data::quad, std::size(data::quad), {3, 3, 2});
         s_quad->create();
     }
-    s_quad->draw();
+    return s_quad;
 }
 
-void lcf::Geometry::drawCube()
+const lcf::Geometry::Ptr &lcf::Geometry::cube()
 {
+    static Ptr s_cube = nullptr;
     if (not s_cube) {
-        s_cube = std::make_unique<Geometry>();
+        s_cube = std::make_shared<Geometry>();
         s_cube->addInterleavedAttributes(data::cube, std::size(data::cube), {3, 3, 2});
         s_cube->create();
     }
-    s_cube->draw();
+    return s_cube;
 }
 
-void lcf::Geometry::drawSphere()
+// lcf::Geometry *lcf::Geometry::cube()
+// {
+//     static Geometry s_cube;
+//     if (not s_cube.isCreated()) {
+//         s_cube.addInterleavedAttributes(data::cube, std::size(data::cube), {3, 3, 2});
+//         s_cube.create();
+//     }
+//     qDebug() << &s_cube << s_cube.isCreated();
+//     return &s_cube;
+// }
+
+const lcf::Geometry::Ptr &lcf::Geometry::sphere()
 {
+    static Ptr s_sphere = nullptr;
     if (not s_sphere) {
         s_sphere = std::make_unique<Geometry>(generateSphere());
     }
-    s_sphere->draw();
-}
-
-lcf::Geometry *lcf::Geometry::quad()
-{
-    if (not s_quad) {
-        s_quad = std::make_unique<Geometry>();
-        s_quad->addInterleavedAttributes(data::quad, std::size(data::quad), {3, 3, 2});
-        s_quad->create();
-    }
-    return s_quad.get();
-}
-
-lcf::Geometry *lcf::Geometry::cube()
-{
-    if (not s_cube) {
-        s_cube = std::make_unique<Geometry>();
-        s_cube->addInterleavedAttributes(data::cube, std::size(data::cube), {3, 3, 2});
-        s_cube->create();
-    }
-    return s_cube.get();
-}
-
-lcf::Geometry *lcf::Geometry::sphere()
-{
-    if (not s_sphere) {
-        s_sphere = std::make_unique<Geometry>(generateSphere());
-    }
-    return s_sphere.get();
+    return s_sphere;
 }
 
 lcf::Geometry lcf::Geometry::generateSphere(int x_segments, int y_segments)

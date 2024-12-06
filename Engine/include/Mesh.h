@@ -7,6 +7,8 @@
 #include "Obejct3D.h"
 #include "TextureWrapper.h"
 #include "Skeleton.h"
+#include <QList>
+#include "InstanceHelper.h"
 
 namespace lcf {
     class Mesh : public Object3D
@@ -15,21 +17,26 @@ namespace lcf {
         using GeometryPtr = std::shared_ptr<Geometry>;
         using MaterialPtr = std::shared_ptr<Material>;
         using SkeletonPtr = std::unique_ptr<Skeleton>;
+        using InstanceHelperPtr = std::shared_ptr<InstanceHelper>;
         Mesh(const GeometryPtr &geometry, const MaterialPtr &material);
         Mesh(const Mesh& other);
         void draw() override;
         void setSkeleton(SkeletonPtr &&skeleton);
+        void setMaterial(const MaterialPtr &material);
         Object3D::Type type() const override;
-        Geometry* geometry() const;
-        Material* material() const;
-        Skeleton *skeleton() const;
+        const GeometryPtr &geometry() const;
+        const MaterialPtr &material() const;
+        const SkeletonPtr &skeleton() const;
         void activateSkeleton(bool active);
-        void setShader(GLShaderProgram *shader);
+        void setShader(const SharedGLShaderProgramPtr &shader);
+        InstanceHelperPtr &instanceHelper();
+        void setInstanceHelper(const InstanceHelperPtr &instance_helper);
     protected:
         GeometryPtr m_geometry;
         MaterialPtr m_material;
         SkeletonPtr m_skeleton;
+        InstanceHelperPtr m_instance_helper;
         bool m_skeleton_activated = false;
-        GLShaderProgram *m_shader = nullptr;
+        SharedGLShaderProgramPtr m_shader = nullptr;
     };
 }

@@ -1,37 +1,51 @@
 #include "Model.h"
 
+lcf::Model::Model() :
+    m_instance_helper(std::make_shared<InstanceHelper>()),
+    m_material(Material::newShared())
+{
+}
+
 lcf::Model *lcf::Model::clone() const
 {
-    if (not m_created) { return nullptr; }
-    Model *model = new Model;
-    if (not m_root_bone) {
-        for (auto &mesh : m_meshes) {
-            if (not mesh) { continue; }
-            auto mesh_clone = std::make_unique<Mesh>(*mesh);
-            mesh_clone->setParent(model);
-            model->addMesh(std::move(mesh_clone));
-        }
-        return model;
+    if (not m_created) {
+        qDebug() << "lcf::Model::clone() - Model is not created yet!";
+        return nullptr;
     }
-    model->m_root_bone = this->processSkeleton(model->m_bones, nullptr, m_root_bone);
+    Model *cloned_model = new Model;
+    cloned_model->m_created = true;
+    // cloned_model->m_local = m_local;
+    // cloned_model->m_world = m_world;
+    // cloned_model->m_world_need_update = m_world_need_update;
+    // cloned_model->m_local_decomposed = m_local_decomposed;
+    // cloned_model->m_animation_play_state = m_animation_play_state;
     for (auto &mesh : m_meshes) {
+        if (not mesh) { continue; }
+        auto cloned_mesh = std::make_unique<Mesh>(*mesh);
+        cloned_mesh->setParent(cloned_model);
+        cloned_model->addMesh(std::move(cloned_mesh));
+    }
+    cloned_model->m_root_bone = this->processSkeleton(cloned_model->m_bones, nullptr, m_root_bone);
+    for (int i = 0; i < cloned_model->m_meshes.size(); ++i) {
+        auto &mesh = m_meshes[i];
+        if (not mesh->skeleton()) { continue; }
+        auto &cloned_mesh = cloned_model->m_meshes[i];
         Skeleton::BonePtrs bones;
         for (auto &bone : mesh->skeleton()->bones()) {
-            auto it = model->m_bones.find(bone->name());
+            auto it = cloned_model->m_bones.find(bone->name());
+            if (it == cloned_model->m_bones.end()) { continue; }
             bones.emplace_back(it->second);
         }
-        Mesh *mesh_clone = new Mesh(Mesh::GeometryPtr(mesh->geometry()), Mesh::MaterialPtr(mesh->material()));
-        mesh_clone->setSkeleton(std::make_unique<Skeleton>(std::move(bones), mesh->skeleton()->offsetMatrices()));
-        mesh_clone->setParent(model);
-        model->addMesh(MeshPtr(mesh_clone));
+        cloned_mesh->setSkeleton(std::make_unique<Skeleton>(std::move(bones), mesh->skeleton()->offsetMatrices()));
     }
     for (auto &animation : m_animations) {
         if (not animation) { continue; }
-        auto animation_clone = std::make_unique<Animation>(*animation);
-        animation_clone->updateControlledBones(model->m_bones);
-        model->addAnimation(std::move(animation_clone));
+        auto cloned_animation = std::make_unique<Animation>(*animation);
+        cloned_animation->updateControlledBones(cloned_model->m_bones);
+        cloned_model->addAnimation(std::move(cloned_animation));
     }
-    return model;
+    cloned_model->playAnimation();
+    return cloned_model;
 }
 
 void lcf::Model::draw()
@@ -47,7 +61,13 @@ void lcf::Model::create()
     for (auto &mesh : m_meshes) {
         mesh->geometry()->create();
         mesh->material()->create();
+        mesh->setInstanceHelper(m_instance_helper);
     }
+}
+
+bool lcf::Model::isCreated() const
+{
+    return m_created;
 }
 
 lcf::Object3D::Type lcf::Model::type() const
@@ -60,11 +80,28 @@ bool lcf::Model::hasAnimation() const
     return not m_animations.empty();
 }
 
-void lcf::Model::setShader(GLShaderProgram *shader)
+void lcf::Model::setShader(const SharedGLShaderProgramPtr &shader)
 {
+    m_shader = shader;
     for (auto &mesh : m_meshes) {
         mesh->setShader(shader);
     }
+}
+
+void lcf::Model::setMaterial(const MaterialPtr &material)
+{
+    m_material = material;
+    for (auto &mesh : m_meshes) {
+        mesh->setMaterial(m_material);
+    }
+}
+
+lcf::Model::InstanceHelperPtr &lcf::Model::instanceHelper()
+{
+    if (not m_instance_helper) {
+        m_instance_helper = std::make_shared<InstanceHelper>();
+    }
+    return m_instance_helper;
 }
 
 void lcf::Model::setBones(Bone *root_bone, BoneMap &&bone_map)
@@ -78,8 +115,19 @@ void lcf::Model::addAnimation(AnimationPtr &&animation)
     m_animations.emplace_back(std::move(animation));
 }
 
+void lcf::Model::passSettingsToMeshes()
+{
+    for (auto &mesh : m_meshes) {
+        mesh->setShader(m_shader);
+        mesh->setInstanceHelper(m_instance_helper);
+        mesh->material()->addTextures(m_material->textures());
+    }
+    this->playAnimation();
+}
+
 void lcf::Model::playAnimation(int i, float speed)
 {
+    m_animation_play_state = {i, speed};
     for (auto &mesh : m_meshes) { mesh->activateSkeleton(true); }
     if (m_animations.empty()) {
         qDebug() << "No animations found!";
@@ -89,8 +137,16 @@ void lcf::Model::playAnimation(int i, float speed)
     m_animation_player.play(m_animations[i].get(), speed);
 }
 
+void lcf::Model::playAnimation()
+{
+    const auto &[index, speed] = m_animation_play_state;
+    if (index == -1) { return; }
+    this->playAnimation(index, speed);
+}
+
 void lcf::Model::stopAnimation()
 {
+    m_animation_play_state = {-1, 1.0f};
     m_animation_player.stop();
     for (auto &mesh : m_meshes) { mesh->activateSkeleton(false); }
 }
@@ -98,6 +154,16 @@ void lcf::Model::stopAnimation()
 void lcf::Model::addMesh(MeshPtr && mesh)
 {
     m_meshes.emplace_back(std::move(mesh));
+}
+
+lcf::Model::MeshList & lcf::Model::meshes()
+{
+    return m_meshes;
+}
+
+const lcf::Model::MaterialPtr &lcf::Model::material() const
+{
+    return m_material;
 }
 
 lcf::Bone *lcf::Model::processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const

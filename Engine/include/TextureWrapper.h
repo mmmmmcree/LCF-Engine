@@ -10,6 +10,7 @@ namespace lcf {
     {
         using _Texture = std::variant<GLTexture *, std::shared_ptr<GLTexture>, ShaderToy *>;
     public:
+        ~TextureWrapper() = default;
         TextureWrapper(GLTexture *texture);
         TextureWrapper(ShaderToy *texture);
         TextureWrapper(const std::shared_ptr<GLTexture> &texture);

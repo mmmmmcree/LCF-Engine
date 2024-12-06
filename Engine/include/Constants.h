@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QString>
+
 namespace lcf::data {
     constexpr float quad[] = {
         -1.0f,  -1.0f,  0.0f, 0.0f, 0.0f, 1.0f,  0.0f,  0.0f,
@@ -77,4 +79,11 @@ namespace lcf::data {
         -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
         -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
     };
+}
+
+namespace lcf::path {
+    const QString source_dir = QString(SOURCE_DIR) + '/';
+    const QString res_prefix = source_dir + "res/";
+    const QString shaders_prefix = source_dir + "shaders/";
+    const QString models_prefix = source_dir + "models/";
 }

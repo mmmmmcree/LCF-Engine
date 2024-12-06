@@ -11,6 +11,7 @@ namespace lcf {
     {
     // Attribute的添加顺序就是VAO的绑定顺序
     public:
+        using Ptr = std::shared_ptr<Geometry>;
         Geometry();
         template <typename T>
         void addAttribute(T *data, size_t data_size, int item_size);
@@ -23,17 +24,12 @@ namespace lcf {
         unsigned int id() const;
         int indicesSize() const;
         void draw();
-        static void drawQuad();
-        static void drawCube();
-        static void drawSphere();
-        static Geometry *quad();
-        static Geometry *cube();
-        static Geometry *sphere();
+        void drawInstanced(int instance_count);
+        static const Ptr &quad();
+        static const Ptr &cube();
+        static const Ptr &sphere();
     private:
         static Geometry generateSphere(int x_segments = 128, int y_segments = 128);
-        inline static std::unique_ptr<Geometry> s_quad = nullptr;
-        inline static std::unique_ptr<Geometry> s_cube = nullptr;
-        inline static std::unique_ptr<Geometry> s_sphere = nullptr;
     private:
         bool m_created;
         size_t m_items_cnt;
@@ -42,7 +38,7 @@ namespace lcf {
         std::vector<std::vector<unsigned char>> m_buffer_data;
         std::vector<AttributeInfos> m_attribute_infos_list;
         GLBuffer m_ebo;
-        std::vector<unsigned char> m_indices;
+        std::vector<unsigned int> m_indices;
         int m_indices_size;
         GLBeginMode m_mode;
         //todo Bounding Box
@@ -62,10 +58,6 @@ inline void lcf::Geometry::addAttribute(T *data, size_t data_size, int item_size
     auto &attr_infos = m_attribute_infos_list.emplace_back(std::initializer_list<int>{item_size}, T{});
     auto &vbo = m_buffers.emplace_back(GLBuffer::VertexBuffer);
     auto &buffer_data = m_buffer_data.emplace_back(std::vector<unsigned char>(data_size * sizeof(T)));
-
-    if constexpr (std::is_same_v<T, int>) {
-        qDebug() << attr_infos.GLType() << attr_infos.typeSize();
-    }
     memcpy(buffer_data.data(), data, data_size * sizeof(T));
 }
 

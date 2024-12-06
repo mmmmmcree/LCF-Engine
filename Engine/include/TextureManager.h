@@ -3,6 +3,8 @@
 #include "GLTexture.h"
 #include <unordered_map>
 #include "Image.h"
+#include <QOpenGLContext>
+#include <QOffscreenSurface>
 
 
 namespace lcf {
@@ -11,9 +13,13 @@ namespace lcf {
         Q_OBJECT
     public:
         static TextureManager *instance();
-        std::unique_ptr<GLTexture> load(const QString &image_path);
+        std::unique_ptr<GLTexture> load(const QString &image_path, bool mirroed = false);
         std::unique_ptr<GLTexture> load(unsigned char *data, int width, int height);
+        void initialize(QOpenGLContext *context);
     private:
         TextureManager() = default;
+    private:
+        QOpenGLContext *m_context = nullptr;
+        QOffscreenSurface *m_surface = nullptr;
     };
 }

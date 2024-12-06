@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GLHelper.h"
+#include "GLHelper.h"
 #include <variant>
 #include <QOpenGLTexture>
 #include <QOpenGLFramebufferObject>

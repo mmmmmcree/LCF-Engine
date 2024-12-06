@@ -35,6 +35,7 @@ private:
     Camera();
     void setUBO();
 private:
+public:
     CameraController *m_controller = nullptr;
     ProjectionProvider m_projection_provider;
     QMatrix4x4 m_view;

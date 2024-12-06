@@ -14,13 +14,12 @@ namespace lcf {
         using ShaderInfos = QList<ShaderInfo>;
         static ShaderManager *instance();
         void initialize();
-        std::unique_ptr<GLShaderProgram> load(const ShaderInfos &shader_infos);
-        GLShaderProgram *load(const QString &name, const ShaderInfos &shader_infos);
-        GLShaderProgram *get(const QString &name);
-        const QString &defaultPath();
+        UniqueGLShaderProgramPtr load(const ShaderInfos &shader_infos);
+        SharedGLShaderProgramPtr load(const QString &name, const ShaderInfos &shader_infos);
+        SharedGLShaderProgramPtr get(const QString &name);
     private:
         ShaderManager();
     private:
-        std::unordered_map<QString, std::unique_ptr<GLShaderProgram>> m_shaders;
+        std::unordered_map<QString, SharedGLShaderProgramPtr> m_shaders;
     };
 }

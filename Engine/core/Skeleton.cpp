@@ -20,16 +20,6 @@ lcf::Skeleton::Skeleton(const Skeleton &other) :
     }
 }
 
-void lcf::Skeleton::bind(GLShaderProgram *shader)
-{
-    static QString uniform_name = "bone_matrices[%1]";
-    for (int i = 0; i < m_bones.size(); ++i) {
-        shader->setUniformValue(uniform_name.arg(i).toLocal8Bit(),
-            m_bones[i]->worldMatrix() * m_offset_matrices->at(i)
-        );
-    }
-}
-
 const lcf::Skeleton::BonePtrs &lcf::Skeleton::bones() const
 {
     return m_bones;
@@ -38,4 +28,13 @@ const lcf::Skeleton::BonePtrs &lcf::Skeleton::bones() const
 const lcf::Skeleton::MatricesPtr &lcf::Skeleton::offsetMatrices() const
 {
     return m_offset_matrices;
+}
+
+lcf::Skeleton::Matrices lcf::Skeleton::boneMatrices() const
+{
+    Matrices matrices(m_offset_matrices->size());
+    for (int i = 0; i < m_offset_matrices->size(); ++i) {
+        matrices[i] = m_bones[i]->worldMatrix() * m_offset_matrices->at(i);
+    }
+    return matrices;
 }
