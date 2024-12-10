@@ -51,11 +51,7 @@ void lcf::Scene::draw()
 
 void lcf::Scene::setSkyboxTexture(TextureWrapper texture)
 {
-    if (m_skybox->material()->textures().empty()) {
-        m_skybox->material()->addTexture(texture);
-    } else {
-        m_skybox->material()->setTexture(0, texture);
-    }
+    m_skybox->material()->setTexture(TextureType::Diffuse, texture);
 }
 
 QTimer *lcf::Scene::timer()

@@ -50,7 +50,13 @@ lcf::Model *lcf::Model::clone() const
 
 void lcf::Model::draw()
 {
+    if (m_shader_uniform_binder) {
+        m_shader_uniform_binder->bind();
+    }
     Object3D::draw();
+    if (m_shader_uniform_binder) {
+        m_shader_uniform_binder->release();
+    }
     m_animation_player.update(1.0f / 60.0f);
 }
 
@@ -82,9 +88,17 @@ bool lcf::Model::hasAnimation() const
 
 void lcf::Model::setShader(const SharedGLShaderProgramPtr &shader)
 {
-    m_shader = shader;
+    m_shader_uniform_binder = std::make_shared<ShaderUniformBinder>(shader);
     for (auto &mesh : m_meshes) {
-        mesh->setShader(shader);
+        mesh->setShaderUniformBinder(m_shader_uniform_binder);
+    }
+}
+
+void lcf::Model::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder)
+{
+    m_shader_uniform_binder = shader_uniform_binder;
+    for (auto &mesh : m_meshes) {
+        mesh->setShaderUniformBinder(shader_uniform_binder);
     }
 }
 
@@ -118,9 +132,9 @@ void lcf::Model::addAnimation(AnimationPtr &&animation)
 void lcf::Model::passSettingsToMeshes()
 {
     for (auto &mesh : m_meshes) {
-        mesh->setShader(m_shader);
+        mesh->setShaderUniformBinder(m_shader_uniform_binder);
         mesh->setInstanceHelper(m_instance_helper);
-        mesh->material()->addTextures(m_material->textures());
+        mesh->material()->setTextures(m_material->textureInfoMap());
     }
     this->playAnimation();
 }

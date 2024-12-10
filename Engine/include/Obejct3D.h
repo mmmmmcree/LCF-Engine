@@ -47,8 +47,10 @@ namespace lcf {
         void setScale(float x, float y, float z);
         void setScale(const Vector3D &scale);
         void setScale(float factor);
+        const Vector3D &position() const;
         const std::vector<Object3D*> &children() const;
-        virtual const Matrix4x4 &worldMatrix();
+        const Matrix4x4 &worldMatrix();
+        Matrix3x3  normalMatrix();
         void setName(std::string_view name);
         const std::string &name() const;
     protected:

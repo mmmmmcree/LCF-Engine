@@ -4,10 +4,6 @@
 
 lcf::Material::Material(const Material &other)
 {
-    if (not other.m_created) {
-        qDebug() << "Material not created! You will receive a blank material.";
-        return;
-    }
     m_textures = other.m_textures;
 }
 
@@ -16,91 +12,69 @@ lcf::Material::SharedPtr lcf::Material::newShared()
     return std::make_shared<Material>();
 }
 
-lcf::Material::SharedPtr lcf::Material::newCreatedShared()
+void lcf::Material::setTexture(int texture_type, TextureWrapper texture)
 {
-    std::shared_ptr<Material> material = std::make_shared<Material>();
-    material->create();
-    return material;
-}
-
-void lcf::Material::addTexture(TextureWrapper texture)
-{
-    if (not m_created) { return; }
-    m_textures.emplace_back(texture);
-}
-
-void lcf::Material::addTextures(const TextureList &textures)
-{
-    m_textures.insert(m_textures.end(), textures.begin(), textures.end());
-}
-
-void lcf::Material::addData(unsigned char *data, int width, int height)
-{
-    if (m_created) {
-        qDebug() << "Material already created! Cannot add texture data.";
-        return;
+    auto iter = m_textures.find(texture_type);
+    if (iter == m_textures.end()) {
+        m_textures.emplace(std::make_pair(texture_type, texture));
+    } else {
+        iter->second = texture;
     }
-    Image image = dataToImage(data, width, height);
-    if (image.isNull()) { return; }
-    m_image_data.emplace_back(std::move(image));
 }
 
-void lcf::Material::addImageData(const Image &image)
-{
-    if (m_created) {
-        return;
-    }
-    if (image.isNull()) { return; }
-    m_image_data.emplace_back(image);
-}
-
-void lcf::Material::addImageData(Image &&image)
-{
-    if (m_created) {
-        qDebug() << "Material already created! Cannot add texture data.";
-        return;
-    }
-    if (image.isNull()) { return; }
-    m_image_data.emplace_back(std::move(image));
-}
-
-const lcf::Material::TextureList &lcf::Material::textures() const
+const lcf::Material::TextureInfoMap &lcf::Material::textureInfoMap() const
 {
     return m_textures;
 }
 
-void lcf::Material::setTexture(int index, TextureWrapper texture)
+void lcf::Material::setTextures(const TextureInfoMap & texture_info_map)
 {
-    if (index < 0 or index >= m_textures.size()) { return; }
-    m_textures[index] = texture;
+    for (const auto & [type, texture] : texture_info_map) {
+        this->setTexture(type, texture);
+    }
+}
+
+void lcf::Material::setImageData(int texture_type, unsigned char *data, int width, int height)
+{
+    Image image = dataToImage(data, width, height);
+    if (image.isNull()) { return; }
+    m_image_data.emplace_back(std::make_pair(texture_type, std::move(image)));
+}
+
+void lcf::Material::setImageData(int texture_type, const Image &image)
+{
+    if (image.isNull()) { return; }
+    m_image_data.emplace_back(std::make_pair(texture_type, image));
+}
+
+void lcf::Material::setImageData(int texture_type, Image &&image)
+{
+    if (image.isNull()) { return; }
+    m_image_data.emplace_back(std::make_pair(texture_type, std::move(image)));
 }
 
 void lcf::Material::create()
 {
-    if (m_created) { return; }
-    m_created = true;
-    for (const auto &image : m_image_data) {
-        m_textures.emplace_back(std::make_unique<GLTexture>(image));
+    //! 不会覆盖已有的纹理
+    for (const auto & [type, image] : m_image_data) {
+        auto iter = m_textures.find(type);
+        if (iter != m_textures.end()) { continue; }
+        m_textures.emplace(std::make_pair(type, std::make_shared<GLTexture>(image)));
     }
     m_image_data.clear();
 }
 
-bool lcf::Material::isCreated() const
-{
-    return m_created;
-}
-
 void lcf::Material::bind()
 {
-    for (int i = 0; i < m_textures.size(); ++i) {
-        m_textures[i].bind(i);
+    int unit = 0;
+    for (auto &[type, texture] : m_textures) {
+        texture.bind(unit++);
     }
 }
 
 void lcf::Material::release()
 {
-    for (int i = 0; i < m_textures.size(); ++i) {
-        m_textures[i].release();
+    for (auto &[type, texture] : m_textures) {
+        texture.release();
     }
-    auto gl = QOpenGLContext::currentContext()->functions();
 }

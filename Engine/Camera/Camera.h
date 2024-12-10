@@ -22,6 +22,7 @@ public:
     };
     static Camera *get();
     void initialize();
+    const QVector3D &position() const;
     void update();
     void setViewPort(int width, int height);
     void setCameraType(Type type);

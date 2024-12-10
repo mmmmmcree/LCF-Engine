@@ -19,6 +19,11 @@ void Camera::initialize()
     QOpenGLContext::currentContext()->extraFunctions()->glGenBuffers(1, &m_ubo);
 }
 
+const QVector3D &Camera::position() const
+{
+    return m_controller->position();
+}
+
 void Camera::update()
 {
     m_controller->update();

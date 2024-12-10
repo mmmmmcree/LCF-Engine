@@ -48,36 +48,38 @@ lcf::SharedGLShaderProgramPtr lcf::ShaderManager::get(const QString &name)
     return nullptr;
 }
 
+lcf::SharedGLShaderProgramPtr lcf::ShaderManager::get(ConfiguredShader type)
+{
+    SharedGLShaderProgramPtr shader = nullptr;
+    switch (type) {
+        case ConfiguredShader::Simple2D : { shader = this->get("simple2D"); } break;
+        case ConfiguredShader::Simple3D : { shader = this->get("simple3D"); } break;
+        case ConfiguredShader::GeometryDebug : { shader = this->get("geometry_debug"); } break;
+        case ConfiguredShader::Skybox : { shader = this->get("skybox"); } break;
+    }
+    return shader;
+}
+
 lcf::ShaderManager::ShaderManager() : QObject()
 {
     SharedGLShaderProgramPtr shader = nullptr;
-    shader = load("sampler2D_debug_2D", {
+    shader = load("simple2D", {
         {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "simple2D.vert"}, 
         {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
     });
     shader->setUniformValue("channel0", 0);
-    shader = load("sampler2D_debug_3D", {
+    shader = load("simple3D", {
         {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
         {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
     });
     shader->setUniformValue("channel0", 0);
-    shader = load("geometry_debug_3D", {
+    shader = load("geometry_debug", {
         {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
         {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "geometry_debug.frag"}, 
     });
-    shader = load("animation_debug_3D", {
-        {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "animation3D.vert"}, 
-        {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
-    });
-    shader->setUniformValue("channel0", 0);
     shader = load("skybox", {
         {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "skybox.vert"}, 
-        {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "samplerSpherical_debug.frag"}, 
-    });
-    shader->setUniformValue("channel0", 0);
-    shader = load("instance_debug_3D", {
-        {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "instance3D.vert"}, 
-        {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
+        {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "sampler_spherical.frag"}, 
     });
     shader->setUniformValue("channel0", 0);
 }

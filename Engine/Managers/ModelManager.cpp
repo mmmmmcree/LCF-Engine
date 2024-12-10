@@ -16,17 +16,21 @@ void lcf::ModelManager::initialize(QOpenGLContext *context)
     m_surface->create();
 }
 
-lcf::Model::SharedPtr lcf::ModelManager::load(const QString &path)
+lcf::Model::SharedPtr lcf::ModelManager::load(const QString &path, std::string name)
 {
     auto iter = m_models.find(path);
     if (iter != m_models.end()) {
-        return this->clone(iter->second.get());
+        return this->clone(iter->second.get(), name);
     }
     if (not QFileInfo(path).exists()) {
         qDebug() << "lcf::ModelManager::load() - File not found: " << path;
         return nullptr;
     }
     auto &model = m_models.emplace(std::make_pair(path, std::make_shared<Model>())).first->second;
+    if (name.empty()) {
+        name = QFileInfo(path).baseName().toStdString();
+    }
+    model->setName(name);
     AssimpLoader *loader = new AssimpLoader(model.get(), path);
     connect(loader, &AssimpLoader::loaded, this, [this](Model *model) {
         this->m_context->makeCurrent(m_surface);
@@ -39,9 +43,13 @@ lcf::Model::SharedPtr lcf::ModelManager::load(const QString &path)
     return model;
 }
 
-lcf::Model::UniquePtr lcf::ModelManager::clone(Model *model)
+lcf::Model::UniquePtr lcf::ModelManager::clone(Model *model, std::string name)
 {
     Model::UniquePtr cloned = std::make_unique<Model>();
+    if (name.empty()) {
+        name = model->name() + "_clone";
+    }
+    cloned->setName(name);
     if (model->isCreated()) {
         this->clone(model, cloned.get());
     } else {

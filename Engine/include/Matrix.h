@@ -7,7 +7,10 @@
 #include "assimp/quaternion.h"
 
 namespace lcf {
+    using Matrix2x2 = QMatrix2x2;
+    using Matrix3x3 = QMatrix3x3;
     using Matrix4x4 = QMatrix4x4;
+    using Vector2D = QVector2D;
     using Vector3D = QVector3D;
     using Vector4D = QVector4D;
     using Quaternion = QQuaternion;

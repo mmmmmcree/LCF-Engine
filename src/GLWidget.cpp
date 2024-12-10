@@ -29,7 +29,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 void GLWidget::initializeGL()
 {
     this->initializeOpenGLFunctions();
-    glClearColor(1.0, 1.0, 0.0, 1.0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     ShaderManager::instance()->initialize();
     Camera::get()->initialize();
     TextureManager::instance()->initialize(this->context());

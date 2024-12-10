@@ -4,6 +4,9 @@
 #include "ShaderManager.h"
 #include "Constants.h"
 #include "utils.h"
+#include "DirectionalLight.h"
+#include "PointLight.h"
+#include "SpotLight.h"
 
 lcf::SceneManager *lcf::SceneManager::instance()
 {
@@ -31,29 +34,41 @@ lcf::Scene *lcf::SceneManager::get(const QString &name)
 
 lcf::Scene *lcf::SceneManager::makeGrassLand()
 {
-    static bool initialized = false;
-    QString scene_name = "grass_land";
-    if (initialized) { return m_scenes[scene_name].get(); }
-    initialized = true;
+    static QString scene_name = "grass_land";
+    if (m_scenes.find(scene_name) != m_scenes.end()) { return m_scenes[scene_name].get(); }
 
     auto &scene = m_scenes.emplace(std::make_pair(scene_name, new Scene)).first->second;
-    
-    UniqueGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "bk.jpg", true);
+    SharedGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "bk.jpg", true);
     texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-    scene->setSkyboxTexture(std::move(texture));
+    scene->setSkyboxTexture(texture);
+
+    DirectionalLight::SharedPtr directional_light = std::make_shared<DirectionalLight>();
+    directional_light->setName("directional_light[0]");
+    directional_light->setAmbientIntensity(0.4f);
+    directional_light->setDiffuseIntensity(1.5f);
+    scene->addSharedChild(directional_light);
+    const auto &directional_light_as_uniform_list = directional_light->asUniformList();
 
     Model::SharedPtr dinasour = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
     scene->addSharedChild(dinasour);
     dinasour->scale(0.3f);
     dinasour->translate(3.0f, 0.0f, 0.0f);
-    dinasour->setShader(ShaderManager::instance()->get("animation_debug_3D"));
+    SharedGLShaderProgramPtr shader = ShaderManager::instance()->load({
+        {QOpenGLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
+        {QOpenGLShader::Fragment, path::shaders_prefix + "phong.frag"},
+    });
+    GLHelper::setShaderUniforms(shader.get(), {
+        {"diffuse_channel", 0}, {"specular_channel", 1},
+        {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
+    });
+    auto su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    su_binder->setUniforms(directional_light_as_uniform_list);
+    dinasour->setShaderUniformBinder(su_binder);
     dinasour->playAnimation(0, 1.0f);
     Model::SharedPtr dinasour2 = ModelManager::instance()->clone(dinasour.get());
     scene->addSharedChild(dinasour2);
     dinasour2->scale(0.3f);
-    dinasour2->setShader(ShaderManager::instance()->get("animation_debug_3D"));
     dinasour2->playAnimation(1, 2.0f);
-
 
     Model::SharedPtr grass = ModelManager::instance()->load(path::source_dir + "models/grassNew.obj");
     scene->addSharedChild(grass);
@@ -70,17 +85,15 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
             grass->instanceHelper()->addInstanceOffset(m);
         }
     }
-    auto material = Material::newCreatedShared();
+    auto material = Material::newShared();
     SharedGLTexturePtr grass_color = TextureManager::instance()->load(path::source_dir + "res/GRASS.png");
-    material->addTexture(grass_color);
+    material->setTexture(TextureType::Diffuse, grass_color);
     SharedGLTexturePtr grass_mask = TextureManager::instance()->load(path::source_dir + "res/grassMask.png");
     grass_mask->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-    material->addTexture(grass_mask);
+    material->setTexture(TextureType::Opacity, grass_mask);
     SharedGLTexturePtr cloud = TextureManager::instance()->load(path::source_dir + "res/CLOUD.png");
-    material->addTexture(cloud);
+    material->setTexture(TextureType::UserCustom0, cloud);
     grass->setMaterial(material); 
-
-    UniqueGLShaderProgramPtr shader = nullptr;
     shader = ShaderManager::instance()->load({
         {QOpenGLShader::Vertex, path::shaders_prefix + "grass.vert"}, 
         {QOpenGLShader::Fragment, path::shaders_prefix + "grass.frag"}, 
@@ -88,12 +101,30 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
     GLHelper::setShaderUniforms(shader.get(), {
         {"channel0", 0}, {"channel1", 1}, {"channel2", 2}
     });
-    grass->setShader(std::move(shader));
+    su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    su_binder->setSingleUniform({"time", utils::elapsed_time_s});
+    grass->setShaderUniformBinder(su_binder);
+
+    Model::SharedPtr tree1 = ModelManager::instance()->load(path::source_dir + "models/stylized_hand_painted_tree.glb");
+    scene->addSharedChild(tree1);
+    for (int i = 0; i < 16; ++i) {
+        Matrix4x4 tree_mat;
+        tree_mat.translate(utils::random_bounded(-32.0f, 32.0f), utils::random_bounded(-32.0f, 32.0f), 0.0f);
+        tree_mat.rotate(utils::random_bounded(90.0f), {0.0f, 0.0f, 1.0f});
+        tree_mat.scale(utils::random_bounded(0.4f) + 0.8f);
+        tree1->instanceHelper()->addInstanceOffset(tree_mat);
+    }
+    shader = ShaderManager::instance()->load({
+        {QOpenGLShader::Vertex, path::shaders_prefix + "instance3D.vert"},
+        {QOpenGLShader::Fragment, path::shaders_prefix + "sampler2D_debug.frag"}
+    });
+    shader->setUniformValue("channel0", 0);
+    tree1->setShader(shader);
 
     Model::SharedPtr ground = ModelManager::instance()->load(path::source_dir + "models/grassland.glb");
     scene->addSharedChild(ground);
-    material = Material::newCreatedShared();
-    material->addTexture(grass_color);
+    material = Material::newShared();
+    material->setTexture(TextureType::Diffuse, grass_color);
     ground->setMaterial(material);
     ground->scale(0.7f);
     ground->translateY(-0.12f);
@@ -101,17 +132,86 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
         {QOpenGLShader::Vertex, path::shaders_prefix + "grass_land.vert"}, 
         {QOpenGLShader::Fragment, path::shaders_prefix + "grass_land.frag"}, 
     });
-    ground->setShader(std::move(shader));
+    ground->setShader(shader);
 
     Model::SharedPtr house1 = ModelManager::instance()->load(path::source_dir + "models/house.fbx");
     scene->addSharedChild(house1);
     house1->translate(4.0f, 0.9f, 0.0f);
-    house1->setShader(ShaderManager::instance()->get("sampler2D_debug_3D"));
+    shader = ShaderManager::instance()->load({
+        {QOpenGLShader::Vertex, path::shaders_prefix + "illumination.vert"},
+        {QOpenGLShader::Fragment, path::shaders_prefix + "phong.frag"},
+    });
+    GLHelper::setShaderUniforms(shader.get(), {
+        {"diffuse_channel", 0}, {"specular_channel", 1},
+        {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
+    });
+    su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    su_binder->setUniforms(directional_light_as_uniform_list);
+    house1->setShaderUniformBinder(su_binder);
+
+    
+
 
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         dinasour->translate(0.0f, 0.0f, 0.15f);
         dinasour->rotateY(1.0f);
     });
     scene->timer()->start(1000 / 60);
+    return scene.get();
+}
+
+lcf::Scene * lcf::SceneManager::testScene()
+{
+    static QString scene_name = "test";
+    if (m_scenes.find(scene_name) != m_scenes.end()) { return m_scenes[scene_name].get(); }
+    auto &scene = m_scenes.emplace(std::make_pair(scene_name, new Scene)).first->second;
+    UniqueGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "black.png");
+    texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
+    scene->setSkyboxTexture(std::move(texture));
+
+    Light::SharedPtr directional_light = std::make_shared<DirectionalLight>();
+    directional_light->setName("directional_light[0]");
+    scene->addSharedChild(directional_light);
+    const auto &light_as_uniform_list = directional_light->asUniformList();
+    // Light::SharedPtr point_light = std::make_shared<PointLight>();
+    // point_light->setName("point_light[0]");
+    // scene->addSharedChild(point_light);
+    // const auto &light_as_uniform_list = point_light->asUniformList();
+    // Light::SharedPtr spot_light = std::make_shared<SpotLight>();
+    // spot_light->setName("spot_light[0]");
+    // scene->addSharedChild(spot_light);
+    // const auto &light_as_uniform_list = spot_light->asUniformList();
+
+    Model::SharedPtr dinasour = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
+    scene->addSharedChild(dinasour);
+    dinasour->scale(0.3f);
+    SharedGLShaderProgramPtr shader = ShaderManager::instance()->load({
+        {QOpenGLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
+        {QOpenGLShader::Fragment, path::shaders_prefix + "phong.frag"},
+    });
+    GLHelper::setShaderUniforms(shader.get(), {
+        {"diffuse_channel", 0}, {"specular_channel", 1},
+        {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
+    });
+    auto su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    su_binder->setUniforms(light_as_uniform_list);
+    dinasour->setShaderUniformBinder(su_binder);
+    dinasour->playAnimation(1, 1.0f);
+
+
+    Model::SharedPtr house1 = ModelManager::instance()->load(path::source_dir + "models/house.fbx");
+    scene->addSharedChild(house1);
+    house1->translate(4.0f, 0.9f, 0.0f);
+    shader = ShaderManager::instance()->load({
+        {QOpenGLShader::Vertex, path::shaders_prefix + "illumination.vert"},
+        {QOpenGLShader::Fragment, path::shaders_prefix + "phong.frag"},
+    });
+    GLHelper::setShaderUniforms(shader.get(), {
+        {"diffuse_channel", 0}, {"specular_channel", 1},
+        {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
+    });
+    su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    su_binder->setUniforms(light_as_uniform_list);
+    house1->setShaderUniformBinder(su_binder);
     return scene.get();
 }

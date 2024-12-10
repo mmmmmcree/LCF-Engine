@@ -9,6 +9,7 @@
 #include "Skeleton.h"
 #include <QList>
 #include "InstanceHelper.h"
+#include "ShaderUniformBinder.h"
 
 namespace lcf {
     class Mesh : public Object3D
@@ -29,6 +30,7 @@ namespace lcf {
         const SkeletonPtr &skeleton() const;
         void activateSkeleton(bool active);
         void setShader(const SharedGLShaderProgramPtr &shader);
+        void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
         InstanceHelperPtr &instanceHelper();
         void setInstanceHelper(const InstanceHelperPtr &instance_helper);
     protected:
@@ -37,6 +39,7 @@ namespace lcf {
         SkeletonPtr m_skeleton;
         InstanceHelperPtr m_instance_helper;
         bool m_skeleton_activated = false;
-        SharedGLShaderProgramPtr m_shader = nullptr;
+        ShaderUniformBinder::SharedPtr m_shader_uniform_binder;
+        // SharedGLShaderProgramPtr m_shader = nullptr;
     };
 }

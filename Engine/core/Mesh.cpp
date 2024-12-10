@@ -8,7 +8,8 @@ lcf::Mesh::Mesh(const GeometryPtr &geometry, const MaterialPtr &material) :
     m_material(material), 
     m_skeleton(nullptr),
     m_skeleton_activated(false),
-    m_shader(nullptr),
+    // m_shader(nullptr),
+    m_shader_uniform_binder(nullptr),
     m_instance_helper(std::make_shared<InstanceHelper>())
 {
 }
@@ -19,7 +20,7 @@ lcf::Mesh::Mesh(const Mesh &other) :
     m_material(other.m_material), 
     m_skeleton(nullptr),
     m_skeleton_activated(other.m_skeleton_activated),
-    m_shader(other.m_shader), 
+    m_shader_uniform_binder(other.m_shader_uniform_binder),
     m_instance_helper(other.m_instance_helper ? std::make_shared<InstanceHelper>(*other.m_instance_helper) : std::make_shared<InstanceHelper>())
 {
 }
@@ -27,16 +28,16 @@ lcf::Mesh::Mesh(const Mesh &other) :
 void lcf::Mesh::draw()
 {
     Object3D::draw();
-    if (not m_shader or not m_material) { return; }
-    if (not m_geometry->isCreated() or not m_material->isCreated()) { return; }
-    m_shader->bind();
-    m_shader->setUniformValue("model", this->worldMatrix());
-    m_shader->setUniformValue("time", utils::elapsed_time_s());
+    if (not m_shader_uniform_binder or not m_material) { return; }
+    if (not m_geometry->isCreated()) { return; }
+    m_shader_uniform_binder->bind();
+    const auto &shader = m_shader_uniform_binder->shader();
+    shader->setUniformValue("model", this->worldMatrix());
+    shader->setUniformValue("normal_matrix", this->normalMatrix());
     if (m_skeleton and m_skeleton_activated) {
         const auto &bone_matrices = m_skeleton->boneMatrices();
         if (not bone_matrices.empty()) {
-            qDebug() << "bone_matrices size: " << bone_matrices.size();
-            m_shader->setUniformValueArray("bone_matrices", bone_matrices.data(), static_cast<int>(bone_matrices.size()));
+            shader->setUniformValueArray("bone_matrices", bone_matrices.data(), static_cast<int>(bone_matrices.size()));
         }
     }
     m_material->bind();
@@ -47,7 +48,7 @@ void lcf::Mesh::draw()
         m_geometry->drawInstanced(instance_count);
     }
     m_material->release();
-    m_shader->release();
+    m_shader_uniform_binder->release();
 }
 
 void lcf::Mesh::setSkeleton(SkeletonPtr &&skeleton)
@@ -87,7 +88,17 @@ void lcf::Mesh::activateSkeleton(bool active)
 
 void lcf::Mesh::setShader(const SharedGLShaderProgramPtr &shader)
 {
-    m_shader = shader;
+    m_shader_uniform_binder = std::make_shared<ShaderUniformBinder>(shader);
+}
+
+// void lcf::Mesh::setShader(const SharedGLShaderProgramPtr &shader)
+// {
+//     m_shader = shader;
+// }
+
+void lcf::Mesh::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder)
+{
+    m_shader_uniform_binder = shader_uniform_binder;
 }
 
 lcf::Mesh::InstanceHelperPtr &lcf::Mesh::instanceHelper()

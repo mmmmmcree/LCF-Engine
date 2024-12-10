@@ -5,6 +5,7 @@
 #include "AnimationPlayer.h"
 #include "GLShaderProgram.h"
 #include "InstanceHelper.h"
+#include "ShaderUniformBinder.h"
 
 namespace lcf {
     class ModelManager;
@@ -16,7 +17,6 @@ namespace lcf {
     public:
         using SharedPtr = std::shared_ptr<Model>;
         using UniquePtr = std::unique_ptr<Model>;
-        using Group = Object3D;
         using MeshPtr = std::unique_ptr<Mesh>;
         using MeshList = std::vector<MeshPtr>;
         using BoneMap = std::unordered_map<std::string, Bone *>;
@@ -32,6 +32,7 @@ namespace lcf {
         bool isCreated() const;
         bool hasAnimation() const;
         void setShader(const SharedGLShaderProgramPtr &shader);
+        void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
         void setMaterial(const MaterialPtr &material);
         InstanceHelperPtr &instanceHelper();
         Object3D::Type type() const override;
@@ -46,6 +47,7 @@ namespace lcf {
         void setBones(Bone *root_bone, BoneMap &&bone_map);
         void addAnimation(AnimationPtr &&animation);
     private:
+        ShaderUniformBinder::SharedPtr m_shader_uniform_binder;
         MeshList m_meshes;
         InstanceHelperPtr m_instance_helper;
         AnimationList m_animations;
@@ -57,7 +59,7 @@ namespace lcf {
         void passSettingsToMeshes();
         using AnimationPlayState = std::pair<int, float>;
         MaterialPtr m_material;        
-        SharedGLShaderProgramPtr m_shader = nullptr;
+        // SharedGLShaderProgramPtr m_shader = nullptr;
         AnimationPlayState m_animation_play_state = { -1, 1.0f };
     };
 }

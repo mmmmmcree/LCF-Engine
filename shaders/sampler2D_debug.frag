@@ -9,5 +9,7 @@ in VS_OUT {
 uniform sampler2D channel0;
 
 void main() {
-    frag_color = texture(channel0, fs_in.uv);
+    vec4 color = texture(channel0, fs_in.uv);
+    if (color.a < 0.3) { discard; }
+    frag_color = color;
 }

@@ -15,8 +15,8 @@ namespace lcf {
     public:
         static ModelManager *instance();
         void initialize(QOpenGLContext *context);
-        Model::SharedPtr load(const QString &path);
-        Model::UniquePtr clone(Model *model);
+        Model::SharedPtr load(const QString &path, std::string name = "");
+        Model::UniquePtr clone(Model *model, std::string name = "");
     private:
         ModelManager() = default;
         void clone(Model *model, Model *cloned);

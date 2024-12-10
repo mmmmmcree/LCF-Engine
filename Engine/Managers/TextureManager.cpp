@@ -33,9 +33,14 @@ std::unique_ptr<lcf::GLTexture> lcf::TextureManager::load(const QString &image_p
     return std::unique_ptr<GLTexture>(texture);
 }
 
-std::unique_ptr<lcf::GLTexture> lcf::TextureManager::load(unsigned char *data, int width, int height)
+std::unique_ptr<lcf::GLTexture> lcf::TextureManager::loadSingleThread(unsigned char *data, int width, int height)
 {
     return std::make_unique<GLTexture>(dataToImage(data, width, height));
+}
+
+std::unique_ptr<lcf::GLTexture> lcf::TextureManager::loadSingleThread(const QString & image_path, bool mirrored)
+{
+    return std::make_unique<GLTexture>(mirrored ? QImage(image_path).mirrored() : QImage(image_path));
 }
 
 void lcf::TextureManager::initialize(QOpenGLContext * context)

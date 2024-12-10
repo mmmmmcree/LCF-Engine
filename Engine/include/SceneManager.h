@@ -15,6 +15,7 @@ namespace lcf {
         void initialize(QOpenGLContext *context);
         Scene *get(const QString& name);
         Scene *makeGrassLand();
+        Scene *testScene();
     private:
         SceneManager() = default;
     private:

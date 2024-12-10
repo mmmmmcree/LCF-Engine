@@ -195,6 +195,11 @@ void lcf::Object3D::setScale(float factor)
     this->setScale(factor, factor, factor);
 }
 
+const lcf::Vector3D &lcf::Object3D::position() const
+{
+    return m_local_decomposed.translation;
+}
+
 const std::vector<lcf::Object3D *> &lcf::Object3D::children() const
 {
     return m_children;
@@ -212,6 +217,11 @@ const lcf::Matrix4x4 &lcf::Object3D::worldMatrix()
     m_world = m_parent ? m_parent->worldMatrix() * m_local : m_local;
     m_world_need_update = false;
     return m_world;
+}
+
+lcf::Matrix3x3 lcf::Object3D::normalMatrix()
+{
+    return this->worldMatrix().inverted().transposed().toGenericMatrix<3, 3>();
 }
 
 void lcf::Object3D::setName(std::string_view name)

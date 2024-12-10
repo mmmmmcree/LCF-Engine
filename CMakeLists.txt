@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-DSOURCE_DIR="${CMAKE_SOURCE_DIR}")
 file(GLOB libs "./lib/*" "./Engine/lib/*")  
- 
+  
 file(COPY ${libs} DESTINATION ${CMAKE_BINARY_DIR}/Release)
 find_package(Qt6 COMPONENTS Widgets REQUIRED) 
 include_directories(./include/Ela Engine/include Engine)

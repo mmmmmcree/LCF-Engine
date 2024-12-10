@@ -41,11 +41,11 @@ lcf::AssimpLoader::MaterialPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai
 {
     Material *material = new Material;
     std::unordered_map<std::string, Image> image_map;
-    for (int type = aiTextureType_NONE; type <= aiTextureType_TRANSMISSION; ++type) {
+    for (int type = aiTextureType_DIFFUSE; type <= aiTextureType_TRANSMISSION; ++type) {
         int count = ai_material->GetTextureCount(static_cast<aiTextureType>(type));
         for (int i = 0; i < count; ++i) {
             aiString texture_path;
-            ai_material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_path);
+            ai_material->Get(AI_MATKEY_TEXTURE(static_cast<aiTextureType>(type), i), texture_path);
             auto iter = image_map.find(texture_path.C_Str());
             if (iter != image_map.end()) { continue; }
             const aiTexture *ai_texture = scene->GetEmbeddedTexture(texture_path.C_Str());
@@ -57,7 +57,7 @@ lcf::AssimpLoader::MaterialPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai
                 image = Image(m_path + texture_path.C_Str());
             }
             image_map.insert(std::make_pair(texture_path.C_Str(), image));
-            material->addImageData(image);
+            material->setImageData(type, image);
         }
     }
     return MaterialPtr(material);
@@ -136,7 +136,6 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
         if (ai_mesh->HasVertexColors(0)) {
             memcpy(colors.data() + i * 4, ai_mesh->mColors[0] + i, sizeof(float) * 4);
         }
-
     }
     for (unsigned int i = 0; i < ai_mesh->mNumFaces; ++i) {
         aiFace face = ai_mesh->mFaces[i];
