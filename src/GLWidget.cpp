@@ -1,18 +1,12 @@
 #include "GLWidget.h"
 #include <QTimer>
-#include <QRandomGenerator>
-#include "GLHelper.h"
 #include "Camera/Camera.h"
-#include "ShaderToys/ShaderToyManager.h"
-#include "Constants.h"
-#include "Mesh.h"
+#include "ShaderToyManager.h"
 #include "ModelManager.h"
 #include "ShaderManager.h"
 #include "Scene.h"
 #include "TextureManager.h"
-#include <QRandomGenerator>
-#include "InstanceHelper.h"
-#include "utils.h"
+#include "Constants.h"
 #include "SceneManager.h"
 
 using namespace lcf;
@@ -31,17 +25,18 @@ void GLWidget::initializeGL()
     this->initializeOpenGLFunctions();
     glClearColor(0.0, 0.0, 0.0, 1.0);
     ShaderManager::instance()->initialize();
-    Camera::get()->initialize();
+    Camera::instance()->initialize();
     TextureManager::instance()->initialize(this->context());
     SceneManager::instance()->initialize(this->context());
     ModelManager::instance()->initialize(this->context());
-    auto scene = SceneManager::instance()->makeGrassLand();
+    auto scene = SceneManager::instance()->testShaderToy();
     Scene::setCurrent(scene);
 }
 
 void GLWidget::paintGL()
 {
-    Camera::get()->update();
+    Camera::instance()->update();
+    ShaderToyManager::instance()->updateActivated();
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Scene::current()->draw();
@@ -52,25 +47,25 @@ void GLWidget::resizeGL(int w, int h)
 {
     w *= this->devicePixelRatio();
     h *= this->devicePixelRatio();
-    Camera::get()->setViewPort(w, h);
+    Camera::instance()->setViewPort(w, h);
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    Camera::get()->processMouseMoveEvent(event);
+    Camera::instance()->processMouseMoveEvent(event);
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-    Camera::get()->processWheelEvent(event);
+    Camera::instance()->processWheelEvent(event);
 }
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
-    Camera::get()->processKeyPressEvent(event);
+    Camera::instance()->processKeyPressEvent(event);
 }
 
 void GLWidget::keyReleaseEvent(QKeyEvent *event)
 {
-    Camera::get()->processKeyReleaseEvent(event);
+    Camera::instance()->processKeyReleaseEvent(event);
 }

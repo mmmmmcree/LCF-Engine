@@ -65,14 +65,14 @@ CameraControlPanel::CameraControlPanel(QWidget *parent) : ElaScrollPage(parent)
     vlayout->setSpacing(10);
     this->addCentralWidget(central_widget, true, true, 0);
 
-    connect(projection_selector, &QComboBox::currentIndexChanged, Camera::get(), [](int index) {
-        Camera::get()->setProjectionType(static_cast<Camera::ProjectionType>(index));
+    connect(projection_selector, &QComboBox::currentIndexChanged, Camera::instance(), [](int index) {
+        Camera::instance()->setProjectionType(static_cast<Camera::ProjectionType>(index));
     });
-    connect(control_mode_selector, &QComboBox::currentIndexChanged, Camera::get(), [](int index) {
-        Camera::get()->setCameraController(static_cast<Camera::ControllerType>(index));
+    connect(control_mode_selector, &QComboBox::currentIndexChanged, Camera::instance(), [](int index) {
+        Camera::instance()->setCameraController(static_cast<Camera::ControllerType>(index));
     });
-    connect(camera_selector, &QComboBox::currentIndexChanged, Camera::get(), [](int index) {
-        Camera::get()->setCameraType(static_cast<Camera::Type>(index));
+    connect(camera_selector, &QComboBox::currentIndexChanged, Camera::instance(), [](int index) {
+        Camera::instance()->setCameraType(static_cast<Camera::Type>(index));
     });
     connect(toggle_btn, &ElaToggleButton::toggled, this, [=](bool checked) {
         if (checked) {

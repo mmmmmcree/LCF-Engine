@@ -4,6 +4,8 @@
 #include <memory>
 
 namespace lcf {
+    using GLShader = QOpenGLShader;
+
     using GLShaderProgram = QOpenGLShaderProgram;
 
     using SharedGLShaderProgramPtr = std::shared_ptr<GLShaderProgram>;

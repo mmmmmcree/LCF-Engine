@@ -19,6 +19,7 @@ namespace lcf {
         using MaterialPtr = std::shared_ptr<Material>;
         using SkeletonPtr = std::unique_ptr<Skeleton>;
         using InstanceHelperPtr = std::shared_ptr<InstanceHelper>;
+        using SharedPtr = std::shared_ptr<Mesh>;
         Mesh(const GeometryPtr &geometry, const MaterialPtr &material);
         Mesh(const Mesh& other);
         void draw() override;

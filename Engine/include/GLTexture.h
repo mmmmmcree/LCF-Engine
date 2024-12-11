@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QOpenGLTexture>
-#include "ShaderToys/ShaderToy.h"
 #include <memory>
 
 namespace lcf {

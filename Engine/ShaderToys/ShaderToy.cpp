@@ -1,19 +1,20 @@
 #include "ShaderToy.h"
 #include <QOffscreenSurface>
 #include <QOpenGLFunctions>
+#include "ShaderManager.h"
+#include "Constants.h"
 
-ShaderToy::ShaderToy(int width, int height, const QStringList &frag_paths) :
+lcf::ShaderToy::ShaderToy(int width, int height, const QStringList &frag_paths) :
     m_buffers(frag_paths.size())
 {
     this->setSize(width, height);
     for (int i = 0; i < frag_paths.size(); ++i) {
-        //todo 改成用ShaderManager获得Shader
-        // m_shaders.emplace_back(
-        //     GLHelper::loadShaderWithPaths({
-        //         {QOpenGLShader::Vertex, GLHelper::defaultShaderPath() + "simple2D.vert"}, 
-        //         {QOpenGLShader::Fragment, frag_paths[i]}
-        //     })
-        // );
+        m_shaders.emplace_back(
+            ShaderManager::instance()->load({
+                {QOpenGLShader::Vertex, path::shaders_prefix + "simple2D.vert"}, 
+                {QOpenGLShader::Fragment, frag_paths[i]}
+            })
+        );
         auto shader = m_shaders.back().get(); 
         GLHelper::setShaderUniforms(shader, {
             {"iResolution", iResolution},
@@ -24,7 +25,7 @@ ShaderToy::ShaderToy(int width, int height, const QStringList &frag_paths) :
     m_elapsed_timer.start();
 }
 
-void ShaderToy::setSize(int width, int height)
+void lcf::ShaderToy::setSize(int width, int height)
 {
     m_width = width;
     m_height = height;
@@ -36,21 +37,21 @@ void ShaderToy::setSize(int width, int height)
     iFrame = 0;
 }
 
-void ShaderToy::setBuffer(int index, const QList<BufferTexture> &textures)
+void lcf::ShaderToy::setBuffer(int index, const BufferTextureList &textures)
 {
     auto &buffer = m_buffers[index];
     for (auto texture : textures) {
         std::visit([&](auto &&arg) {
             if constexpr (std::is_same_v<std::decay_t<decltype(arg)>, int>) {
                 buffer.addTexture(&m_buffers[arg]);
-            } else if constexpr (std::is_same_v<std::decay_t<decltype(arg)>, QOpenGLTexture*>) {
+            } else if constexpr (std::is_same_v<std::decay_t<decltype(arg)>, SharedGLTexturePtr>) {
                 buffer.addTexture(arg);
             }
         }, texture);
     }
 }
 
-void ShaderToy::update()
+void lcf::ShaderToy::update()
 {
     auto gl = QOpenGLContext::currentContext()->functions();
     gl->glGetIntegerv(GL_VIEWPORT, m_original_viewport);
@@ -67,12 +68,12 @@ void ShaderToy::update()
     ++iFrame;
 }
 
-GLuint ShaderToy::texture() const
+GLuint lcf::ShaderToy::texture() const
 {
     return m_buffers.back().texture();
 }
 
-void ShaderToy::bind(uint unit)
+void lcf::ShaderToy::bind(uint unit)
 {
     if (m_buffers.empty()) {
         qDebug() << "No buffer to bind";
@@ -81,9 +82,13 @@ void ShaderToy::bind(uint unit)
     auto gl = QOpenGLContext::currentContext()->functions();
     gl->glActiveTexture(GL_TEXTURE0 + unit);
     gl->glBindTexture(GL_TEXTURE_2D, this->texture());
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); 
 }
 
-void ShaderToy::release()
+void lcf::ShaderToy::release()
 {
     auto gl = QOpenGLContext::currentContext()->functions();
     gl->glActiveTexture(GL_TEXTURE0);

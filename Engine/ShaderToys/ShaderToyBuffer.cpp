@@ -3,21 +3,28 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
-ShaderToyBuffer::ShaderToyBuffer() : m_shader(nullptr), m_read_fbo(nullptr), m_write_fbo(nullptr)
+
+// void ShaderToyBuffer::addTextures(const QList<Texture> &textures)
+// {
+//     m_textures.append(textures);
+// }
+
+lcf::ShaderToyBuffer::ShaderToyBuffer() :
+    m_shader(nullptr), m_read_fbo(nullptr), m_write_fbo(nullptr)
 {
 }
 
-void ShaderToyBuffer::setShader(QOpenGLShaderProgram *shader)
+void lcf::ShaderToyBuffer::setShader(GLShaderProgram *shader)
 {
     m_shader = shader;
 }
 
-QOpenGLShaderProgram *ShaderToyBuffer::shader() const
+lcf::GLShaderProgram *lcf::ShaderToyBuffer::shader() const
 {
     return m_shader;
 }
 
-void ShaderToyBuffer::update()
+void lcf::ShaderToyBuffer::update()
 {
     auto gl = QOpenGLContext::currentContext()->functions();
     for (int i = 0; i < m_textures.size(); i++) {
@@ -32,40 +39,35 @@ void ShaderToyBuffer::update()
     m_write_fbo->release();
     std::swap(m_read_fbo, m_write_fbo);
     gl->glActiveTexture(GL_TEXTURE0);
-    gl->glBindTexture(GL_TEXTURE_2D, 0);
+    gl->glBindTexture(GL_TEXTURE_2D, 0);   
 }
 
-void ShaderToyBuffer::bind(uint unit) const
+void lcf::ShaderToyBuffer::bind(uint unit) const
 {
     auto gl = QOpenGLContext::currentContext()->functions();
     gl->glActiveTexture(GL_TEXTURE0 + unit);
     gl->glBindTexture(GL_TEXTURE_2D, m_read_fbo->texture());
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); 
 }
 
-GLuint ShaderToyBuffer::texture() const
+GLuint lcf::ShaderToyBuffer::texture() const
 {
     return m_read_fbo->texture();
 }
 
-void ShaderToyBuffer::setSize(int width, int height)
+void lcf::ShaderToyBuffer::setSize(int width, int height)
 {
-    QOpenGLFramebufferObjectFormat format;
+    GLFrameBufferObjectFormat format;
     format.setInternalTextureFormat(GL_RGBA32F);
-    format.setAttachment(QOpenGLFramebufferObject::CombinedDepthStencil);
-    auto tmp = m_read_fbo.release();
-    m_read_fbo.reset(new QOpenGLFramebufferObject(width, height, format));
-    delete tmp;
-    tmp = m_write_fbo.release();
-    m_write_fbo.reset(new QOpenGLFramebufferObject(width, height, format));
-    delete tmp;
+    format.setAttachment(GLFrameBufferObject::CombinedDepthStencil);
+    m_read_fbo = std::make_unique<GLFrameBufferObject>(width, height, format);
+    m_write_fbo = std::make_unique<GLFrameBufferObject>(width, height, format);
 }
 
-void ShaderToyBuffer::addTexture(Texture texture)
+void lcf::ShaderToyBuffer::addTexture(Texture texture)
 {
     m_textures.emplace_back(texture);
-}
-
-void ShaderToyBuffer::addTextures(const QList<Texture> &textures)
-{
-    m_textures.append(textures);
 }

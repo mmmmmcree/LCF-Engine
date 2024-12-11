@@ -1,5 +1,4 @@
 #include "TextureWrapper.h"
-#include "ShaderToys/ShaderToy.h"
 
 lcf::TextureWrapper::TextureWrapper(GLTexture *texture) : m_texture(texture)
 {

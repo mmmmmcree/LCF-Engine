@@ -5,13 +5,10 @@
 #include "TrackballController.h"
 #include "GameController.h"
 
-Camera *Camera::get()
+Camera *Camera::instance()
 {
-    static std::unique_ptr<Camera> s_instance(nullptr);
-    if (not s_instance) {
-        s_instance.reset(new Camera);
-    }
-    return s_instance.get();
+    static Camera s_instance;
+    return &s_instance;
 }
 
 void Camera::initialize()

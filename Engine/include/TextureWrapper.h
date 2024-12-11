@@ -1,9 +1,8 @@
 #pragma once
 
 #include "GLTexture.h"
-// #include "ShaderToys/ShaderToy.h"
+#include "ShaderToy.h"
 
-class ShaderToy;
 
 namespace lcf {
     class TextureWrapper

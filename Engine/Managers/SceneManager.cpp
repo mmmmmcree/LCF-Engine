@@ -7,6 +7,7 @@
 #include "DirectionalLight.h"
 #include "PointLight.h"
 #include "SpotLight.h"
+#include "ShaderToyManager.h"
 
 lcf::SceneManager *lcf::SceneManager::instance()
 {
@@ -149,9 +150,6 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
     su_binder->setUniforms(directional_light_as_uniform_list);
     house1->setShaderUniformBinder(su_binder);
 
-    
-
-
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         dinasour->translate(0.0f, 0.0f, 0.15f);
         dinasour->rotateY(1.0f);
@@ -173,21 +171,13 @@ lcf::Scene * lcf::SceneManager::testScene()
     directional_light->setName("directional_light[0]");
     scene->addSharedChild(directional_light);
     const auto &light_as_uniform_list = directional_light->asUniformList();
-    // Light::SharedPtr point_light = std::make_shared<PointLight>();
-    // point_light->setName("point_light[0]");
-    // scene->addSharedChild(point_light);
-    // const auto &light_as_uniform_list = point_light->asUniformList();
-    // Light::SharedPtr spot_light = std::make_shared<SpotLight>();
-    // spot_light->setName("spot_light[0]");
-    // scene->addSharedChild(spot_light);
-    // const auto &light_as_uniform_list = spot_light->asUniformList();
 
     Model::SharedPtr dinasour = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
     scene->addSharedChild(dinasour);
     dinasour->scale(0.3f);
     SharedGLShaderProgramPtr shader = ShaderManager::instance()->load({
-        {QOpenGLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
-        {QOpenGLShader::Fragment, path::shaders_prefix + "phong.frag"},
+        {GLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
+        {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
         {"diffuse_channel", 0}, {"specular_channel", 1},
@@ -203,8 +193,8 @@ lcf::Scene * lcf::SceneManager::testScene()
     scene->addSharedChild(house1);
     house1->translate(4.0f, 0.9f, 0.0f);
     shader = ShaderManager::instance()->load({
-        {QOpenGLShader::Vertex, path::shaders_prefix + "illumination.vert"},
-        {QOpenGLShader::Fragment, path::shaders_prefix + "phong.frag"},
+        {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
+        {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
         {"diffuse_channel", 0}, {"specular_channel", 1},
@@ -213,5 +203,32 @@ lcf::Scene * lcf::SceneManager::testScene()
     su_binder = std::make_shared<ShaderUniformBinder>(shader);
     su_binder->setUniforms(light_as_uniform_list);
     house1->setShaderUniformBinder(su_binder);
+    return scene.get();
+}
+
+lcf::Scene * lcf::SceneManager::testShaderToy()
+{
+    static QString scene_name = "shader_toy";
+    if (m_scenes.find(scene_name) != m_scenes.end()) { return m_scenes[scene_name].get(); }
+    auto &scene = m_scenes.emplace(std::make_pair(scene_name, new Scene)).first->second;
+    SharedGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "bk.jpg", true);
+    texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
+    scene->setSkyboxTexture(texture);
+    auto shader_toy = ShaderToyManager::instance()->load("train", 1024, 768, {
+        path::shaders_prefix + "train_buffer.frag",
+        path::shaders_prefix + "train.frag",
+    });
+    ShaderToyManager::instance()->activate("train");
+    texture = TextureManager::instance()->load(path::res_prefix + "train_noise.png");
+    texture->setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
+    texture->setWrapMode(GLTexture::Repeat);
+    shader_toy->setBuffer(0, {texture, 0});
+    shader_toy->setBuffer(1, {0});
+    Material::SharedPtr material = std::make_shared<Material>();
+    material->setTexture(TextureType::UserCustom0, shader_toy);
+    Mesh::SharedPtr mesh = std::make_shared<Mesh>(Geometry::quad(), material);
+    mesh->setShader(ShaderManager::instance()->get(ShaderManager::Simple3D));
+    mesh->scale(1.5f, 1.0f, 1.0f);
+    scene->addSharedChild(mesh);
     return scene.get();
 }

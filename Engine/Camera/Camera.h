@@ -20,7 +20,7 @@ public:
         TrackballPerspective, 
         FirstPersonPerspective, 
     };
-    static Camera *get();
+    static Camera *instance();
     void initialize();
     const QVector3D &position() const;
     void update();
