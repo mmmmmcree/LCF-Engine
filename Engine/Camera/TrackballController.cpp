@@ -1,52 +1,56 @@
 #include "TrackBallController.h"
 
-TrackballController::TrackballController() : CameraController()
+lcf::TrackballController::TrackballController() : CameraController()
 {
-    this->reset();
     this->setSensitivity(0.2f);
     this->setMoveSpeed(0.005f);
     this->setScaleSpeed(0.005f);
 }
 
-CameraController::Type TrackballController::type() const
+void lcf::TrackballController::update(Camera *camera)
 {
-    return Trackball;
+    this->updateCameraYaw(camera, m_delta_yaw);
+    this->updateCameraPitch(camera, m_delta_pitch);
+    camera->position() += camera->right() * m_delta_right;
+    camera->position() += camera->up() * m_delta_up;
+    camera->position() += camera->front() * m_delta_front;
+    m_delta_yaw = m_delta_pitch = m_delta_up = m_delta_right = m_delta_front = 0.0f;
 }
 
-void TrackballController::processMouseMoveEvent(QMouseEvent *event)
+void lcf::TrackballController::processMouseMoveEvent(QMouseEvent *event)
 {
     auto [x, y] = event->position();
     auto [dx, dy] = event->position() - m_last_mouse_pos;
     if (event->buttons() & Qt::LeftButton) {
-        this->updateCameraYaw(-dx * m_sensitivity);
-        this->updateCameraPitch(-dy * m_sensitivity);
+        m_delta_yaw -= dx * m_sensitivity;
+        m_delta_pitch -= dy * m_sensitivity;
     }
     if (event->buttons() & Qt::RightButton) {
-        m_position += m_right * -dx * m_move_speed;
-        m_position += m_up * dy * m_move_speed;
+        m_delta_right -= dx * m_move_speed;
+        m_delta_up += dy * m_move_speed;
     }
     m_last_mouse_pos = event->position();
 }
 
-void TrackballController::processWheelEvent(QWheelEvent *event)
+void lcf::TrackballController::processWheelEvent(QWheelEvent *event)
 {
     float delta = event->angleDelta().y() * m_scale_speed;
-    m_position += this->front() * delta;
+    m_delta_front += delta;
 }
 
-void TrackballController::updateCameraPitch(double angle_deg)
+void lcf::TrackballController::updateCameraPitch(Camera *camera, double angle_deg)
 {
     QMatrix4x4 rot_matrix;
-    rot_matrix.rotate(angle_deg, m_right);
-    m_up = QVector3D(rot_matrix * m_up.toVector4D());
-    m_position = QVector3D(rot_matrix * QVector4D(m_position, 1.0f));
+    rot_matrix.rotate(angle_deg, camera->right());
+    camera->up() = QVector3D(rot_matrix * camera->up().toVector4D());
+    camera->position() = QVector3D(rot_matrix * QVector4D(camera->position(), 1.0f));
 }
 
-void TrackballController::updateCameraYaw(double angle_deg)
+void lcf::TrackballController::updateCameraYaw(Camera *camera, double angle_deg)
 {
     QMatrix4x4 rot_matrix;
     rot_matrix.rotate(angle_deg, 0.0f, 1.0f, 0.0f);
-    m_up = QVector3D(rot_matrix * m_up.toVector4D());
-    m_right = QVector3D(rot_matrix * m_right.toVector4D());
-    m_position = QVector3D(rot_matrix * QVector4D(m_position, 1.0f));
+    camera->up() = QVector3D(rot_matrix * camera->up().toVector4D());
+    camera->right() = QVector3D(rot_matrix * camera->right().toVector4D());
+    camera->position() = QVector3D(rot_matrix * QVector4D(camera->position(), 1.0f));
 }

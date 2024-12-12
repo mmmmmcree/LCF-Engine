@@ -1,41 +1,41 @@
 #include "GameController.h"
 
-GameController::GameController()
+lcf::GameController::GameController()
 {
-    this->reset();
     this->setSensitivity(0.15f);
     this->setMoveSpeed(0.1f);
 }
 
-void GameController::update()
+void lcf::GameController::update(Camera *camera)
 {
-    QVector3D direction, front = this->front();
+    this->updateCameraPitch(camera, m_delta_pitch);
+    this->updateCameraYaw(camera, m_delta_yaw);
+    m_delta_pitch = m_delta_yaw = 0.0f;
+    QVector3D direction;
+    const QVector3D &front = camera->front();
+    const QVector3D &up = camera->up();
+    const QVector3D &right = camera->right();
     if (m_direction & Forward) { direction += front; }
     if (m_direction & Backward) { direction -= front; }
-    if (m_direction & Left) { direction -= m_right; }
-    if (m_direction & Right) { direction += m_right; }
-    if (m_direction & Up) { direction += m_up; }
-    if (m_direction & Down) { direction -= m_up; }
-    m_position += direction.normalized() * m_move_speed;
+    if (m_direction & Left) { direction -= right; }
+    if (m_direction & Right) { direction += right; }
+    if (m_direction & Up) { direction += up; }
+    if (m_direction & Down) { direction -= up; }
+    camera->position() += direction.normalized() * m_move_speed;
 }
 
-CameraController::Type GameController::type() const
-{
-    return Type::Game;
-}
-
-void GameController::processMouseMoveEvent(QMouseEvent *event)
+void lcf::GameController::processMouseMoveEvent(QMouseEvent *event)
 {
     auto [x, y] = event->position();
     auto [dx, dy] = event->position() - m_last_mouse_pos;
     if (event->buttons() & Qt::RightButton) {
-        this->updateCameraYaw(-dx * m_sensitivity);
-        this->updateCameraPitch(-dy * m_sensitivity);
+        m_delta_yaw -= dx * m_sensitivity;
+        m_delta_pitch -= dy * m_sensitivity;
     }
     m_last_mouse_pos = event->position();
 }
 
-void GameController::processKeyPressEvent(QKeyEvent *event)
+void lcf::GameController::processKeyPressEvent(QKeyEvent *event)
 {
     CameraController::processKeyPressEvent(event);
     switch(event->key()) {
@@ -48,7 +48,7 @@ void GameController::processKeyPressEvent(QKeyEvent *event)
     }
 }
 
-void GameController::processKeyReleaseEvent(QKeyEvent *event)
+void lcf::GameController::processKeyReleaseEvent(QKeyEvent *event)
 {
     CameraController::processKeyReleaseEvent(event);
     switch(event->key()) {
@@ -61,20 +61,20 @@ void GameController::processKeyReleaseEvent(QKeyEvent *event)
     }
 }
 
-void GameController::updateCameraPitch(double angle_deg)
+void lcf::GameController::updateCameraPitch(Camera *camera, double angle_deg)
 {
     float temp_pitch = m_pitch + angle_deg;
     if (temp_pitch > 89.0f or temp_pitch < -89.0f) { return; }
     m_pitch = temp_pitch;
     QMatrix4x4 rot_matrix;
-    rot_matrix.rotate(angle_deg, m_right);
-    m_up = QVector3D(rot_matrix * m_up.toVector4D());
+    rot_matrix.rotate(angle_deg, camera->right());
+    camera->up() = QVector3D(rot_matrix * camera->up().toVector4D());
 }
 
-void GameController::updateCameraYaw(double angle_deg)
+void lcf::GameController::updateCameraYaw(Camera *camera, double angle_deg)
 {
     QMatrix4x4 rot_matrix;
     rot_matrix.rotate(angle_deg, 0.0f, 1.0f, 0.0f);
-    m_up = QVector3D(rot_matrix * m_up.toVector4D());
-    m_right = QVector3D(rot_matrix * m_right.toVector4D());
+    camera->up() = QVector3D(rot_matrix * camera->up().toVector4D());
+    camera->right() = QVector3D(rot_matrix * camera->right().toVector4D());
 }

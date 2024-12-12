@@ -3,6 +3,7 @@
 #include <QOpenGLFunctions>
 #include "ShaderManager.h"
 #include "Constants.h"
+#include "utils.h"
 
 lcf::ShaderToy::ShaderToy(int width, int height, const QStringList &frag_paths) :
     m_buffers(frag_paths.size())
@@ -59,7 +60,7 @@ void lcf::ShaderToy::update()
     for (auto &buffer : m_buffers) {
         if (not buffer.shader()) { qDebug() << "No shader for buffer"; return; }
         GLHelper::setShaderUniforms(buffer.shader(), {
-            {"iTime", m_elapsed_timer.elapsed() / 1000.0f},
+            {"iTime", utils::elapsed_time_s()},
             {"iFrame", iFrame},
         });
         buffer.update();
@@ -82,10 +83,6 @@ void lcf::ShaderToy::bind(uint unit)
     auto gl = QOpenGLContext::currentContext()->functions();
     gl->glActiveTexture(GL_TEXTURE0 + unit);
     gl->glBindTexture(GL_TEXTURE_2D, this->texture());
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); 
 }
 
 void lcf::ShaderToy::release()

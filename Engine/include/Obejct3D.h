@@ -29,8 +29,8 @@ namespace lcf {
         void translateY(float y);
         void translateZ(float z);
         void translate(const Vector3D &translation);
-        void setTranslation(float x, float y, float z);
-        void setTranslation(const Vector3D &translation);
+        void setPosition(float x, float y, float z);
+        void setPosition(const Vector3D &position);
         void rotate(const Quaternion &rotation);
         void rotate(float angle_deg, float x, float y, float z);
         void setRotation(float angle_deg, float x, float y, float z);
@@ -48,9 +48,10 @@ namespace lcf {
         void setScale(const Vector3D &scale);
         void setScale(float factor);
         const Vector3D &position() const;
+        Vector3D &position();
         const std::vector<Object3D*> &children() const;
         const Matrix4x4 &worldMatrix();
-        Matrix3x3  normalMatrix();
+        const Matrix3x3  &normalMatrix();
         void setName(std::string_view name);
         const std::string &name() const;
     protected:
@@ -60,10 +61,12 @@ namespace lcf {
         void removeChild(Object3D* child);
     protected:
         //! 初始化默认需要更新，否则在没有设置父节点的情况下，即将成为父节点的节点的更新需求不会传递到该节点
-        bool m_world_need_update = true;
         Matrix4x4 m_local;
-        DecomposedTransform m_local_decomposed;
         Matrix4x4 m_world;
+        DecomposedTransform m_local_decomposed;
+        Matrix3x3 m_normal_matrix;
+        bool m_world_need_update = true;
+        bool m_normal_matrix_need_update = true;
         Object3D *m_parent = nullptr;
         std::string m_name;
     private:

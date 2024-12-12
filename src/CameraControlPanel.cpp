@@ -5,7 +5,7 @@
 #include "ElaToggleButton.h"
 #include "ElaText.h"
 #include "ElaCheckBox.h"
-#include "Camera/Camera.h"
+#include "GlobalCamera.h"
 
 CameraControlPanel::CameraControlPanel(QWidget *parent) : ElaScrollPage(parent)
 {
@@ -65,14 +65,14 @@ CameraControlPanel::CameraControlPanel(QWidget *parent) : ElaScrollPage(parent)
     vlayout->setSpacing(10);
     this->addCentralWidget(central_widget, true, true, 0);
 
-    connect(projection_selector, &QComboBox::currentIndexChanged, Camera::instance(), [](int index) {
-        Camera::instance()->setProjectionType(static_cast<Camera::ProjectionType>(index));
+    connect(projection_selector, &QComboBox::currentIndexChanged, this, [](int index) {
+        lcf::GlobalCamera::instance()->setProjectionType(static_cast<lcf::Camera::ProjectionType>(index));
     });
-    connect(control_mode_selector, &QComboBox::currentIndexChanged, Camera::instance(), [](int index) {
-        Camera::instance()->setCameraController(static_cast<Camera::ControllerType>(index));
+    connect(control_mode_selector, &QComboBox::currentIndexChanged, this, [](int index) {
+        lcf::GlobalCamera::instance()->setControllerType(static_cast<lcf::GlobalCamera::ControllerType>(index));
     });
-    connect(camera_selector, &QComboBox::currentIndexChanged, Camera::instance(), [](int index) {
-        Camera::instance()->setCameraType(static_cast<Camera::Type>(index));
+    connect(camera_selector, &QComboBox::currentIndexChanged, this, [](int index) {
+        lcf::GlobalCamera::instance()->setCameraType(static_cast<lcf::GlobalCamera::Type>(index));
     });
     connect(toggle_btn, &ElaToggleButton::toggled, this, [=](bool checked) {
         if (checked) {

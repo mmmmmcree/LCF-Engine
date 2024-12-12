@@ -93,6 +93,7 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
     grass_mask->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
     material->setTexture(TextureType::Opacity, grass_mask);
     SharedGLTexturePtr cloud = TextureManager::instance()->load(path::source_dir + "res/CLOUD.png");
+    cloud->setMinMagFilters(GLTexture::LinearMipMapLinear, GLTexture::LinearMipMapLinear);
     material->setTexture(TextureType::UserCustom0, cloud);
     grass->setMaterial(material); 
     shader = ShaderManager::instance()->load({
@@ -211,15 +212,12 @@ lcf::Scene * lcf::SceneManager::testShaderToy()
     static QString scene_name = "shader_toy";
     if (m_scenes.find(scene_name) != m_scenes.end()) { return m_scenes[scene_name].get(); }
     auto &scene = m_scenes.emplace(std::make_pair(scene_name, new Scene)).first->second;
-    SharedGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "bk.jpg", true);
-    texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-    scene->setSkyboxTexture(texture);
     auto shader_toy = ShaderToyManager::instance()->load("train", 1024, 768, {
         path::shaders_prefix + "train_buffer.frag",
         path::shaders_prefix + "train.frag",
     });
     ShaderToyManager::instance()->activate("train");
-    texture = TextureManager::instance()->load(path::res_prefix + "train_noise.png");
+    SharedGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "train_noise.png");
     texture->setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
     texture->setWrapMode(GLTexture::Repeat);
     shader_toy->setBuffer(0, {texture, 0});
@@ -227,7 +225,7 @@ lcf::Scene * lcf::SceneManager::testShaderToy()
     Material::SharedPtr material = std::make_shared<Material>();
     material->setTexture(TextureType::UserCustom0, shader_toy);
     Mesh::SharedPtr mesh = std::make_shared<Mesh>(Geometry::quad(), material);
-    mesh->setShader(ShaderManager::instance()->get(ShaderManager::Simple3D));
+    mesh->setShader(ShaderManager::instance()->get(ShaderManager::Simple2D));
     mesh->scale(1.5f, 1.0f, 1.0f);
     scene->addSharedChild(mesh);
     return scene.get();

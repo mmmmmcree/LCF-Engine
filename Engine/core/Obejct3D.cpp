@@ -3,7 +3,9 @@
 lcf::Object3D::Object3D(const Object3D &other) :
     m_local(other.m_local),
     m_world(other.m_world),
+    m_normal_matrix(other.m_normal_matrix),
     m_world_need_update(other.m_world_need_update),
+    m_normal_matrix_need_update(other.m_normal_matrix_need_update),
     m_local_decomposed(other.m_local_decomposed),
     m_children(),
     m_parent(nullptr),
@@ -92,14 +94,14 @@ void lcf::Object3D::translate(const Vector3D &translation)
     this->updateWorldMatrix();
 }
 
-void lcf::Object3D::setTranslation(float x, float y, float z)
+void lcf::Object3D::setPosition(float x, float y, float z)
 {
-    this->setTranslation(Vector3D(x, y, z));
+    this->setPosition(Vector3D(x, y, z));
 }
 
-void lcf::Object3D::setTranslation(const Vector3D &translation)
+void lcf::Object3D::setPosition(const Vector3D &position)
 {
-    m_local_decomposed.translation = translation;
+    m_local_decomposed.translation = position;
     m_local = m_local_decomposed.toTransform();
     this->updateWorldMatrix();
 }
@@ -200,6 +202,11 @@ const lcf::Vector3D &lcf::Object3D::position() const
     return m_local_decomposed.translation;
 }
 
+lcf::Vector3D & lcf::Object3D::position()
+{
+    return m_local_decomposed.translation;
+}
+
 const std::vector<lcf::Object3D *> &lcf::Object3D::children() const
 {
     return m_children;
@@ -219,9 +226,12 @@ const lcf::Matrix4x4 &lcf::Object3D::worldMatrix()
     return m_world;
 }
 
-lcf::Matrix3x3 lcf::Object3D::normalMatrix()
+const lcf::Matrix3x3 &lcf::Object3D::normalMatrix()
 {
-    return this->worldMatrix().inverted().transposed().toGenericMatrix<3, 3>();
+    if (not m_normal_matrix_need_update) { return m_normal_matrix; }
+    m_normal_matrix = this->worldMatrix().inverted().transposed().toGenericMatrix<3, 3>();
+    m_normal_matrix_need_update = false;
+    return m_normal_matrix;
 }
 
 void lcf::Object3D::setName(std::string_view name)
@@ -242,6 +252,7 @@ void lcf::Object3D::updateWorldMatrix()
     */
     if (m_world_need_update) { return; }
     m_world_need_update = true;
+    m_normal_matrix_need_update = true;
     this->notifyWorldMatrixUpdatedToChildren();
 }
 
@@ -250,6 +261,7 @@ void lcf::Object3D::notifyWorldMatrixUpdatedToChildren()
     for (auto child : m_children) {
         if (child->m_world_need_update) { continue; }
         child->m_world_need_update = true;
+        child->m_normal_matrix_need_update = true;
         child->notifyWorldMatrixUpdatedToChildren();
     }
 }

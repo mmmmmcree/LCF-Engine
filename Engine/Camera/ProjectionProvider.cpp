@@ -38,7 +38,9 @@ void ProjectionProvider::update()
 void ProjectionProvider::setAspect(int width, int height)
 {
     m_aspect = static_cast<float>(width) / static_cast<float>(height);
-    this->update();
+    if (m_type == Perspective) {
+        this->update();
+    }
 }
 
 void ProjectionProvider::increaseScale(float delta)
