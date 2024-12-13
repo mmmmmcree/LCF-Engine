@@ -4,8 +4,9 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 uv;
 layout(location = 3) in vec3 color;
-layout(location = 4) in vec4 bone_ids; 
-layout(location = 5) in vec4 bone_weights;
+layout(location = 4) in vec3 tangent;
+layout(location = 5) in vec4 bone_ids; 
+layout(location = 6) in vec4 bone_weights;
 
 out VS_OUT {
     vec3 normal;
@@ -13,6 +14,7 @@ out VS_OUT {
     vec3 color;
     vec3 view_direction;
     vec3 world_position;
+    mat3 TBN;
 } vs_out;
 
 const int MAX_BONES = 150;
@@ -41,9 +43,14 @@ void main()
     }
     vec4 world_position = model * final_position;
     gl_Position = projection * view * world_position;
-    vs_out.normal = normalize(normal_matrix * normal);
+    // vs_out.normal = normalize(normal_matrix * normal);
     vs_out.uv = uv;
     vs_out.color = color;
     vs_out.view_direction = normalize(world_position.xyz - camera_position);
     vs_out.world_position = world_position.xyz;
+    vec3 T = normalize(mat3(model) * tangent);
+    vec3 N = normalize(normal_matrix * normal);
+    vec3 B = cross(N, T);
+    vs_out.normal = N;
+    vs_out.TBN = mat3(T, B, N);
 }

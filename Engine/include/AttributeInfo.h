@@ -10,12 +10,14 @@ namespace lcf {
     {
     public:
         template <typename T>
-        AttributeInfo(int item_size, T type_check);
+        AttributeInfo(unsigned int location, int item_size, T type_check);
         int itemSize() const;
         int strideBytes() const;
         size_t typeSize() const;
         int GLType() const;
+        unsigned int location() const;
     private:
+        unsigned int m_location;
         int m_item_size;
         int m_type_size;
         int m_gl_type;
@@ -24,39 +26,40 @@ namespace lcf {
     class AttributeInfos
     {
     public:
+        using LocItemsizePair = std::pair<unsigned int, int>;
+        using LocItemsizePairList = std::initializer_list<LocItemsizePair>;
+        using AttributeInfoList = std::vector<AttributeInfo>;
+        using OffsetList = std::vector<size_t>;
         template <typename T>
-        AttributeInfos(const std::initializer_list<int> &item_sizes, T type_check);
-        const std::vector<AttributeInfo> &get() const;
+        AttributeInfos(const LocItemsizePairList &loc_itemsize_list, T type_check);
+        const AttributeInfoList &get() const;
         int itemSize(size_t index) const;
         int strideBytes() const;
         size_t offset(size_t index) const;
         int GLType() const;
         size_t typeSize() const;
     private:
-        std::vector<AttributeInfo> m_infos;
-        std::vector<size_t> m_offsets;
+        AttributeInfoList m_infos;
+        OffsetList m_offsets;
         int m_stride_bytes;
     };
 }
 
 template <typename T>
-inline lcf::AttributeInfo::AttributeInfo(int item_size, T type_check)
+inline lcf::AttributeInfo::AttributeInfo(unsigned int location, int item_size, T type_check)
 {
+    m_location = location;
     m_item_size = item_size;
     m_type_size = sizeof(T);
     m_gl_type = GLTypeMapper<T>::type;
 }
 
 template <typename T>
-inline lcf::AttributeInfos::AttributeInfos(const std::initializer_list<int> &item_sizes, T type_check)
+inline lcf::AttributeInfos::AttributeInfos(const LocItemsizePairList &loc_itemsize_list, T type_check)
 {
-    if (item_sizes.size() == 0) {
-        qDebug() << "AttributeInfos: item_sizes is empty";
-        return;
-    }
     m_stride_bytes = 0;
-    for (const auto &item_size : item_sizes) {
-        auto &info = m_infos.emplace_back(item_size, type_check);
+    for (const auto &[location, item_size] : loc_itemsize_list) {
+        auto &info = m_infos.emplace_back(location, item_size, type_check);
         m_offsets.emplace_back(m_stride_bytes);
         m_stride_bytes += info.strideBytes();
     }

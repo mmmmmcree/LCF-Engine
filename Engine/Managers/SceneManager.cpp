@@ -45,8 +45,6 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
 
     DirectionalLight::SharedPtr directional_light = std::make_shared<DirectionalLight>();
     directional_light->setName("directional_light[0]");
-    directional_light->setAmbientIntensity(0.4f);
-    directional_light->setDiffuseIntensity(1.5f);
     scene->addSharedChild(directional_light);
     const auto &directional_light_as_uniform_list = directional_light->asUniformList();
 
@@ -59,7 +57,7 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
         {QOpenGLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"diffuse_channel", 0}, {"specular_channel", 1},
+        {"material.diffuse_map", 0}, {"material.specular_map", 1},
         {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
     });
     auto su_binder = std::make_shared<ShaderUniformBinder>(shader);
@@ -144,7 +142,7 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
         {QOpenGLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"diffuse_channel", 0}, {"specular_channel", 1},
+        {"material.diffuse_map", 0}, {"material.specular_map", 1},
         {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
     });
     su_binder = std::make_shared<ShaderUniformBinder>(shader);
@@ -168,8 +166,10 @@ lcf::Scene * lcf::SceneManager::testScene()
     texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
     scene->setSkyboxTexture(std::move(texture));
 
-    Light::SharedPtr directional_light = std::make_shared<DirectionalLight>();
+    DirectionalLight::SharedPtr directional_light = std::make_shared<DirectionalLight>();
     directional_light->setName("directional_light[0]");
+    directional_light->setDirection({-1.0f, -1.0f, 0.0f});
+    directional_light->setSpecularIntensity(10.0f);
     scene->addSharedChild(directional_light);
     const auto &light_as_uniform_list = directional_light->asUniformList();
 
@@ -181,7 +181,7 @@ lcf::Scene * lcf::SceneManager::testScene()
         {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"diffuse_channel", 0}, {"specular_channel", 1},
+        {"material.diffuse_map", 0}, {"material.specular_map", 1}, {"material.normal_map", 2}, 
         {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
     });
     auto su_binder = std::make_shared<ShaderUniformBinder>(shader);
@@ -198,7 +198,7 @@ lcf::Scene * lcf::SceneManager::testScene()
         {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"diffuse_channel", 0}, {"specular_channel", 1},
+        {"material.diffuse_map", 0}, {"material.specular_map", 1}, {"material.normal_map", 2}, 
         {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
     });
     su_binder = std::make_shared<ShaderUniformBinder>(shader);

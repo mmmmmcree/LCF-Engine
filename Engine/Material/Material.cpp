@@ -2,14 +2,22 @@
 #include "TextureManager.h"
 #include <QOpenGLFunctions>
 
-lcf::Material::Material(const Material &other)
-{
-    m_textures = other.m_textures;
-}
+// lcf::Material::Material(const Material &other)
+// {
+//     m_textures = other.m_textures;
+// }
 
 lcf::Material::SharedPtr lcf::Material::newShared()
 {
     return std::make_shared<Material>();
+}
+
+lcf::Material::Material()
+{
+    m_phong_uniforms.emplace_back(SingleUniform("material.diffuse", [this] { return m_diffuse; }));
+    m_phong_uniforms.emplace_back(SingleUniform("material.specular", [this] { return m_specular; }));
+    m_phong_uniforms.emplace_back(SingleUniform("material.ambient", [this] { return m_ambient; }));
+    m_phong_uniforms.emplace_back(SingleUniform("material.shininess", [this] { return m_shininess; }));
 }
 
 void lcf::Material::setTexture(int texture_type, TextureWrapper texture)
@@ -77,4 +85,12 @@ void lcf::Material::release()
     for (auto &[type, texture] : m_textures) {
         texture.release();
     }
+}
+
+const lcf::UniformList &lcf::Material::asUniformList() const
+{
+    switch (m_type) {
+        case Phong : { return m_phong_uniforms; }
+    }
+    return m_phong_uniforms;
 }

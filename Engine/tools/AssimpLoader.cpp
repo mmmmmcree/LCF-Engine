@@ -18,7 +18,9 @@ void lcf::AssimpLoader::run()
     }
     const QString &path = file_info.path() + '/';
     Assimp::Importer importer;
-    const aiScene *scene = importer.ReadFile(m_path.toStdString(), aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals);
+    const aiScene *scene = importer.ReadFile(m_path.toStdString(),
+        aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace
+    );
     if (not scene or scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE or not scene->mRootNode) {
         qDebug() << "Failed to load model:" << m_path;
         return;
@@ -54,12 +56,23 @@ lcf::AssimpLoader::MaterialPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai
                 unsigned char *data = reinterpret_cast<unsigned char *>(ai_texture->pcData);
                 image = dataToImage(data, ai_texture->mWidth, ai_texture->mHeight);
             } else if (texture_path.length > 0) {
-                image = Image(m_path + texture_path.C_Str());
+                image = Image(m_path + texture_path.C_Str()).mirrored();
             }
             image_map.insert(std::make_pair(texture_path.C_Str(), image));
             material->setImageData(type, image);
         }
     }
+
+    aiColor4D diffuse, specular, ambient;
+    ai_real shininess;
+    ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
+    ai_material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
+    ai_material->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
+    ai_material->Get(AI_MATKEY_SHININESS, shininess);
+    material->m_diffuse = toVector3D(diffuse);
+    material->m_ambient = toVector3D(ambient);
+    material->m_specular = toVector3D(specular);
+    material->m_shininess = shininess;
     return MaterialPtr(material);
 }
 
@@ -125,7 +138,14 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     std::vector<float> positions(num_vertices * 3);
     std::vector<float> normals(num_vertices * 3);
     std::vector<float> uvs(num_vertices * 2);
-    std::vector<float> colors(num_vertices * 4);
+    std::vector<float> colors;
+    if (ai_mesh->HasVertexColors(0)) { colors.resize(num_vertices * 4); }
+    std::vector<float> tangents;
+    // std::vector<float> bitangents;
+    if (ai_mesh->HasTangentsAndBitangents()) {
+        tangents.resize(num_vertices * 3);
+        // bitangents.resize(num_vertices * 3);
+    }
     std::vector<unsigned int> indices;
     for (int i = 0; i < num_vertices; ++i) {
         memcpy(positions.data() + i * 3, ai_mesh->mVertices + i, sizeof(float) * 3);
@@ -135,6 +155,9 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
         }
         if (ai_mesh->HasVertexColors(0)) {
             memcpy(colors.data() + i * 4, ai_mesh->mColors[0] + i, sizeof(float) * 4);
+        }
+        if (ai_mesh->HasTangentsAndBitangents()) {
+            memcpy(tangents.data() + i * 3, ai_mesh->mTangents + i, sizeof(float) * 3);
         }
     }
     for (unsigned int i = 0; i < ai_mesh->mNumFaces; ++i) {
@@ -167,17 +190,18 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     }
     const MaterialPtr &material = materials[ai_mesh->mMaterialIndex];
     Geometry *geometry = new Geometry;
-    geometry->addAttribute(positions.data(), positions.size(), 3);
-    geometry->addAttribute(normals.data(), normals.size(), 3);
-    geometry->addAttribute(uvs.data(), uvs.size(), 2);
-    geometry->addAttribute(colors.data(), colors.size(), 4);
+    geometry->addAttribute(positions.data(), positions.size(), 0, 3);
+    geometry->addAttribute(normals.data(), normals.size(), 1, 3);
+    geometry->addAttribute(uvs.data(), uvs.size(), 2, 2);
+    if (not colors.empty()) { geometry->addAttribute(colors.data(), colors.size(), 3, 4); }
+    if (not tangents.empty()) { geometry->addAttribute(tangents.data(), tangents.size(), 4, 3); }
     geometry->setIndices(indices.data(), indices.size());
     Mesh *mesh = new Mesh(Mesh::GeometryPtr(geometry), material);
     Skeleton::MatricesPtr matrices_ptr = std::make_shared<Skeleton::Matrices>(std::move(offset_matrices));
     mesh->setSkeleton(std::make_unique<Skeleton>(std::move(bones), matrices_ptr));
     if (matrices_ptr->empty()) { return mesh ; }
-    geometry->addAttribute(bone_ids.data(), bone_ids.size(), 4);
-    geometry->addAttribute(bone_weights.data(), bone_weights.size(), 4);
+    geometry->addAttribute(bone_ids.data(), bone_ids.size(), 5, 4);
+    geometry->addAttribute(bone_weights.data(), bone_weights.size(), 6, 4);
     return mesh;
 }
 

@@ -5,6 +5,7 @@
 #include "assimp/matrix4x4.h"
 #include "assimp/vector3.h"
 #include "assimp/quaternion.h"
+#include "assimp/color4.h"
 
 namespace lcf {
     using Matrix2x2 = QMatrix2x2;
@@ -18,6 +19,10 @@ namespace lcf {
     Matrix4x4 toMatrix4x4(const aiMatrix4x4& at_mat);
 
     Vector3D toVector3D(const aiVector3D& ai_vec);
+
+    Vector3D toVector3D(const aiColor4D& ai_color);
+
+    Vector4D toVector4D(const aiColor4D& ai_color);
 
     Quaternion toQuaternion(const aiQuaternion& ai_quat);
 

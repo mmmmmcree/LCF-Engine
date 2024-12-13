@@ -47,6 +47,7 @@ namespace lcf {
         void setBones(Bone *root_bone, BoneMap &&bone_map);
         void addAnimation(AnimationPtr &&animation);
     private:
+        MaterialPtr m_material;
         ShaderUniformBinder::SharedPtr m_shader_uniform_binder;
         MeshList m_meshes;
         InstanceHelperPtr m_instance_helper;
@@ -58,8 +59,6 @@ namespace lcf {
     private: // 为多线程加载模型准备的，在加载之前设置的状态在加载完毕后可能需要重新设置一遍，故需要保存
         void passSettingsToMeshes();
         using AnimationPlayState = std::pair<int, float>;
-        MaterialPtr m_material;        
-        // SharedGLShaderProgramPtr m_shader = nullptr;
         AnimationPlayState m_animation_play_state = { -1, 1.0f };
     };
 }

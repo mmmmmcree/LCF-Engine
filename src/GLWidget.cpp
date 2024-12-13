@@ -29,7 +29,8 @@ void GLWidget::initializeGL()
     TextureManager::instance()->initialize(this->context());
     SceneManager::instance()->initialize(this->context());
     ModelManager::instance()->initialize(this->context());
-    auto scene = SceneManager::instance()->makeGrassLand();
+    // auto scene = SceneManager::instance()->makeGrassLand();
+    auto scene = SceneManager::instance()->testScene();
     Scene::setCurrent(scene);
 }
 

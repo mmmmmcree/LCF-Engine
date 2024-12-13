@@ -14,9 +14,9 @@ namespace lcf {
         using Ptr = std::shared_ptr<Geometry>;
         Geometry();
         template <typename T>
-        void addAttribute(T *data, size_t data_size, int item_size);
+        void addAttribute(T *data, size_t data_size, unsigned int location, int item_size);
         template <typename T>
-        void addInterleavedAttributes(T *data, size_t data_size, const std::initializer_list<int> &item_sizes);
+        void addInterleavedAttributes(T *data, size_t data_size, const AttributeInfos::LocItemsizePairList &loc_itemsize_list);
         void setIndices(unsigned int *indices, size_t indices_size);
         void setBeginMode(GLBeginMode mode);
         void create();
@@ -47,7 +47,7 @@ namespace lcf {
 }
 
 template <typename T>
-inline void lcf::Geometry::addAttribute(T *data, size_t data_size, int item_size)
+inline void lcf::Geometry::addAttribute(T *data, size_t data_size, unsigned int location, int item_size)
 {
     if (not data or data_size == 0) { return; }
     if (m_items_cnt == 0) {
@@ -55,24 +55,24 @@ inline void lcf::Geometry::addAttribute(T *data, size_t data_size, int item_size
     } else if (m_items_cnt != data_size / item_size) {
         qDebug() << "Data does not match the number of items.";
     }
-    auto &attr_infos = m_attribute_infos_list.emplace_back(std::initializer_list<int>{item_size}, T{});
+    auto &attr_infos = m_attribute_infos_list.emplace_back(AttributeInfos::LocItemsizePairList{{location, item_size}}, T{});
     auto &vbo = m_buffers.emplace_back(GLBuffer::VertexBuffer);
     auto &buffer_data = m_buffer_data.emplace_back(std::vector<unsigned char>(data_size * sizeof(T)));
     memcpy(buffer_data.data(), data, data_size * sizeof(T));
 }
 
 template <typename T>
-inline void lcf::Geometry::addInterleavedAttributes(T *data, size_t data_size, const std::initializer_list<int> &item_sizes)
+inline void lcf::Geometry::addInterleavedAttributes(T *data, size_t data_size, const AttributeInfos::LocItemsizePairList &loc_itemsize_list)
 {
     if (not data or data_size == 0) { return; }
     int total_size = 0;
-    for (auto item_size : item_sizes) { total_size += item_size; }
+    for (const auto &[location, item_size] : loc_itemsize_list) { total_size += item_size; }
     if (m_items_cnt == 0) {
         m_items_cnt = data_size / total_size;
     } else if (m_items_cnt != data_size / total_size) {
          qDebug() << "Data does not match the number of items.";
     }
-    auto &attr_infos = m_attribute_infos_list.emplace_back(item_sizes, T{});
+    auto &attr_infos = m_attribute_infos_list.emplace_back(loc_itemsize_list, T{});
     auto &vbo = m_buffers.emplace_back(GLBuffer::VertexBuffer);
     auto &buffer_data = m_buffer_data.emplace_back(std::vector<unsigned char>(data_size * sizeof(T)));
     memcpy(buffer_data.data(), data, data_size * sizeof(T));

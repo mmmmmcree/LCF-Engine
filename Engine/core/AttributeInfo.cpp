@@ -20,6 +20,11 @@ int lcf::AttributeInfo::GLType() const
     return m_gl_type;
 }
 
+unsigned int lcf::AttributeInfo::location() const
+{
+    return m_location;
+}
+
 const std::vector<lcf::AttributeInfo> &lcf::AttributeInfos::get() const
 {
     return m_infos;

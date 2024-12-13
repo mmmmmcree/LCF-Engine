@@ -49,15 +49,13 @@ void lcf::Geometry::create()
     m_vao = std::make_unique<GLVAO>();
     m_vao->create();
     m_vao->bind();
-    unsigned int loc = 0;
     for (int i = 0; i < m_buffers.size(); ++i) {
         m_buffers[i].bind();
         const auto &attr_infos = m_attribute_infos_list[i];
         size_t attr_idx = 0;
         for (auto &attr_info : attr_infos.get()) {
-            gl->glEnableVertexAttribArray(loc);
-            gl->glVertexAttribPointer(loc, attr_info.itemSize(), attr_info.GLType(), GL_FALSE, attr_infos.strideBytes(), (void *)(attr_infos.offset(attr_idx)));
-            ++loc;
+            gl->glEnableVertexAttribArray(attr_info.location());
+            gl->glVertexAttribPointer(attr_info.location(), attr_info.itemSize(), attr_info.GLType(), GL_FALSE, attr_infos.strideBytes(), (void *)(attr_infos.offset(attr_idx)));
             ++attr_idx;
         }
     }
@@ -104,7 +102,7 @@ const lcf::Geometry::Ptr &lcf::Geometry::quad()
     static Ptr s_quad = nullptr;
     if (not s_quad) {
         s_quad = std::make_shared<Geometry>();
-        s_quad->addInterleavedAttributes(data::quad, std::size(data::quad), {3, 3, 2});
+        s_quad->addInterleavedAttributes(data::quad, std::size(data::quad), {{0, 3}, {1, 3}, {2, 2}});
         s_quad->create();
     }
     return s_quad;
@@ -115,7 +113,7 @@ const lcf::Geometry::Ptr &lcf::Geometry::cube()
     static Ptr s_cube = nullptr;
     if (not s_cube) {
         s_cube = std::make_shared<Geometry>();
-        s_cube->addInterleavedAttributes(data::cube, std::size(data::cube), {3, 3, 2});
+        s_cube->addInterleavedAttributes(data::cube, std::size(data::cube), {{0, 3}, {1, 3}, {2, 2}});
         s_cube->create();
     }
     return s_cube;
@@ -171,7 +169,7 @@ lcf::Geometry lcf::Geometry::generateSphere(int x_segments, int y_segments)
         }
     }
     lcf::Geometry sphere;
-    sphere.addInterleavedAttributes(vertices.data(), vertices.size(), {3, 3, 2});
+    sphere.addInterleavedAttributes(vertices.data(), vertices.size(), {{0, 3}, {1, 3}, {2, 2}});
     sphere.setIndices(indices.data(), indices.size());
     sphere.setBeginMode(TRIANGLE_STRIP);
     sphere.create();

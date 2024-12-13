@@ -15,6 +15,16 @@ lcf::Vector3D lcf::toVector3D(const aiVector3D & ai_vec)
     return Vector3D(ai_vec.x, ai_vec.y, ai_vec.z);
 }
 
+lcf::Vector3D lcf::toVector3D(const aiColor4D &ai_color)
+{
+    return Vector3D(ai_color.r, ai_color.g, ai_color.b);
+}
+
+lcf::Vector4D lcf::toVector4D(const aiColor4D &ai_color)
+{
+    return Vector4D(ai_color.r, ai_color.g, ai_color.b, ai_color.a);
+}
+
 lcf::Quaternion lcf::toQuaternion(const aiQuaternion &ai_quat)
 {
     return Quaternion(ai_quat.w, ai_quat.x, ai_quat.y, ai_quat.z);

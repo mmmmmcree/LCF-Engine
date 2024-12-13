@@ -8,7 +8,6 @@ lcf::Mesh::Mesh(const GeometryPtr &geometry, const MaterialPtr &material) :
     m_material(material), 
     m_skeleton(nullptr),
     m_skeleton_activated(false),
-    // m_shader(nullptr),
     m_shader_uniform_binder(nullptr),
     m_instance_helper(std::make_shared<InstanceHelper>())
 {
@@ -41,6 +40,12 @@ void lcf::Mesh::draw()
         }
     }
     m_material->bind();
+    // shader->setUniformValue("material.ambient", m_material->m_ambient);
+    // shader->setUniformValue("material.diffuse", m_material->m_diffuse);
+    // shader->setUniformValue("material.specular", m_material->m_specular);
+    // shader->setUniformValue("material.shininess", m_material->m_shininess);
+    // qDebug() << m_material->asUniformList().size();
+    m_shader_uniform_binder->setUniforms(m_material->asUniformList());
     int instance_count = m_instance_helper->instanceCount();
     if (instance_count == 0) { m_geometry->draw(); }
     else {

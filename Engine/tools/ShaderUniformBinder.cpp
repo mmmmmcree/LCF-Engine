@@ -18,6 +18,7 @@ void lcf::ShaderUniformBinder::setUniform(const Uniform &uniform)
         auto iter = m_name_to_index_map.find(name);
         if (iter != m_name_to_index_map.end()) {
             m_uniforms[iter->second] = arg;
+            this->setUniformLocation(m_uniforms[iter->second], location);
             return;
         }
         m_name_to_index_map[name] = static_cast<int>(m_uniforms.size());
