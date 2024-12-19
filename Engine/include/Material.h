@@ -37,13 +37,9 @@ namespace lcf {
         void setImageData(int texture_type, const Image& image);
         void setImageData(int texture_type, Image&& image);
     private:
-    public:
         Type m_type = Type::Phong;
         TextureInfoMap m_textures;
         TextureDataInfoList m_image_data;
-        Vector3D m_ambient = {0.1f, 0.1f, 0.1f};
-        Vector3D m_diffuse = {0.5f, 0.5f, 0.5f};
-        Vector3D m_specular = {0.5f, 0.5f, 0.5f};
         float m_shininess = 32.0f;
         UniformList m_phong_uniforms;
     };
@@ -66,4 +62,9 @@ Material类中存取所有的纹理信息，根据这些信息得到可能的材
 具体来说，如果type == Phong，需要将diffuse_map绑定到纹理单元0, specular_map绑定到纹理单元1, normal_map绑定到纹理单元2，
 再将shininess传递给shader
 如果缺少normal_map?
+*/
+
+/*
+修改思路：MaterialBinder类中存取所有的纹理信息；在MaterialBinder类中有一个Material指针，为具体的材质类型，比如PhongMaterial，
+MaterialBinder类似一个状态机，根据设定的材质类型生成不同的具体材质类型，实际绑定时调用指针的绑定方法即可
 */

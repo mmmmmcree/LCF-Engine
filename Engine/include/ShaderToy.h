@@ -27,7 +27,7 @@ namespace lcf {
         int m_width, m_height;
         ShaderToyBufferList m_buffers;
         ShaderList m_shaders;
-        GLint m_original_viewport[4];
+        // GLint m_original_viewport[4];
     private:
         QElapsedTimer m_elapsed_timer;
         Vector3D iResolution;

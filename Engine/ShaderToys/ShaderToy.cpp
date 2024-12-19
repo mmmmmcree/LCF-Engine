@@ -54,8 +54,9 @@ void lcf::ShaderToy::setBuffer(int index, const BufferTextureList &textures)
 
 void lcf::ShaderToy::update()
 {
+    static GLint original_viewport[4];
     auto gl = QOpenGLContext::currentContext()->functions();
-    gl->glGetIntegerv(GL_VIEWPORT, m_original_viewport);
+    gl->glGetIntegerv(GL_VIEWPORT, original_viewport);
     gl->glViewport(0, 0, m_width, m_height);
     for (auto &buffer : m_buffers) {
         if (not buffer.shader()) { qDebug() << "No shader for buffer"; return; }
@@ -65,7 +66,7 @@ void lcf::ShaderToy::update()
         });
         buffer.update();
     }
-    gl->glViewport(m_original_viewport[0], m_original_viewport[1], m_original_viewport[2], m_original_viewport[3]);
+    gl->glViewport(original_viewport[0], original_viewport[1], original_viewport[2], original_viewport[3]);
     ++iFrame;
 }
 

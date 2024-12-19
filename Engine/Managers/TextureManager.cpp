@@ -51,3 +51,30 @@ void lcf::TextureManager::initialize(QOpenGLContext * context)
     m_surface->create();
 }
 
+lcf::SharedGLTexturePtr lcf::TextureManager::get(Type type)
+{
+    SharedGLTexturePtr texture;
+    switch (type) {
+        case DefaultDiffuse : { texture = m_textures["default_diffuse"]; } break;
+        case DefaultSpecular : { texture = m_textures["default_specular"]; } break;
+        case DefaultNormal : { texture = m_textures["default_normal"]; } break;
+    }
+    return texture;
+}
+
+lcf::TextureManager::TextureManager()
+{
+    Image image(1, 1, QImage::Format_RGBA8888);
+    image.fill(Qt::white);
+    SharedGLTexturePtr texture = std::make_shared<GLTexture>(image);
+    texture->setWrapMode(GLTexture::ClampToEdge);
+    m_textures.insert({"default_diffuse", texture});
+    image.fill(Qt::black);
+    texture = std::make_shared<GLTexture>(image);
+    texture->setWrapMode(GLTexture::ClampToEdge);
+    m_textures.insert({"default_specular", texture});
+    image.fill(Qt::blue);
+    texture = std::make_shared<GLTexture>(image);
+    texture->setWrapMode(GLTexture::ClampToEdge);
+    m_textures.insert({"default_normal", texture});
+}

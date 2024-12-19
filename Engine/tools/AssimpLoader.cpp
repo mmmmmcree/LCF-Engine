@@ -16,7 +16,6 @@ void lcf::AssimpLoader::run()
         qDebug() << "Model file does not exist:" << m_path;
         return;
     }
-    const QString &path = file_info.path() + '/';
     Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(m_path.toStdString(),
         aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenNormals | aiProcess_CalcTangentSpace
@@ -25,6 +24,7 @@ void lcf::AssimpLoader::run()
         qDebug() << "Failed to load model:" << m_path;
         return;
     }
+    m_path = file_info.path() + '/'; // 修改m_path为路径前缀用于加载贴图
     if (not m_model) { m_model = new Model; }
     Materials materials;
     for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
@@ -48,6 +48,8 @@ lcf::AssimpLoader::MaterialPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai
         for (int i = 0; i < count; ++i) {
             aiString texture_path;
             ai_material->Get(AI_MATKEY_TEXTURE(static_cast<aiTextureType>(type), i), texture_path);
+            if (texture_path.length == 0) { continue; }
+            qDebug() << texture_path.C_Str();
             auto iter = image_map.find(texture_path.C_Str());
             if (iter != image_map.end()) { continue; }
             const aiTexture *ai_texture = scene->GetEmbeddedTexture(texture_path.C_Str());
@@ -55,7 +57,7 @@ lcf::AssimpLoader::MaterialPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai
             if (ai_texture) {
                 unsigned char *data = reinterpret_cast<unsigned char *>(ai_texture->pcData);
                 image = dataToImage(data, ai_texture->mWidth, ai_texture->mHeight);
-            } else if (texture_path.length > 0) {
+            } else {
                 image = Image(m_path + texture_path.C_Str()).mirrored();
             }
             image_map.insert(std::make_pair(texture_path.C_Str(), image));
@@ -63,15 +65,8 @@ lcf::AssimpLoader::MaterialPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai
         }
     }
 
-    aiColor4D diffuse, specular, ambient;
     ai_real shininess;
-    ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse);
-    ai_material->Get(AI_MATKEY_COLOR_SPECULAR, specular);
-    ai_material->Get(AI_MATKEY_COLOR_AMBIENT, ambient);
     ai_material->Get(AI_MATKEY_SHININESS, shininess);
-    material->m_diffuse = toVector3D(diffuse);
-    material->m_ambient = toVector3D(ambient);
-    material->m_specular = toVector3D(specular);
     material->m_shininess = shininess;
     return MaterialPtr(material);
 }

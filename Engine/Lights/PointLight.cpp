@@ -1,6 +1,6 @@
 #include "PointLight.h"
 
-lcf::UniformList lcf::PointLight::asUniformList() const
+lcf::UniformList lcf::PointLight::asUniformList()
 {
     UniformList uniform_list = Light::asUniformList();
     uniform_list.emplace_back(SingleUniform(uniformName("position"), [this] { return this->position(); }));

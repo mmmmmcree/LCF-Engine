@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Obejct3D.h"
+#include "Object3D.h"
 #include "ProjectionProvider.h"
 
 namespace lcf {
@@ -9,6 +9,7 @@ namespace lcf {
     public:
         using ProjectionType = ProjectionProvider::Type;
         Camera() = default;
+        ~Camera() = default;
         void bind();
         Vector3D front();
         const Vector3D &up() const;
@@ -17,7 +18,7 @@ namespace lcf {
         Vector3D &right();
         void setProjectionType(ProjectionType type);
         void setViewPort(int width, int height);
-    private:
+    protected:
         GLuint m_ubo = 0;
         Vector3D m_up = {0, 1, 0};
         Vector3D m_right = {1, 0, 0};

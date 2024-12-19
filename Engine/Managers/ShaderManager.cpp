@@ -1,6 +1,9 @@
 #include "ShaderManager.h"
 #include <QFileInfo>
 #include "Constants.h"
+#include <sstream>
+#include <QRegularExpression>
+#include "GLHelper.h"
 
 lcf::ShaderManager *lcf::ShaderManager::instance()
 {
@@ -17,11 +20,7 @@ lcf::UniqueGLShaderProgramPtr lcf::ShaderManager::load(const ShaderInfos &shader
 {
     GLShaderProgram *shader = new GLShaderProgram;
     for (const auto &[type, path] : shader_infos) {
-        if (QFileInfo(path).exists()) {
-            shader->addShaderFromSourceFile(type, path);
-        } else {
-            qDebug() << "Shader file not found: " << path;
-        }
+        shader->addShaderFromSourceCode(type, readShaderSourceCode(path));
     }
     if (not shader->link()) {
         qDebug() << shader->log();
@@ -56,6 +55,9 @@ lcf::SharedGLShaderProgramPtr lcf::ShaderManager::get(ConfiguredShader type)
         case ConfiguredShader::Simple3D : { shader = this->get("simple3D"); } break;
         case ConfiguredShader::GeometryDebug : { shader = this->get("geometry_debug"); } break;
         case ConfiguredShader::Skybox : { shader = this->get("skybox"); } break;
+        case ConfiguredShader::ShadowMap : { shader = this->get("shadow_map"); } break;
+        case ConfiguredShader::AnimatedShadowMap : { shader = this->get("animated_shadow_map"); } break;
+        case ConfiguredShader::DepthDebug : { shader = this->get("depth_debug"); } break;
     }
     return shader;
 }
@@ -64,22 +66,59 @@ lcf::ShaderManager::ShaderManager() : QObject()
 {
     SharedGLShaderProgramPtr shader = nullptr;
     shader = load("simple2D", {
-        {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "simple2D.vert"}, 
-        {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
+        {GLShader::Vertex, lcf::path::shaders_prefix + "simple2D.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
     });
-    shader->setUniformValue("channel0", 0);
+    GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
     shader = load("simple3D", {
-        {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
-        {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
+        {GLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
     });
-    shader->setUniformValue("channel0", 0);
+    GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
     shader = load("geometry_debug", {
-        {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
-        {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "geometry_debug.frag"}, 
+        {GLShader::Vertex, lcf::path::shaders_prefix + "geometry_debug.vert"}, 
+        {GLShader::Geometry, lcf::path::shaders_prefix + "geometry_debug.geom"},
+        {GLShader::Fragment, lcf::path::shaders_prefix + "geometry_debug.frag"}, 
     });
     shader = load("skybox", {
-        {QOpenGLShader::Vertex, lcf::path::shaders_prefix + "skybox.vert"}, 
-        {QOpenGLShader::Fragment, lcf::path::shaders_prefix + "sampler_spherical.frag"}, 
+        {GLShader::Vertex, lcf::path::shaders_prefix + "skybox.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "sampler_spherical.frag"}, 
     });
-    shader->setUniformValue("channel0", 0);
+    GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
+    shader = load("shadow_map", {
+        {GLShader::Vertex, lcf::path::shaders_prefix + "shadow_map.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "depth_map.frag"}, 
+    });
+    shader = load("animated_shadow_map", {
+        {GLShader::Vertex, lcf::path::shaders_prefix + "animated_shadow_map.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "depth_map.frag"}, 
+    });
+    shader = load("depth_debug", {
+        {GLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "depth_debug.frag"}, 
+    });
+    GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
+}
+
+QString lcf::ShaderManager::readShaderSourceCode(const QString &file_path)
+{
+    QFile file(file_path);
+    if (not file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "lcf::ShaderManager::readShaderSourceCode: Cannot open file:" << file_path;
+        return "";
+    }
+    QTextStream in(&file);
+    QString result;
+    static QRegularExpression include_regex("#include\\s*\"([^\"]+)\"");
+    while (not in.atEnd()) {
+        QString line = in.readLine();
+        auto match = include_regex.match(line);
+        if (match.hasMatch()) {
+            QString include_file_path = lcf::path::shaders_prefix + match.captured(1);
+            result += readShaderSourceCode(include_file_path);
+        } else {
+            result += line + '\n';
+        }
+    }
+    return result;
 }

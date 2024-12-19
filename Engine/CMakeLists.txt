@@ -6,8 +6,8 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
     set(ASSIMP_LIB ${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp-vc143-mtd.lib)
 else()    
     set(ASSIMP_LIB ${CMAKE_CURRENT_SOURCE_DIR}/lib/assimp-vc143-mt.lib)
-endif()
+endif()   
 include_directories(./include)
 target_link_libraries(    
     EngineLib Qt6::Widgets Qt6::OpenGLWidgets ${ASSIMP_LIB}
-)
+)   

@@ -1,15 +1,16 @@
-#include "Obejct3D.h"
+#include "Object3D.h"
 
 lcf::Object3D::Object3D(const Object3D &other) :
     m_local(other.m_local),
     m_world(other.m_world),
-    m_normal_matrix(other.m_normal_matrix),
+    m_inversed_world(other.m_inversed_world),
     m_world_need_update(other.m_world_need_update),
     m_normal_matrix_need_update(other.m_normal_matrix_need_update),
     m_local_decomposed(other.m_local_decomposed),
     m_children(),
     m_parent(nullptr),
-    m_name(other.m_name)
+    m_name(other.m_name),
+    m_cast_shadow(other.m_cast_shadow)
 {
 }
 
@@ -17,6 +18,13 @@ void lcf::Object3D::draw()
 {
     for (auto child : m_children) {
         child->draw();
+    }
+}
+
+void lcf::Object3D::drawShadow()
+{
+    for (auto child : m_children) {
+        child->drawShadow();
     }
 }
 
@@ -41,6 +49,11 @@ lcf::Object3D *lcf::Object3D::root() const
         p = p->m_parent;
     }
     return p;
+}
+
+lcf::Object3D *lcf::Object3D::parent() const
+{
+    return m_parent;
 }
 
 void lcf::Object3D::setParent(Object3D *parent)
@@ -226,12 +239,17 @@ const lcf::Matrix4x4 &lcf::Object3D::worldMatrix()
     return m_world;
 }
 
-const lcf::Matrix3x3 &lcf::Object3D::normalMatrix()
+const lcf::Matrix4x4 &lcf::Object3D::inversedWorldMatrix()
 {
-    if (not m_normal_matrix_need_update) { return m_normal_matrix; }
-    m_normal_matrix = this->worldMatrix().inverted().transposed().toGenericMatrix<3, 3>();
+    if (not m_normal_matrix_need_update) { return m_inversed_world; }
+    m_inversed_world = this->worldMatrix().inverted();
     m_normal_matrix_need_update = false;
-    return m_normal_matrix;
+    return m_inversed_world;
+}
+
+lcf::Matrix3x3 lcf::Object3D::normalMatrix()
+{
+    return this->inversedWorldMatrix().transposed().toGenericMatrix<3, 3>();
 }
 
 void lcf::Object3D::setName(std::string_view name)
@@ -242,6 +260,16 @@ void lcf::Object3D::setName(std::string_view name)
 const std::string &lcf::Object3D::name() const
 {
     return m_name;
+}
+
+void lcf::Object3D::setCastShadow(bool cast_shadow)
+{
+    m_cast_shadow = cast_shadow;
+}
+
+bool lcf::Object3D::castShadow() const
+{
+    return m_cast_shadow;
 }
 
 void lcf::Object3D::updateWorldMatrix()

@@ -9,9 +9,12 @@ void lcf::Camera::bind()
     m_view.setToIdentity();
     m_view.lookAt(this->position(), this->position() + this->front(), m_up);
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
-    if (not m_ubo) { gl->glGenBuffers(1, &m_ubo); }
+    if (not m_ubo) {
+        gl->glGenBuffers(1, &m_ubo);
+        gl->glBindBuffer(GL_UNIFORM_BUFFER, m_ubo);
+        gl->glBufferData(GL_UNIFORM_BUFFER, 144, nullptr, GL_DYNAMIC_DRAW);
+    }
     gl->glBindBuffer(GL_UNIFORM_BUFFER, m_ubo);
-    gl->glBufferData(GL_UNIFORM_BUFFER, 144, nullptr, GL_DYNAMIC_DRAW);
     gl->glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_ubo, 0, 144);
     gl->glBufferSubData(GL_UNIFORM_BUFFER, 0, 64, m_view.constData());
     gl->glBufferSubData(GL_UNIFORM_BUFFER, 64, 64, m_projection_provider.projectionMatrix().constData());

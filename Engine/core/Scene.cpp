@@ -1,14 +1,19 @@
 #include "Scene.h"
 #include <QOpenGLFunctions>
+#include <QOpenGLExtraFunctions>
 #include "ShaderManager.h"
 #include "TextureManager.h"
 #include "GlobalCamera.h"
+#include "DirectionalLight.h"
+#include "Constants.h"
 
 lcf::Scene::Scene() : Object3D()
 {
     Mesh::MaterialPtr material = std::make_shared<Material>();
     m_skybox = std::make_unique<Mesh>(Mesh::GeometryPtr(Geometry::cube()), material);
     m_skybox->setShader(ShaderManager::instance()->get(ShaderManager::Skybox));
+
+    m_fbo = std::make_unique<GLFrameBufferObject>(1036, 674, GLFrameBufferObject::Depth);
 }
 
 lcf::Scene *lcf::Scene::global()
@@ -31,6 +36,13 @@ void lcf::Scene::setCurrent(Scene *scene)
     s_current->timer()->start();
 }
 
+void lcf::Scene::addLight(const Light::SharedPtr &light)
+{
+    if (not light or light->parent() == this) { return; }
+    light->setParent(this);
+    m_lights.emplace_back(light);
+}
+
 void lcf::Scene::addSharedChild(const Object3D::SharedPtr &child)
 {
     if (not child) { return; }
@@ -40,10 +52,12 @@ void lcf::Scene::addSharedChild(const Object3D::SharedPtr &child)
 
 void lcf::Scene::draw()
 {
-    GlobalCamera::instance()->bind();
-    auto gl = QOpenGLContext::currentContext()->functions();
+    auto gl = QOpenGLContext::currentContext()->extraFunctions();
     gl->glEnable(GL_DEPTH_TEST);
+    this->shadowPass();
+    GlobalCamera::instance()->bind();
     Object3D::draw();
+
     gl->glDepthFunc(GL_LEQUAL); 
     m_skybox->draw();
     gl->glDepthFunc(GL_LESS);
@@ -64,4 +78,19 @@ void lcf::Scene::setSkyboxTexture(TextureWrapper texture)
 QTimer *lcf::Scene::timer()
 {
     return &m_timer;
+}
+
+void lcf::Scene::shadowPass()
+{
+    static SharedGLShaderProgramPtr shadow_shader = ShaderManager::instance()->get(ShaderManager::ShadowMap);
+    static SharedGLShaderProgramPtr animated_shadow_shader = ShaderManager::instance()->get(ShaderManager::AnimatedShadowMap);
+    for (int i = 0; i < m_lights.size(); ++i) {
+        GLHelper::setShaderUniform(shadow_shader.get(), {"light_index", i});
+        GLHelper::setShaderUniform(animated_shadow_shader.get(), {"light_index", i});
+        if (not m_lights[i]->castShadow()) { continue; }
+        auto &light = m_lights[i];
+        light->bind(i);
+        Object3D::drawShadow();
+        light->release();
+    }
 }

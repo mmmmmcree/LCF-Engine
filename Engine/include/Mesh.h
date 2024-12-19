@@ -4,7 +4,7 @@
 #include "Material.h"
 #include "GLShaderProgram.h"
 #include "Matrix.h"
-#include "Obejct3D.h"
+#include "Object3D.h"
 #include "TextureWrapper.h"
 #include "Skeleton.h"
 #include <QList>
@@ -23,6 +23,7 @@ namespace lcf {
         Mesh(const GeometryPtr &geometry, const MaterialPtr &material);
         Mesh(const Mesh& other);
         void draw() override;
+        void drawShadow() override;
         void setSkeleton(SkeletonPtr &&skeleton);
         void setMaterial(const MaterialPtr &material);
         Object3D::Type type() const override;
@@ -34,6 +35,8 @@ namespace lcf {
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
         InstanceHelperPtr &instanceHelper();
         void setInstanceHelper(const InstanceHelperPtr &instance_helper);
+    private:
+        void _draw(GLShaderProgram *shader);
     protected:
         GeometryPtr m_geometry;
         MaterialPtr m_material;
@@ -41,6 +44,5 @@ namespace lcf {
         InstanceHelperPtr m_instance_helper;
         bool m_skeleton_activated = false;
         ShaderUniformBinder::SharedPtr m_shader_uniform_binder;
-        // SharedGLShaderProgramPtr m_shader = nullptr;
     };
 }

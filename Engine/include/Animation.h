@@ -2,7 +2,7 @@
 
 #include "KeyFrameTrack.h"
 #include "Matrix.h"
-#include "Obejct3D.h"
+#include "Object3D.h"
 
 namespace lcf {
     class Animation

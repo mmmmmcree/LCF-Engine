@@ -16,6 +16,9 @@ namespace lcf {
             Simple3D,
             GeometryDebug,
             Skybox,
+            ShadowMap,
+            AnimatedShadowMap,
+            DepthDebug,
         };
         using ShaderInfo = std::pair<QOpenGLShader::ShaderTypeBit, QString>;
         using ShaderInfos = QList<ShaderInfo>;
@@ -27,6 +30,8 @@ namespace lcf {
         SharedGLShaderProgramPtr get(ConfiguredShader type);
     private:
         ShaderManager();
+    public:
+        QString readShaderSourceCode(const QString &file_path); // 给shader文件添加include功能
     private:
         std::unordered_map<QString, SharedGLShaderProgramPtr> m_shaders;
     };

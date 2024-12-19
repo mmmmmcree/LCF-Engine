@@ -28,6 +28,7 @@ namespace lcf {
         Model(const Model &other) = delete;
         Model *clone() const;
         void draw() override;
+        void drawShadow() override;
         void create();
         bool isCreated() const;
         bool hasAnimation() const;

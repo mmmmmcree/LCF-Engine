@@ -19,6 +19,23 @@ void ProjectionProvider::setType(Type type)
     this->update();
 }
 
+void ProjectionProvider::setOrthoSize(float size)
+{
+    m_ortho_size = size;
+    this->update();
+}
+
+void ProjectionProvider::setNearPlane(float near_plane)
+{
+    m_near = near_plane;
+    this->update();
+}
+
+void ProjectionProvider::setFarPlane(float far_plane)
+{
+    m_far = far_plane;
+}
+
 ProjectionProvider::Type ProjectionProvider::type() const
 {
     return m_type;

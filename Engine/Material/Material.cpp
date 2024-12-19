@@ -14,9 +14,6 @@ lcf::Material::SharedPtr lcf::Material::newShared()
 
 lcf::Material::Material()
 {
-    m_phong_uniforms.emplace_back(SingleUniform("material.diffuse", [this] { return m_diffuse; }));
-    m_phong_uniforms.emplace_back(SingleUniform("material.specular", [this] { return m_specular; }));
-    m_phong_uniforms.emplace_back(SingleUniform("material.ambient", [this] { return m_ambient; }));
     m_phong_uniforms.emplace_back(SingleUniform("material.shininess", [this] { return m_shininess; }));
 }
 

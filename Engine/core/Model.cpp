@@ -60,6 +60,12 @@ void lcf::Model::draw()
     m_animation_player.update(1.0f / 60.0f);
 }
 
+void lcf::Model::drawShadow()
+{
+    if (not m_cast_shadow) { return; }
+    Object3D::drawShadow();
+}
+
 void lcf::Model::create()
 {
     if (m_created) { return; }
@@ -135,6 +141,7 @@ void lcf::Model::passSettingsToMeshes()
         mesh->setShaderUniformBinder(m_shader_uniform_binder);
         mesh->setInstanceHelper(m_instance_helper);
         mesh->material()->setTextures(m_material->textureInfoMap());
+        mesh->setCastShadow(m_cast_shadow);
     }
     this->playAnimation();
 }

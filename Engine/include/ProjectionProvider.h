@@ -12,6 +12,9 @@ public:
     ProjectionProvider();
     const QMatrix4x4 &projectionMatrix() const;
     void setType(Type type);
+    void setOrthoSize(float size);
+    void setNearPlane(float near_plane);
+    void setFarPlane(float far_plane);
     Type type() const;
     void update();
     void setAspect(int width, int height);

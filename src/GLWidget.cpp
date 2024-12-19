@@ -1,6 +1,5 @@
 #include "GLWidget.h"
 #include <QTimer>
-// #include "Camera.h"
 #include "GlobalCamera.h"
 #include "ShaderToyManager.h"
 #include "ModelManager.h"
@@ -21,10 +20,11 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
     update_timer->start(1000 / 60);
 }
 
+
 void GLWidget::initializeGL()
 {
     this->initializeOpenGLFunctions();
-    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClearColor(0.2f, 0.2f, 0.0f, 1.0f);
     ShaderManager::instance()->initialize();
     TextureManager::instance()->initialize(this->context());
     SceneManager::instance()->initialize(this->context());

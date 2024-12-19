@@ -2,7 +2,7 @@
 
 #include "Matrix.h"
 #include "GLShaderProgram.h"
-#include "Obejct3D.h"
+#include "Object3D.h"
 
 namespace lcf {
     class Skeleton

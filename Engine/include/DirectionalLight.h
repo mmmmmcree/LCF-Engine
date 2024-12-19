@@ -1,16 +1,24 @@
 #pragma once
 
 #include "Light.h"
+#include "FrameBufferObject.h"
 
 namespace lcf {
     class DirectionalLight : public Light
     {
     public: 
         using SharedPtr = std::shared_ptr<DirectionalLight>;
-        DirectionalLight() = default;
-        UniformList asUniformList() const override;
-        void setDirection(const Vector3D &direction);
+        DirectionalLight();
+        void bind(int light_index) override;
+        void release() override;
+        void bindAsShadowMap(int texture_unit) override;
+        UniformList asUniformList() override;
+        FrameBufferObject::UniquePtr &fbo();
     private:
-        Vector3D m_direction = {0.0f, -1.0f, 0.0f};
+        FrameBufferObject::UniquePtr m_fbo;
+        Matrix4x4 m_light_matrix;
+        inline static unsigned int s_ssbo = 0;
+        inline static size_t s_ssbo_size = 0;
+        inline static size_t s_light_count = 0;
     };
 }

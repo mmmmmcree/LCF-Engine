@@ -12,15 +12,23 @@ namespace lcf {
     {
         Q_OBJECT
     public:
+        enum Type
+        {
+            DefaultDiffuse,
+            DefaultNormal,
+            DefaultSpecular,
+        };
         static TextureManager *instance();
         std::unique_ptr<GLTexture> load(const QString &image_path, bool mirroed = false);
         std::unique_ptr<GLTexture> loadSingleThread(unsigned char *data, int width, int height);
         std::unique_ptr<GLTexture> loadSingleThread(const QString &image_path, bool mirrored = false);
         void initialize(QOpenGLContext *context);
+        SharedGLTexturePtr get(Type type);
     private:
-        TextureManager() = default;
+        TextureManager();
     private:
         QOpenGLContext *m_context = nullptr;
         QOffscreenSurface *m_surface = nullptr;
+        std::unordered_map<QString, SharedGLTexturePtr> m_textures;
     };
 }

@@ -8,7 +8,7 @@ namespace lcf {
     public:
         using SharedPtr = std::shared_ptr<PointLight>;
         PointLight() = default;
-        UniformList asUniformList() const override;
+        UniformList asUniformList() override;
     private:
         float m_constant = 1.0f, m_linear = 0.09f, m_quadratic = 0.032f;
     };

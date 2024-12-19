@@ -4,7 +4,7 @@
 #include <string_view>
 #include <algorithm>
 #include "my_math.h"
-#include "Obejct3D.h"
+#include "Object3D.h"
 #include "KeyFrame.h"
 
 namespace lcf {

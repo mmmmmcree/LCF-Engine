@@ -1,9 +1,5 @@
 #include "AnimationPlayer.h"
 
-// void lcf::AnimationPlayer::setBoneMap(BoneMap *bone_map)
-// {
-//     m_bone_map = bone_map;
-// }
 
 void lcf::AnimationPlayer::play(Animation *animation, float speed)
 {

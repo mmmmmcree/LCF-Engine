@@ -3,7 +3,7 @@
 #include <memory>
 
 
-void GLHelper::setShaderUniform(QOpenGLShaderProgram *shader, const UniformInfo &uniform)
+void lcf::GLHelper::setShaderUniform(QOpenGLShaderProgram *shader, const UniformInfo &uniform)
 {
     shader->bind();
     std::visit([&](auto &&value) {
@@ -12,7 +12,7 @@ void GLHelper::setShaderUniform(QOpenGLShaderProgram *shader, const UniformInfo 
     shader->release();
 }
 
-void GLHelper::setShaderUniforms(QOpenGLShaderProgram *shader, const UniformInfos &uniform_infos)
+void lcf::GLHelper::setShaderUniforms(QOpenGLShaderProgram *shader, const UniformInfos &uniform_infos)
 {
     shader->bind();
     for (const auto &[name, uniform] : uniform_infos) {

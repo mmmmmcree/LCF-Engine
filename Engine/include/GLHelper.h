@@ -10,12 +10,13 @@
 #include <memory>
 
 
-
-struct GLHelper
-{
-    using Uniform = std::variant<int, float, QVector2D, QVector3D, QColor, QVector4D, QMatrix2x2, QMatrix3x3, QMatrix4x4>;
-    using UniformInfo = std::pair<QString, Uniform>;
-    using UniformInfos = std::initializer_list<UniformInfo>;
-    static void setShaderUniform(QOpenGLShaderProgram * shader, const UniformInfo &uniform_info);
-    static void setShaderUniforms(QOpenGLShaderProgram * shader, const UniformInfos &uniform_infos);
-};
+namespace lcf {
+    struct GLHelper
+    {
+        using Uniform = std::variant<int, float, QVector2D, QVector3D, QColor, QVector4D, QMatrix2x2, QMatrix3x3, QMatrix4x4>;
+        using UniformInfo = std::pair<QString, Uniform>;
+        using UniformInfos = std::initializer_list<UniformInfo>;
+        static void setShaderUniform(QOpenGLShaderProgram * shader, const UniformInfo &uniform_info);
+        static void setShaderUniforms(QOpenGLShaderProgram * shader, const UniformInfos &uniform_infos);
+    };
+}
