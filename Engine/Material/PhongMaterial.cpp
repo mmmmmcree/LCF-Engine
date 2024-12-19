@@ -19,6 +19,11 @@ void lcf::PhongMaterial::bind()
     }
 }
 
+lcf::MaterialType lcf::PhongMaterial::type() const
+{
+    return MaterialType::Phong;
+}
+
 void lcf::PhongMaterial::setDiffuseMap(TextureWrapper texture)
 {
     m_textures[0] = texture;

@@ -2,7 +2,7 @@
 
 lcf::Model::Model() :
     m_instance_helper(std::make_shared<InstanceHelper>()),
-    m_material(Material::newShared())
+    m_material_controller(std::make_shared<MaterialController>())
 {
 }
 
@@ -14,11 +14,6 @@ lcf::Model *lcf::Model::clone() const
     }
     Model *cloned_model = new Model;
     cloned_model->m_created = true;
-    // cloned_model->m_local = m_local;
-    // cloned_model->m_world = m_world;
-    // cloned_model->m_world_need_update = m_world_need_update;
-    // cloned_model->m_local_decomposed = m_local_decomposed;
-    // cloned_model->m_animation_play_state = m_animation_play_state;
     for (auto &mesh : m_meshes) {
         if (not mesh) { continue; }
         auto cloned_mesh = std::make_unique<Mesh>(*mesh);
@@ -72,7 +67,7 @@ void lcf::Model::create()
     m_created = true;
     for (auto &mesh : m_meshes) {
         mesh->geometry()->create();
-        mesh->material()->create();
+        mesh->materialController()->create();
         mesh->setInstanceHelper(m_instance_helper);
     }
 }
@@ -108,12 +103,9 @@ void lcf::Model::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &sh
     }
 }
 
-void lcf::Model::setMaterial(const MaterialPtr &material)
+const lcf::MaterialController::SharedPtr &lcf::Model::materialController() const
 {
-    m_material = material;
-    for (auto &mesh : m_meshes) {
-        mesh->setMaterial(m_material);
-    }
+    return m_material_controller;
 }
 
 lcf::Model::InstanceHelperPtr &lcf::Model::instanceHelper()
@@ -138,9 +130,10 @@ void lcf::Model::addAnimation(AnimationPtr &&animation)
 void lcf::Model::passSettingsToMeshes()
 {
     for (auto &mesh : m_meshes) {
+        mesh->materialController()->setType(m_material_controller->materialType());
+        mesh->materialController()->setTextures(m_material_controller->textureInfoMap());
         mesh->setShaderUniformBinder(m_shader_uniform_binder);
         mesh->setInstanceHelper(m_instance_helper);
-        mesh->material()->setTextures(m_material->textureInfoMap());
         mesh->setCastShadow(m_cast_shadow);
     }
     this->playAnimation();
@@ -180,11 +173,6 @@ void lcf::Model::addMesh(MeshPtr && mesh)
 lcf::Model::MeshList & lcf::Model::meshes()
 {
     return m_meshes;
-}
-
-const lcf::Model::MaterialPtr &lcf::Model::material() const
-{
-    return m_material;
 }
 
 lcf::Bone *lcf::Model::processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const

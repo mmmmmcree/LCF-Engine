@@ -23,7 +23,6 @@ namespace lcf {
         using AnimationPtr = std::unique_ptr<Animation>;
         using AnimationList = std::vector<AnimationPtr>;
         using InstanceHelperPtr = std::shared_ptr<InstanceHelper>;
-        using MaterialPtr = Mesh::MaterialPtr;
         Model();
         Model(const Model &other) = delete;
         Model *clone() const;
@@ -34,21 +33,20 @@ namespace lcf {
         bool hasAnimation() const;
         void setShader(const SharedGLShaderProgramPtr &shader);
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
-        void setMaterial(const MaterialPtr &material);
+        const MaterialController::SharedPtr &materialController() const;
         InstanceHelperPtr &instanceHelper();
         Object3D::Type type() const override;
         void playAnimation(int i, float speed = 1.0f);
         void playAnimation();
         void stopAnimation();
         MeshList &meshes();
-        const MaterialPtr &material() const;
     private:
         Bone *processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const;
         void addMesh(MeshPtr &&mesh);
         void setBones(Bone *root_bone, BoneMap &&bone_map);
         void addAnimation(AnimationPtr &&animation);
     private:
-        MaterialPtr m_material;
+        MaterialController::SharedPtr m_material_controller;
         ShaderUniformBinder::SharedPtr m_shader_uniform_binder;
         MeshList m_meshes;
         InstanceHelperPtr m_instance_helper;

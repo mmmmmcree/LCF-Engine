@@ -20,7 +20,6 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
     update_timer->start(1000 / 60);
 }
 
-
 void GLWidget::initializeGL()
 {
     this->initializeOpenGLFunctions();
@@ -31,6 +30,7 @@ void GLWidget::initializeGL()
     ModelManager::instance()->initialize(this->context());
     // auto scene = SceneManager::instance()->makeGrassLand();
     auto scene = SceneManager::instance()->testScene();
+    // auto scene = SceneManager::instance()->testShaderToy();
     Scene::setCurrent(scene);
 }
 

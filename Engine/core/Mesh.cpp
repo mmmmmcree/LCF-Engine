@@ -3,10 +3,10 @@
 #include "ShaderManager.h"
 
 
-lcf::Mesh::Mesh(const GeometryPtr &geometry, const MaterialPtr &material) :
+lcf::Mesh::Mesh(const GeometryPtr &geometry) :
     Object3D(),
     m_geometry(geometry),
-    m_material(material), 
+    m_material_controller(std::make_shared<MaterialController>()), 
     m_skeleton(nullptr),
     m_skeleton_activated(false),
     m_shader_uniform_binder(nullptr),
@@ -17,7 +17,7 @@ lcf::Mesh::Mesh(const GeometryPtr &geometry, const MaterialPtr &material) :
 lcf::Mesh::Mesh(const Mesh &other) :
     Object3D(other),
     m_geometry(other.m_geometry),
-    m_material(other.m_material), 
+    m_material_controller(other.m_material_controller),
     m_skeleton(nullptr),
     m_skeleton_activated(other.m_skeleton_activated),
     m_shader_uniform_binder(other.m_shader_uniform_binder),
@@ -28,13 +28,13 @@ lcf::Mesh::Mesh(const Mesh &other) :
 void lcf::Mesh::draw()
 {
     Object3D::draw();
-    if (not m_shader_uniform_binder or not m_material) { return; }
+    if (not m_shader_uniform_binder) { return; }
     if (not m_geometry->isCreated()) { return; }
     m_shader_uniform_binder->bind();
-    m_material->bind();
-    m_shader_uniform_binder->setUniforms(m_material->asUniformList());
+    m_material_controller->bind();
+    m_shader_uniform_binder->setUniforms(m_material_controller->asUniformList());
     this->_draw(m_shader_uniform_binder->shader().get());
-    m_material->release();
+    m_material_controller->release();
     m_shader_uniform_binder->release();
 }
 
@@ -56,11 +56,6 @@ void lcf::Mesh::setSkeleton(SkeletonPtr &&skeleton)
     m_skeleton = std::move(skeleton);
 }
 
-void lcf::Mesh::setMaterial(const MaterialPtr & material)
-{
-    m_material = material;
-}
-
 lcf::Object3D::Type lcf::Mesh::type() const
 {
     return Object3D::Type::Mesh;
@@ -69,11 +64,6 @@ lcf::Object3D::Type lcf::Mesh::type() const
 const lcf::Mesh::GeometryPtr &lcf::Mesh::geometry() const
 {
     return m_geometry;
-}
-
-const lcf::Mesh::MaterialPtr &lcf::Mesh::material() const
-{
-    return m_material;
 }
 
 const lcf::Mesh::SkeletonPtr &lcf::Mesh::skeleton() const
@@ -104,6 +94,16 @@ lcf::Mesh::InstanceHelperPtr &lcf::Mesh::instanceHelper()
 void lcf::Mesh::setInstanceHelper(const InstanceHelperPtr &instance_helper)
 {
     m_instance_helper = instance_helper;
+}
+
+const lcf::MaterialController::SharedPtr &lcf::Mesh::materialController() const
+{
+    return m_material_controller;
+}
+
+void lcf::Mesh::setMaterialController(const MaterialController::SharedPtr &material_controller)
+{
+    m_material_controller = material_controller;
 }
 
 void lcf::Mesh::_draw(GLShaderProgram * shader)

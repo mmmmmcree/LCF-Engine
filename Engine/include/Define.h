@@ -98,4 +98,10 @@ namespace lcf {
         UserCustom14,
         UserCustom15,
     };
+
+    enum MaterialType
+    {
+        UserCustom,
+        Phong,
+    };
 }

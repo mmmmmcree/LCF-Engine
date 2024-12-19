@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Matrix.h"
-#include "Material.h"
 #include "GLShaderProgram.h"
 
 namespace lcf {

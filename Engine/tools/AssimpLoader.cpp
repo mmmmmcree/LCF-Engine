@@ -26,7 +26,7 @@ void lcf::AssimpLoader::run()
     }
     m_path = file_info.path() + '/'; // 修改m_path为路径前缀用于加载贴图
     if (not m_model) { m_model = new Model; }
-    Materials materials;
+    MaterialControllerList materials;
     for (unsigned int i = 0; i < scene->mNumMaterials; i++) {
         materials.emplace_back(processMaterial(scene->mMaterials[i], scene));
     }
@@ -39,9 +39,9 @@ void lcf::AssimpLoader::run()
     emit loaded(m_model);
 }
 
-lcf::AssimpLoader::MaterialPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai_material, const aiScene *scene)
+lcf::MaterialController::SharedPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai_material, const aiScene *scene)
 {
-    Material *material = new Material;
+    MaterialController::SharedPtr mat_controller = std::make_shared<MaterialController>();
     std::unordered_map<std::string, Image> image_map;
     for (int type = aiTextureType_DIFFUSE; type <= aiTextureType_TRANSMISSION; ++type) {
         int count = ai_material->GetTextureCount(static_cast<aiTextureType>(type));
@@ -61,14 +61,14 @@ lcf::AssimpLoader::MaterialPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai
                 image = Image(m_path + texture_path.C_Str()).mirrored();
             }
             image_map.insert(std::make_pair(texture_path.C_Str(), image));
-            material->setImageData(type, image);
+            mat_controller->setImageData(type, image);
         }
     }
 
     ai_real shininess;
     ai_material->Get(AI_MATKEY_SHININESS, shininess);
-    material->m_shininess = shininess;
-    return MaterialPtr(material);
+    mat_controller->m_shininess = shininess;
+    return mat_controller;
 }
 
 void lcf::AssimpLoader::processAnimations(const aiScene *scene, const BoneMap &bone_map)
@@ -110,7 +110,7 @@ void lcf::AssimpLoader::processAnimations(const aiScene *scene, const BoneMap &b
     }
 }
 
-void lcf::AssimpLoader::processNode(aiNode *node, const aiScene *scene, const Materials &materials, const BoneMap &bone_map)
+void lcf::AssimpLoader::processNode(aiNode *node, const aiScene *scene, const MaterialControllerList &materials, const BoneMap &bone_map)
 {
     Bone *bone = bone_map.find(node->mName.C_Str())->second;
     for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
@@ -127,7 +127,7 @@ void lcf::AssimpLoader::processNode(aiNode *node, const aiScene *scene, const Ma
     }
 }
 
-lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene, const Materials &materials, const BoneMap &bone_map)
+lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene, const MaterialControllerList &materials, const BoneMap &bone_map)
 {
     int num_vertices = ai_mesh->mNumVertices;
     std::vector<float> positions(num_vertices * 3);
@@ -183,7 +183,7 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
             }
         }
     }
-    const MaterialPtr &material = materials[ai_mesh->mMaterialIndex];
+    const auto &mat_controller = materials[ai_mesh->mMaterialIndex];
     Geometry *geometry = new Geometry;
     geometry->addAttribute(positions.data(), positions.size(), 0, 3);
     geometry->addAttribute(normals.data(), normals.size(), 1, 3);
@@ -191,7 +191,8 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     if (not colors.empty()) { geometry->addAttribute(colors.data(), colors.size(), 3, 4); }
     if (not tangents.empty()) { geometry->addAttribute(tangents.data(), tangents.size(), 4, 3); }
     geometry->setIndices(indices.data(), indices.size());
-    Mesh *mesh = new Mesh(Mesh::GeometryPtr(geometry), material);
+    Mesh *mesh = new Mesh(Mesh::GeometryPtr(geometry));
+    mesh->setMaterialController(mat_controller);
     Skeleton::MatricesPtr matrices_ptr = std::make_shared<Skeleton::Matrices>(std::move(offset_matrices));
     mesh->setSkeleton(std::make_unique<Skeleton>(std::move(bones), matrices_ptr));
     if (matrices_ptr->empty()) { return mesh ; }

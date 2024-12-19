@@ -1,16 +1,17 @@
 #pragma once
 
-#include "MMaterial.h"
+#include "Material.h"
 #include "TextureWrapper.h"
 
 namespace lcf {
-    class PhongMaterial : public MMaterial
+    class PhongMaterial : public Material
     {
     public:
         using UniquePtr = std::unique_ptr<PhongMaterial>;
         using TextureList = std::vector<TextureWrapper>;
         PhongMaterial();
         void bind() override;
+        MaterialType type() const override;
         void setDiffuseMap(TextureWrapper texture);
         void setSpecularMap(TextureWrapper texture);
         void setNormalMap(TextureWrapper texture);

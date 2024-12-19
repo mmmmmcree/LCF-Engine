@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Geometry.h"
-#include "Material.h"
+#include "MaterialController.h"
 #include "GLShaderProgram.h"
 #include "Matrix.h"
 #include "Object3D.h"
@@ -16,30 +16,29 @@ namespace lcf {
     {
     public:
         using GeometryPtr = std::shared_ptr<Geometry>;
-        using MaterialPtr = std::shared_ptr<Material>;
         using SkeletonPtr = std::unique_ptr<Skeleton>;
         using InstanceHelperPtr = std::shared_ptr<InstanceHelper>;
         using SharedPtr = std::shared_ptr<Mesh>;
-        Mesh(const GeometryPtr &geometry, const MaterialPtr &material);
+        Mesh(const GeometryPtr &geometry);
         Mesh(const Mesh& other);
         void draw() override;
         void drawShadow() override;
         void setSkeleton(SkeletonPtr &&skeleton);
-        void setMaterial(const MaterialPtr &material);
         Object3D::Type type() const override;
         const GeometryPtr &geometry() const;
-        const MaterialPtr &material() const;
         const SkeletonPtr &skeleton() const;
         void activateSkeleton(bool active);
         void setShader(const SharedGLShaderProgramPtr &shader);
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
         InstanceHelperPtr &instanceHelper();
         void setInstanceHelper(const InstanceHelperPtr &instance_helper);
+        const MaterialController::SharedPtr &materialController() const;
+        void setMaterialController(const MaterialController::SharedPtr &material_controller);
     private:
         void _draw(GLShaderProgram *shader);
     protected:
         GeometryPtr m_geometry;
-        MaterialPtr m_material;
+        MaterialController::SharedPtr m_material_controller;
         SkeletonPtr m_skeleton;
         InstanceHelperPtr m_instance_helper;
         bool m_skeleton_activated = false;

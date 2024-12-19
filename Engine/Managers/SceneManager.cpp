@@ -8,6 +8,7 @@
 #include "PointLight.h"
 #include "SpotLight.h"
 #include "ShaderToyManager.h"
+#include "UserCustomMaterial.h"
 
 lcf::SceneManager *lcf::SceneManager::instance()
 {
@@ -58,7 +59,6 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
         {QOpenGLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"material.diffuse_map", 0}, {"material.specular_map", 1}, {"material.normal_map", 2}, 
         {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
     });
     auto su_binder = std::make_shared<ShaderUniformBinder>(shader);
@@ -85,16 +85,21 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
             grass->instanceHelper()->addInstanceOffset(m);
         }
     }
-    auto material = Material::newShared();
+    // // auto material = Material::newShared();
+    // UserCustomMaterial::SharedPtr material = std::make_shared<UserCustomMaterial>();
     SharedGLTexturePtr grass_color = TextureManager::instance()->load(path::source_dir + "res/GRASS.png");
-    material->setTexture(TextureType::Diffuse, grass_color);
+    // material->setTexture(TextureType::Diffuse, grass_color);
+    grass->materialController()->setType(MaterialType::UserCustom);
+    grass->materialController()->setTexture(TextureType::Diffuse, grass_color);
     SharedGLTexturePtr grass_mask = TextureManager::instance()->load(path::source_dir + "res/grassMask.png");
     grass_mask->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-    material->setTexture(TextureType::Opacity, grass_mask);
+    // material->setTexture(TextureType::Opacity, grass_mask);
+    grass->materialController()->setTexture(TextureType::Opacity, grass_mask);
     SharedGLTexturePtr cloud = TextureManager::instance()->load(path::source_dir + "res/CLOUD.png");
     cloud->setMinMagFilters(GLTexture::LinearMipMapLinear, GLTexture::LinearMipMapLinear);
-    material->setTexture(TextureType::UserCustom0, cloud);
-    grass->setMaterial(material); 
+    // material->setTexture(TextureType::UserCustom0, cloud);
+    grass->materialController()->setTexture(TextureType::UserCustom0, cloud);
+    // grass->setMaterial(material); 
     shader = ShaderManager::instance()->load({
         {QOpenGLShader::Vertex, path::shaders_prefix + "grass.vert"}, 
         {QOpenGLShader::Fragment, path::shaders_prefix + "grass.frag"}, 
@@ -124,9 +129,8 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
 
     Model::SharedPtr ground = ModelManager::instance()->load(path::source_dir + "models/grassland.glb");
     scene->addSharedChild(ground);
-    material = Material::newShared();
-    material->setTexture(TextureType::Diffuse, grass_color);
-    ground->setMaterial(material);
+    ground->materialController()->setType(MaterialType::UserCustom);
+    ground->materialController()->setTexture(TextureType::Diffuse, grass_color);
     ground->scale(0.7f);
     ground->translateY(-0.12f);
     shader = ShaderManager::instance()->load( {
@@ -185,7 +189,6 @@ lcf::Scene * lcf::SceneManager::testScene()
         {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"material.diffuse_map", 0}, {"material.specular_map", 1}, {"material.normal_map", 2}, 
         {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
     });
     auto su_binder = std::make_shared<ShaderUniformBinder>(shader);
@@ -203,14 +206,13 @@ lcf::Scene * lcf::SceneManager::testScene()
         {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"material.diffuse_map", 0}, {"material.specular_map", 1}, {"material.normal_map", 2}, 
         {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
     });
     su_binder = std::make_shared<ShaderUniformBinder>(shader);
     su_binder->setUniforms(light_as_uniform_list);
     house1->setShaderUniformBinder(su_binder);
 
-    Mesh::SharedPtr plane = std::make_shared<Mesh>(Geometry::quad(), std::make_shared<Material>());
+    Mesh::SharedPtr plane = std::make_shared<Mesh>(Geometry::quad());
     plane->translateY(-3.0f);
     plane->rotateX(-90.0f);
     plane->scale(8.0f);
@@ -218,9 +220,11 @@ lcf::Scene * lcf::SceneManager::testScene()
         {GLShader::Vertex, path::shaders_prefix + "shadow_map_debug.vert"},
         {GLShader::Fragment, path::shaders_prefix + "shadow_map_debug.frag"}
     });
-    auto material = std::make_shared<Material>();
-    material->setTexture(TextureType::UserCustom0, directional_light->fbo()->takeDepthTexture());
-    plane->setMaterial(material);
+    // UserCustomMaterial::SharedPtr material = std::make_shared<UserCustomMaterial>();
+    // material->setTexture(TextureType::UserCustom0, directional_light->fbo()->takeDepthTexture());
+    // plane->setMaterial(material);
+    plane->materialController()->setType(MaterialType::UserCustom);
+    plane->materialController()->setTexture(TextureType::UserCustom0, directional_light->fbo()->takeDepthTexture());
     GLHelper::setShaderUniform(shader.get(), {"ichannel0", 0});
     plane->setShader(shader);
     scene->addSharedChild(plane);
@@ -252,11 +256,13 @@ lcf::Scene * lcf::SceneManager::testShaderToy()
     texture->setWrapMode(GLTexture::Repeat);
     shader_toy->setBuffer(0, {texture, 0});
     shader_toy->setBuffer(1, {0});
-    Material::SharedPtr material = std::make_shared<Material>();
-    material->setTexture(TextureType::UserCustom0, shader_toy);
-    Mesh::SharedPtr mesh = std::make_shared<Mesh>(Geometry::quad(), material);
+    // UserCustomMaterial::SharedPtr material = std::make_shared<UserCustomMaterial>();
+    // material->setTexture(TextureType::UserCustom0, shader_toy);
+    Mesh::SharedPtr mesh = std::make_shared<Mesh>(Geometry::quad());
+    mesh->materialController()->setType(MaterialType::UserCustom);
+    mesh->materialController()->setTexture(TextureType::UserCustom0, shader_toy);
+    // mesh->setMaterial(material);
     mesh->setShader(ShaderManager::instance()->get(ShaderManager::Simple2D));
-    mesh->scale(1.5f, 1.0f, 1.0f);
     scene->addSharedChild(mesh);
     return scene.get();
 }

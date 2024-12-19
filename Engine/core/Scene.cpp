@@ -9,11 +9,11 @@
 
 lcf::Scene::Scene() : Object3D()
 {
-    Mesh::MaterialPtr material = std::make_shared<Material>();
-    m_skybox = std::make_unique<Mesh>(Mesh::GeometryPtr(Geometry::cube()), material);
+    // UserCustomMaterial::SharedPtr material = std::make_shared<UserCustomMaterial>();
+    m_skybox = std::make_unique<Mesh>(Mesh::GeometryPtr(Geometry::cube()));
     m_skybox->setShader(ShaderManager::instance()->get(ShaderManager::Skybox));
-
-    m_fbo = std::make_unique<GLFrameBufferObject>(1036, 674, GLFrameBufferObject::Depth);
+    m_skybox->materialController()->setType(MaterialType::UserCustom);
+    // m_skybox->setMaterial(material);
 }
 
 lcf::Scene *lcf::Scene::global()
@@ -72,7 +72,7 @@ void lcf::Scene::draw()
 
 void lcf::Scene::setSkyboxTexture(TextureWrapper texture)
 {
-    m_skybox->material()->setTexture(TextureType::UserCustom0, texture);
+    m_skybox->materialController()->setTexture(TextureType::UserCustom0, texture);
 }
 
 QTimer *lcf::Scene::timer()

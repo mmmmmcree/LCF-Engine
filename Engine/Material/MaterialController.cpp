@@ -20,13 +20,28 @@ lcf::PhongMaterial::UniquePtr lcf::MaterialController::generatePhongMaterial()
     return material;
 }
 
+lcf::UserCustomMaterial::UniquePtr lcf::MaterialController::generateUserCustomMaterial()
+{
+    auto material = std::make_unique<lcf::UserCustomMaterial>();
+    for (const auto & [type, texture] : m_textures) {
+        material->setTexture(static_cast<TextureType>(type), texture);
+    }
+    return material;
+}
+
 lcf::MaterialController::MaterialController()
 {
 }
 
-void lcf::MaterialController::setMaterial(const MMaterial::SharedPtr &material)
+// void lcf::MaterialController::setMaterial(const Material::SharedPtr &material)
+// {
+//     m_material = material;
+//     m_material_type = m_material->type();
+// }
+
+const lcf::Material::SharedPtr & lcf::MaterialController::material() const
 {
-    m_material = material;
+    return m_material;
 }
 
 void lcf::MaterialController::setTexture(int texture_type, TextureWrapper texture)
@@ -37,6 +52,7 @@ void lcf::MaterialController::setTexture(int texture_type, TextureWrapper textur
     } else {
         iter->second = texture;
     }
+    this->updateMaterial();
 }
 
 const lcf::MaterialController::TextureInfoMap &lcf::MaterialController::textureInfoMap() const
@@ -47,8 +63,14 @@ const lcf::MaterialController::TextureInfoMap &lcf::MaterialController::textureI
 void lcf::MaterialController::setTextures(const TextureInfoMap &texture_info_map)
 {
     for (const auto & [type, texture] : texture_info_map) {
-        this->setTexture(type, texture);
+        auto iter = m_textures.find(type);
+        if (iter != m_textures.end()) {
+            iter->second = texture;
+        } else {
+            m_textures.emplace(std::make_pair(type, texture));
+        }
     }
+    this->updateMaterial();
 }
 
 void lcf::MaterialController::create()
@@ -76,12 +98,20 @@ void lcf::MaterialController::release()
 
 const lcf::UniformList &lcf::MaterialController::asUniformList() const
 {
+    static const lcf::UniformList empty_list;
+    if (not m_material) { return empty_list; }
     return m_material->asUniformList();
 }
 
-void lcf::MaterialController::setType(Type type)
+void lcf::MaterialController::setType(MaterialType type)
 {
-    m_type = type;
+    m_material_type = type;
+    this->updateMaterial();
+}
+
+lcf::MaterialType lcf::MaterialController::materialType() const
+{
+    return m_material_type;
 }
 
 void lcf::MaterialController::setImageData(int texture_type, unsigned char *data, int width, int height)
@@ -105,7 +135,8 @@ void lcf::MaterialController::setImageData(int texture_type, Image &&image)
 
 void lcf::MaterialController::updateMaterial()
 {
-    switch (m_type) {
+    switch (m_material_type) {
         case Phong : { m_material = this->generatePhongMaterial(); } break;
+        case UserCustom : { m_material = this->generateUserCustomMaterial(); } break;
     }
 }
