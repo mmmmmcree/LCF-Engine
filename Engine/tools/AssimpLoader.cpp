@@ -41,7 +41,7 @@ void lcf::AssimpLoader::run()
 
 lcf::MaterialController::SharedPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai_material, const aiScene *scene)
 {
-    MaterialController::SharedPtr mat_controller = std::make_shared<MaterialController>();
+    MaterialController::SharedPtr mat_controller = MaterialController::createShared();
     std::unordered_map<std::string, Image> image_map;
     for (int type = aiTextureType_DIFFUSE; type <= aiTextureType_TRANSMISSION; ++type) {
         int count = ai_material->GetTextureCount(static_cast<aiTextureType>(type));

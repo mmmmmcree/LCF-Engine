@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <memory>
 #include <QObject>
+#include "Define.h"
 
 namespace lcf {
     class ShaderManager : public QObject
@@ -16,23 +17,28 @@ namespace lcf {
             Simple3D,
             GeometryDebug,
             Skybox,
-            ShadowMap,
-            AnimatedShadowMap,
+            DirectionalShadowMap,
+            AnimatedDirectionalShadowMap,
+            PointShadowMap,
+            AnimatedPointShadowMap,
             DepthDebug,
+            SIZE
         };
-        using ShaderInfo = std::pair<QOpenGLShader::ShaderTypeBit, QString>;
+        using ShaderInfo = std::pair<GLShader::ShaderTypeBit, QString>;
         using ShaderInfos = QList<ShaderInfo>;
         static ShaderManager *instance();
         void initialize();
         UniqueGLShaderProgramPtr load(const ShaderInfos &shader_infos);
         SharedGLShaderProgramPtr load(const QString &name, const ShaderInfos &shader_infos);
         SharedGLShaderProgramPtr get(const QString &name);
-        SharedGLShaderProgramPtr get(ConfiguredShader type);
+        const SharedGLShaderProgramPtr &get(ConfiguredShader type) const;
+        const SharedGLShaderProgramPtr &getShadowShader(LightType light_type, bool animated) const;
     private:
         ShaderManager();
     public:
         QString readShaderSourceCode(const QString &file_path); // 给shader文件添加include功能
     private:
-        std::unordered_map<QString, SharedGLShaderProgramPtr> m_shaders;
+        std::unordered_map<QString, SharedGLShaderProgramPtr> m_shader_map;
+        std::vector<SharedGLShaderProgramPtr> m_configured_shaders;
     };
 }

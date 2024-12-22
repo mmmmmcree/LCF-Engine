@@ -21,24 +21,10 @@ void lcf::Object3D::draw()
     }
 }
 
-void lcf::Object3D::drawShadow()
+void lcf::Object3D::drawShadow(LightType light_type)
 {
     for (auto child : m_children) {
-        child->drawShadow();
-    }
-}
-
-lcf::Object3D::Type lcf::Object3D::type() const
-{
-    return Object3D::Type::Group;
-}
-
-void lcf::Object3D::debugParent() const
-{
-    const Object3D *p = this;
-    while (p) {
-        qDebug() << "address: " << p << "type: " << static_cast<int>(p->type()) << "parent: " << p->m_parent;
-        p = p->m_parent;
+        child->drawShadow(light_type);
     }
 }
 
@@ -210,14 +196,14 @@ void lcf::Object3D::setScale(float factor)
     this->setScale(factor, factor, factor);
 }
 
-const lcf::Vector3D &lcf::Object3D::position() const
+const lcf::Vector3D &lcf::Object3D::localPosition() const
 {
     return m_local_decomposed.translation;
 }
 
-lcf::Vector3D & lcf::Object3D::position()
+lcf::Vector3D lcf::Object3D::worldPosition()
 {
-    return m_local_decomposed.translation;
+    return this->worldMatrix().column(3).toVector3D();
 }
 
 const std::vector<lcf::Object3D *> &lcf::Object3D::children() const

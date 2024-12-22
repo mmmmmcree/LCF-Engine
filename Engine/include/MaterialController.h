@@ -15,8 +15,8 @@ namespace lcf {
         using TextureDataInfo = std::pair<int, Image>;
         using TextureDataInfoList = std::vector<TextureDataInfo>;
         using SharedPtr = std::shared_ptr<MaterialController>;
-        MaterialController();
-        // void setMaterial(const Material::SharedPtr &material);
+        MaterialController() = default;
+        static SharedPtr createShared();
         const Material::SharedPtr &material() const;
         void setTexture(int texture_type, TextureWrapper texture);
         const TextureInfoMap &textureInfoMap() const;

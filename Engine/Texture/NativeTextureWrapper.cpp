@@ -2,6 +2,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 
+
 lcf::NativeTextureWrapper::NativeTextureWrapper(unsigned int texture) :
     m_texture(texture)
 {
@@ -12,15 +13,25 @@ lcf::NativeTextureWrapper *lcf::NativeTextureWrapper::operator->()
     return this;
 }
 
+void lcf::NativeTextureWrapper::setTarget(int target)
+{
+    m_target = target;
+}
+
 void lcf::NativeTextureWrapper::bind(int unit) const
 {
     auto gl = QOpenGLContext::currentContext()->functions();
     gl->glActiveTexture(GL_TEXTURE0 + unit);
-    gl->glBindTexture(GL_TEXTURE_2D, m_texture);
+    gl->glBindTexture(m_target, m_texture);
 }
 
 void lcf::NativeTextureWrapper::release() const
 {
     auto gl = QOpenGLContext::currentContext()->functions();
-    gl->glBindTexture(GL_TEXTURE_2D, 0);
+    gl->glBindTexture(m_target, 0);
+}
+
+unsigned int lcf::NativeTextureWrapper::texture() const
+{
+    return m_texture;
 }

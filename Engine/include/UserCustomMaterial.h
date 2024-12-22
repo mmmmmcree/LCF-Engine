@@ -5,16 +5,20 @@
 #include "TextureWrapper.h"
 
 namespace lcf {
+    class MaterialController;
+
     class UserCustomMaterial : public Material
     {
+        friend class MaterialController;
     public:
         using SharedPtr = std::shared_ptr<UserCustomMaterial>;
         using UniquePtr = std::unique_ptr<UserCustomMaterial>;
         using TextureInfoMap = std::map<int, TextureWrapper>;
         void bind() override;
         MaterialType type() const override;
-        void setTexture(TextureType texture_type, TextureWrapper texture);
+    private:
+        UserCustomMaterial(TextureInfoMap *textures);
     private: 
-        TextureInfoMap m_textures;
+        TextureInfoMap *m_textures;
     };
 }

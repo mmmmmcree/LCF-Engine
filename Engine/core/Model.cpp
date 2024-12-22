@@ -55,10 +55,10 @@ void lcf::Model::draw()
     m_animation_player.update(1.0f / 60.0f);
 }
 
-void lcf::Model::drawShadow()
+void lcf::Model::drawShadow(LightType light_type)
 {
     if (not m_cast_shadow) { return; }
-    Object3D::drawShadow();
+    Object3D::drawShadow(light_type);
 }
 
 void lcf::Model::create()
@@ -75,11 +75,6 @@ void lcf::Model::create()
 bool lcf::Model::isCreated() const
 {
     return m_created;
-}
-
-lcf::Object3D::Type lcf::Model::type() const
-{
-    return Object3D::Type::Model;
 }
 
 bool lcf::Model::hasAnimation() const

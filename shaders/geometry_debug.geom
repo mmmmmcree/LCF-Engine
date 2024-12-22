@@ -6,7 +6,7 @@ in VS_OUT {
     vec3 normal;
 } gs_in[];
 
-const float MAGNITUDE = 0.4;
+const float magnitude = 0.4;
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 view;
@@ -18,7 +18,7 @@ void generateLine(int index, const in mat4 PV) {
     const vec4 delta = vec4(0.02, vec3(0.0));
     gl_Position = PV * (gl_in[index].gl_Position - delta);
     EmitVertex();
-    gl_Position = PV * (gl_in[index].gl_Position + vec4(gs_in[index].normal, 0.0));
+    gl_Position = PV * (gl_in[index].gl_Position + vec4(gs_in[index].normal * magnitude, 0.0));
     EmitVertex();
     gl_Position = PV * (gl_in[index].gl_Position + delta);
     EmitVertex();

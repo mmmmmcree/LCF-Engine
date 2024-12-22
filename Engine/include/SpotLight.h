@@ -9,6 +9,7 @@ namespace lcf {
     public:
         using SharedPtr = std::shared_ptr<SpotLight>;
         SpotLight() = default;
+        LightType lightType() const override;
         UniformList asUniformList() override;
         void setInnerAngle(float angle_deg);
         void setOuterAngle(float angle_deg);

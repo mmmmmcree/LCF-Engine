@@ -21,10 +21,12 @@ namespace lcf {
         using SharedPtr = std::shared_ptr<Mesh>;
         Mesh(const GeometryPtr &geometry);
         Mesh(const Mesh& other);
+        static SharedPtr createShared(const GeometryPtr &geometry);
+        static SharedPtr createShared(const Mesh& other);
         void draw() override;
-        void drawShadow() override;
+        void drawShadow(LightType light_type) override;
         void setSkeleton(SkeletonPtr &&skeleton);
-        Object3D::Type type() const override;
+        bool animated() const;
         const GeometryPtr &geometry() const;
         const SkeletonPtr &skeleton() const;
         void activateSkeleton(bool active);

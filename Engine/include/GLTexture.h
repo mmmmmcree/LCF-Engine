@@ -10,3 +10,4 @@ namespace lcf {
 
     using UniqueGLTexturePtr = std::unique_ptr<GLTexture>;
 }
+

@@ -36,6 +36,14 @@ void ProjectionProvider::setFarPlane(float far_plane)
     m_far = far_plane;
 }
 
+void ProjectionProvider::setFov(float fov_deg)
+{
+    m_fov = fov_deg;
+    if (m_type == Perspective) {
+        this->update();
+    }
+}
+
 ProjectionProvider::Type ProjectionProvider::type() const
 {
     return m_type;
@@ -64,4 +72,9 @@ void ProjectionProvider::increaseScale(float delta)
 {
     m_scale += delta * m_scale_speed;
     this->update();
+}
+
+const float & ProjectionProvider::farPlane() const
+{
+    return m_far;
 }

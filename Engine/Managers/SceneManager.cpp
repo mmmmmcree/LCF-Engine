@@ -44,7 +44,7 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
     texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
     scene->setSkyboxTexture(texture);
 
-    DirectionalLight::SharedPtr directional_light = std::make_shared<DirectionalLight>();
+    DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
     directional_light->rotateX(-90.0f);
     directional_light->setName("directional_light[0]");
     scene->addSharedChild(directional_light);
@@ -61,7 +61,7 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
     GLHelper::setShaderUniforms(shader.get(), {
         {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
     });
-    auto su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    auto su_binder = ShaderUniformBinder::createShared(shader);
     su_binder->setUniforms(directional_light_as_uniform_list);
     dinasour->setShaderUniformBinder(su_binder);
     dinasour->playAnimation(0, 1.0f);
@@ -85,21 +85,15 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
             grass->instanceHelper()->addInstanceOffset(m);
         }
     }
-    // // auto material = Material::newShared();
-    // UserCustomMaterial::SharedPtr material = std::make_shared<UserCustomMaterial>();
     SharedGLTexturePtr grass_color = TextureManager::instance()->load(path::source_dir + "res/GRASS.png");
-    // material->setTexture(TextureType::Diffuse, grass_color);
     grass->materialController()->setType(MaterialType::UserCustom);
     grass->materialController()->setTexture(TextureType::Diffuse, grass_color);
     SharedGLTexturePtr grass_mask = TextureManager::instance()->load(path::source_dir + "res/grassMask.png");
     grass_mask->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-    // material->setTexture(TextureType::Opacity, grass_mask);
     grass->materialController()->setTexture(TextureType::Opacity, grass_mask);
     SharedGLTexturePtr cloud = TextureManager::instance()->load(path::source_dir + "res/CLOUD.png");
     cloud->setMinMagFilters(GLTexture::LinearMipMapLinear, GLTexture::LinearMipMapLinear);
-    // material->setTexture(TextureType::UserCustom0, cloud);
     grass->materialController()->setTexture(TextureType::UserCustom0, cloud);
-    // grass->setMaterial(material); 
     shader = ShaderManager::instance()->load({
         {QOpenGLShader::Vertex, path::shaders_prefix + "grass.vert"}, 
         {QOpenGLShader::Fragment, path::shaders_prefix + "grass.frag"}, 
@@ -107,7 +101,7 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
     GLHelper::setShaderUniforms(shader.get(), {
         {"channel0", 0}, {"channel1", 1}, {"channel2", 2}
     });
-    su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    su_binder = ShaderUniformBinder::createShared(shader);
     su_binder->setSingleUniform({"time", utils::elapsed_time_s});
     grass->setShaderUniformBinder(su_binder);
 
@@ -150,7 +144,7 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
         {"material.diffuse_map", 0}, {"material.specular_map", 1}, {"material.normal_map", 2}, 
         {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
     });
-    su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    su_binder = ShaderUniformBinder::createShared(shader);
     su_binder->setUniforms(directional_light_as_uniform_list);
     house1->setShaderUniformBinder(su_binder);
 
@@ -158,7 +152,6 @@ lcf::Scene *lcf::SceneManager::makeGrassLand()
         dinasour->translate(0.0f, 0.0f, 0.15f);
         dinasour->rotateY(1.0f);
     });
-    scene->timer()->start(1000 / 60);
     return scene.get();
 }
 
@@ -171,14 +164,21 @@ lcf::Scene * lcf::SceneManager::testScene()
     texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
     scene->setSkyboxTexture(std::move(texture));
 
-    DirectionalLight::SharedPtr directional_light = std::make_shared<DirectionalLight>();
-    directional_light->setCastShadow(true);
-    directional_light->setName("directional_light[0]");
-    directional_light->setPosition({1.0f, 7.0f, 3.0f});
-    directional_light->rotateX(-90.0f);
-    directional_light->setSpecularIntensity(10.0f);
-    scene->addLight(directional_light);
-    const auto &light_as_uniform_list = directional_light->asUniformList();
+    // auto directional_light = DirectionalLight::createShared();
+    // directional_light->setCastShadow(true);
+    // directional_light->setName("directional_light[0]");
+    // directional_light->setPosition({1.0f, 7.0f, 3.0f});
+    // directional_light->rotateX(-90.0f);
+    // directional_light->setSpecularIntensity(10.0f);
+    // scene->addLight(directional_light);
+    // const auto &light_as_uniform_list = directional_light->asUniformList();
+    auto point_light = PointLight::createShared();
+    point_light->setCastShadow(true);
+    point_light->setName("point_light[0]");
+    point_light->setPosition({1.0f, 3.0f, 1.0f});
+    point_light->scale(0.3f);
+    scene->addLight(point_light);
+    const auto &light_as_uniform_list = point_light->asUniformList();
 
     Model::SharedPtr dinasour = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
     scene->addSharedChild(dinasour);
@@ -189,9 +189,10 @@ lcf::Scene * lcf::SceneManager::testScene()
         {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
+        // {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
+        {"directional_light_num", 0}, {"point_light_num", 1}, {"spot_light_num", 0}
     });
-    auto su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    auto su_binder = ShaderUniformBinder::createShared(shader);
     su_binder->setUniforms(light_as_uniform_list);
     dinasour->setShaderUniformBinder(su_binder);
     dinasour->playAnimation(1, 1.0f);
@@ -206,26 +207,30 @@ lcf::Scene * lcf::SceneManager::testScene()
         {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
+        // {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
+        {"directional_light_num", 0}, {"point_light_num", 1}, {"spot_light_num", 0}
     });
-    su_binder = std::make_shared<ShaderUniformBinder>(shader);
+    su_binder = ShaderUniformBinder::createShared(shader);
     su_binder->setUniforms(light_as_uniform_list);
     house1->setShaderUniformBinder(su_binder);
 
-    Mesh::SharedPtr plane = std::make_shared<Mesh>(Geometry::quad());
-    plane->translateY(-3.0f);
-    plane->rotateX(-90.0f);
+    Mesh::SharedPtr plane = Mesh::createShared(Geometry::cube());
+    // plane->translateY(-3.0f);
+    // plane->rotateX(-90.0f);
     plane->scale(8.0f);
+    // shader = ShaderManager::instance()->load({
+    //     {GLShader::Vertex, path::shaders_prefix + "directional_shadow_map_debug.vert"},
+    //     {GLShader::Fragment, path::shaders_prefix + "directional_shadow_map_debug.frag"}
+    // });
     shader = ShaderManager::instance()->load({
-        {GLShader::Vertex, path::shaders_prefix + "shadow_map_debug.vert"},
-        {GLShader::Fragment, path::shaders_prefix + "shadow_map_debug.frag"}
+        {GLShader::Vertex, path::shaders_prefix + "point_shadow_map_debug.vert"},
+        {GLShader::Fragment, path::shaders_prefix + "point_shadow_map_debug.frag"}
     });
-    // UserCustomMaterial::SharedPtr material = std::make_shared<UserCustomMaterial>();
-    // material->setTexture(TextureType::UserCustom0, directional_light->fbo()->takeDepthTexture());
-    // plane->setMaterial(material);
+
     plane->materialController()->setType(MaterialType::UserCustom);
-    plane->materialController()->setTexture(TextureType::UserCustom0, directional_light->fbo()->takeDepthTexture());
-    GLHelper::setShaderUniform(shader.get(), {"ichannel0", 0});
+    // plane->materialController()->setTexture(TextureType::UserCustom0, directional_light->fbo()->texture());
+    plane->materialController()->setTexture(TextureType::UserCustom0, point_light->fbo()->texture());
+    GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
     plane->setShader(shader);
     scene->addSharedChild(plane);
     connect(scene->timer(), &QTimer::timeout, this, [=] {
@@ -237,7 +242,6 @@ lcf::Scene * lcf::SceneManager::testScene()
         // }
         // d = fmod(d + 0.1f, 90.0f);
     });
-    scene->timer()->start(1000 / 60);
     return scene.get();
 }
 
@@ -256,12 +260,9 @@ lcf::Scene * lcf::SceneManager::testShaderToy()
     texture->setWrapMode(GLTexture::Repeat);
     shader_toy->setBuffer(0, {texture, 0});
     shader_toy->setBuffer(1, {0});
-    // UserCustomMaterial::SharedPtr material = std::make_shared<UserCustomMaterial>();
-    // material->setTexture(TextureType::UserCustom0, shader_toy);
-    Mesh::SharedPtr mesh = std::make_shared<Mesh>(Geometry::quad());
+    Mesh::SharedPtr mesh = Mesh::createShared(Geometry::quad());
     mesh->materialController()->setType(MaterialType::UserCustom);
     mesh->materialController()->setTexture(TextureType::UserCustom0, shader_toy);
-    // mesh->setMaterial(material);
     mesh->setShader(ShaderManager::instance()->get(ShaderManager::Simple2D));
     scene->addSharedChild(mesh);
     return scene.get();

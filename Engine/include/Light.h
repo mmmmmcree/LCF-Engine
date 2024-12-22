@@ -4,6 +4,7 @@
 #include "Uniform.h"
 #include "ProjectionProvider.h"
 #include "GLFrameBufferObject.h"
+#include "Define.h"
 
 namespace lcf {
     class Light : public Object3D
@@ -12,7 +13,8 @@ namespace lcf {
         using SharedPtr = std::shared_ptr<Light>;
         Light();
         void draw() override;
-        virtual void bind(int light_index = 0) { }
+        virtual LightType lightType() const = 0;
+        virtual void bind() { }
         virtual void release() { }
         virtual void bindAsShadowMap(int texture_unit) { }
         virtual UniformList asUniformList();
@@ -25,6 +27,7 @@ namespace lcf {
         std::string uniformName(const std::string &name) const;
     public:
         ProjectionProvider m_projection_provider;
+        Vector3D m_direction;
         Vector3D m_color = {1.0f, 1.0f, 1.0f};
         float m_diffuse_intensity = 1.0f;
         float m_specular_intensity = 0.5f;

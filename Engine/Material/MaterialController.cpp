@@ -3,7 +3,7 @@
 
 lcf::PhongMaterial::UniquePtr lcf::MaterialController::generatePhongMaterial()
 {
-    auto material = std::make_unique<lcf::PhongMaterial>();
+    auto material = PhongMaterial::UniquePtr(new lcf::PhongMaterial);
     auto iter = m_textures.find(TextureType::Diffuse);
     if (iter != m_textures.end()) {
         material->setDiffuseMap(iter->second);
@@ -22,22 +22,14 @@ lcf::PhongMaterial::UniquePtr lcf::MaterialController::generatePhongMaterial()
 
 lcf::UserCustomMaterial::UniquePtr lcf::MaterialController::generateUserCustomMaterial()
 {
-    auto material = std::make_unique<lcf::UserCustomMaterial>();
-    for (const auto & [type, texture] : m_textures) {
-        material->setTexture(static_cast<TextureType>(type), texture);
-    }
+    auto material = UserCustomMaterial::UniquePtr(new lcf::UserCustomMaterial(&m_textures));
     return material;
 }
 
-lcf::MaterialController::MaterialController()
+lcf::MaterialController::SharedPtr lcf::MaterialController::createShared()
 {
+    return std::make_shared<lcf::MaterialController>();
 }
-
-// void lcf::MaterialController::setMaterial(const Material::SharedPtr &material)
-// {
-//     m_material = material;
-//     m_material_type = m_material->type();
-// }
 
 const lcf::Material::SharedPtr & lcf::MaterialController::material() const
 {

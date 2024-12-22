@@ -25,6 +25,13 @@ lcf::TextureWrapper::TextureWrapper(unsigned int texture)
     if (texture) { m_texture = NativeTextureWrapper(texture); }
 }
 
+lcf::TextureWrapper::TextureWrapper(const NativeTextureWrapper &texture)
+{
+    if (texture.texture()) {
+        m_texture = texture;
+    }
+}
+
 void lcf::TextureWrapper::bind(unsigned int unit)
 {
     if (not m_texture.has_value()) { return; }

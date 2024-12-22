@@ -25,6 +25,16 @@ lcf::Mesh::Mesh(const Mesh &other) :
 {
 }
 
+lcf::Mesh::SharedPtr lcf::Mesh::createShared(const GeometryPtr &geometry)
+{
+    return std::make_shared<Mesh>(geometry);
+}
+
+lcf::Mesh::SharedPtr lcf::Mesh::createShared(const Mesh &other)
+{
+    return std::make_shared<Mesh>(other);
+}
+
 void lcf::Mesh::draw()
 {
     Object3D::draw();
@@ -38,17 +48,15 @@ void lcf::Mesh::draw()
     m_shader_uniform_binder->release();
 }
 
-void lcf::Mesh::drawShadow()
+void lcf::Mesh::drawShadow(LightType light_type)
 {
     if (not m_cast_shadow) { return; }
-    Object3D::drawShadow();
+    Object3D::drawShadow(light_type);
     if (not m_geometry->isCreated()) { return; }
-    static SharedGLShaderProgramPtr shadow_shader = ShaderManager::instance()->get(ShaderManager::ShadowMap);
-    static SharedGLShaderProgramPtr animated_shadow_shader = ShaderManager::instance()->get(ShaderManager::AnimatedShadowMap);
-    auto &shader = (m_skeleton and m_skeleton_activated) ? animated_shadow_shader : shadow_shader;
-    shader->bind();
-    this->_draw(shader.get());
-    shader->release();
+    const auto &shadow_shader = ShaderManager::instance()->getShadowShader(light_type, this->animated());
+    shadow_shader->bind();
+    this->_draw(shadow_shader.get());
+    shadow_shader->release();
 }
 
 void lcf::Mesh::setSkeleton(SkeletonPtr &&skeleton)
@@ -56,9 +64,9 @@ void lcf::Mesh::setSkeleton(SkeletonPtr &&skeleton)
     m_skeleton = std::move(skeleton);
 }
 
-lcf::Object3D::Type lcf::Mesh::type() const
+bool lcf::Mesh::animated() const
 {
-    return Object3D::Type::Mesh;
+    return m_skeleton and m_skeleton_activated;
 }
 
 const lcf::Mesh::GeometryPtr &lcf::Mesh::geometry() const
@@ -110,7 +118,7 @@ void lcf::Mesh::_draw(GLShaderProgram * shader)
 {
     shader->setUniformValue("model", this->worldMatrix());
     shader->setUniformValue("normal_matrix", this->normalMatrix());
-    if (m_skeleton and m_skeleton_activated) {
+    if (this->animated()) {
         const auto &bone_matrices = m_skeleton->boneMatrices();
         shader->setUniformValueArray("bone_matrices", bone_matrices.data(), static_cast<int>(bone_matrices.size()));
     }

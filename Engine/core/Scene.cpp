@@ -82,15 +82,10 @@ QTimer *lcf::Scene::timer()
 
 void lcf::Scene::shadowPass()
 {
-    static SharedGLShaderProgramPtr shadow_shader = ShaderManager::instance()->get(ShaderManager::ShadowMap);
-    static SharedGLShaderProgramPtr animated_shadow_shader = ShaderManager::instance()->get(ShaderManager::AnimatedShadowMap);
-    for (int i = 0; i < m_lights.size(); ++i) {
-        GLHelper::setShaderUniform(shadow_shader.get(), {"light_index", i});
-        GLHelper::setShaderUniform(animated_shadow_shader.get(), {"light_index", i});
-        if (not m_lights[i]->castShadow()) { continue; }
-        auto &light = m_lights[i];
-        light->bind(i);
-        Object3D::drawShadow();
+    for (auto &light : m_lights) {
+        if (not light->castShadow()) { continue; }
+        light->bind();
+        Object3D::drawShadow(light->lightType());
         light->release();
     }
 }

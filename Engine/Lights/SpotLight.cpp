@@ -1,9 +1,14 @@
 #include "SpotLight.h"
 
+lcf::LightType lcf::SpotLight::lightType() const
+{
+    return LightType::Spot;
+}
+
 lcf::UniformList lcf::SpotLight::asUniformList()
 {
     UniformList uniform_list = Light::asUniformList();
-    uniform_list.emplace_back(SingleUniform(uniformName("position"), [this] { return this->position(); }));
+    uniform_list.emplace_back(SingleUniform(uniformName("position"), [this] { return this->localPosition(); }));
     uniform_list.emplace_back(SingleUniform(uniformName("direction"), [this] { return this->direction(); }));
     uniform_list.emplace_back(SingleUniform(uniformName("cos_inner"), [this] { return this->m_cos_inner; }));
     uniform_list.emplace_back(SingleUniform(uniformName("cos_outer"), [this] { return this->m_cos_outer; }));

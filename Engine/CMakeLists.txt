@@ -10,4 +10,4 @@ endif()
 include_directories(./include)
 target_link_libraries(    
     EngineLib Qt6::Widgets Qt6::OpenGLWidgets ${ASSIMP_LIB}
-)       
+)         

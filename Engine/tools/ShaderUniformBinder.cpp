@@ -9,6 +9,11 @@ lcf::ShaderUniformBinder::ShaderUniformBinder(const SharedGLShaderProgramPtr &sh
 {
 }
 
+lcf::ShaderUniformBinder::SharedPtr lcf::ShaderUniformBinder::createShared(const SharedGLShaderProgramPtr &shader)
+{
+    return SharedPtr(new ShaderUniformBinder(shader));
+}
+
 void lcf::ShaderUniformBinder::setUniform(const Uniform &uniform)
 {
     std::visit([&](auto &&arg) {

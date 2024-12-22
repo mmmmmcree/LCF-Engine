@@ -18,6 +18,7 @@ namespace lcf {
         TextureWrapper(const std::shared_ptr<GLTexture> &texture);
         TextureWrapper(std::unique_ptr<GLTexture> &&texture);
         TextureWrapper(unsigned int texture);
+        TextureWrapper(const NativeTextureWrapper &texture);
         TextureWrapper(const TextureWrapper &other) = default;
         TextureWrapper &operator=(const TextureWrapper &other) = default;
         void bind(unsigned int unit = 0);

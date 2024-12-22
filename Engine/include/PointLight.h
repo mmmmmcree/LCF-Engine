@@ -1,16 +1,33 @@
 #pragma once
 
 #include "Light.h"
+#include "SingleAttachmentFBO.h"
+#include <array>
 
 namespace lcf {
     class PointLight : public Light
     {
     public:
         using SharedPtr = std::shared_ptr<PointLight>;
-        PointLight() = default;
+        PointLight();
+        static SharedPtr createShared();
+        void draw() override;
+        LightType lightType() const override;
         UniformList asUniformList() override;
+        void bind() override;
+        void release() override;
+        void bindAsShadowMap(int texture_unit) override;
+        SingleAttachmentFBO::UniquePtr &fbo();
     private:
+        void updateLightMatrices();
+    private:
+        SingleAttachmentFBO::UniquePtr m_fbo;
+        std::array<Matrix4x4, 6> m_light_matrices;
         float m_constant = 1.0f, m_linear = 0.09f, m_quadratic = 0.032f;
+        int m_light_index = 0;
+        inline static unsigned int s_ssbo = 0;
+        inline static int s_ssbo_size = 0;
+        inline static int s_light_count = 0;
     };
 }
 /*

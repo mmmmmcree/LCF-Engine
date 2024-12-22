@@ -54,7 +54,7 @@ void lcf::ShaderToy::setBuffer(int index, const BufferTextureList &textures)
 
 void lcf::ShaderToy::update()
 {
-    static GLint original_viewport[4];
+    GLint original_viewport[4];
     auto gl = QOpenGLContext::currentContext()->functions();
     gl->glGetIntegerv(GL_VIEWPORT, original_viewport);
     gl->glViewport(0, 0, m_width, m_height);

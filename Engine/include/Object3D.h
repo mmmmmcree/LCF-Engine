@@ -2,25 +2,18 @@
 
 #include "Matrix.h"
 #include "GLShaderProgram.h"
+#include "Define.h"
 
 namespace lcf {
     class Object3D
     {
     public:
         using SharedPtr = std::shared_ptr<Object3D>;
-        enum class Type
-        {
-            Group,
-            Mesh,
-            Model,
-        };
         Object3D() = default;
         Object3D(const Object3D &other);
         virtual ~Object3D() = default;
         virtual void draw();
-        virtual void drawShadow();
-        virtual Type type() const;
-        void debugParent() const;
+        virtual void drawShadow(LightType light_type);
         Object3D *root() const;
         Object3D *parent() const;
         void setParent(Object3D* parent);
@@ -49,8 +42,8 @@ namespace lcf {
         void setScale(float x, float y, float z);
         void setScale(const Vector3D &scale);
         void setScale(float factor);
-        const Vector3D &position() const;
-        Vector3D &position();
+        const Vector3D &localPosition() const;
+        Vector3D worldPosition();
         const std::vector<Object3D*> &children() const;
         const Matrix4x4 &worldMatrix();
         const Matrix4x4  &inversedWorldMatrix();

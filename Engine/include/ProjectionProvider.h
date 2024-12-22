@@ -15,10 +15,12 @@ public:
     void setOrthoSize(float size);
     void setNearPlane(float near_plane);
     void setFarPlane(float far_plane);
+    void setFov(float fov_deg);
     Type type() const;
     void update();
     void setAspect(int width, int height);
     void increaseScale(float delta);
+    const float &farPlane() const;
 private:
     Type m_type;
     float m_fov, m_aspect, m_near, m_far;

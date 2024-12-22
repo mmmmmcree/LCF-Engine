@@ -27,7 +27,7 @@ namespace lcf {
         Model(const Model &other) = delete;
         Model *clone() const;
         void draw() override;
-        void drawShadow() override;
+        void drawShadow(LightType light_type) override;
         void create();
         bool isCreated() const;
         bool hasAnimation() const;
@@ -35,7 +35,6 @@ namespace lcf {
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
         const MaterialController::SharedPtr &materialController() const;
         InstanceHelperPtr &instanceHelper();
-        Object3D::Type type() const override;
         void playAnimation(int i, float speed = 1.0f);
         void playAnimation();
         void stopAnimation();

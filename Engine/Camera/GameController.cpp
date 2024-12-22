@@ -11,17 +11,17 @@ void lcf::GameController::update(Camera *camera)
     this->updateCameraPitch(camera, m_delta_pitch);
     this->updateCameraYaw(camera, m_delta_yaw);
     m_delta_pitch = m_delta_yaw = 0.0f;
-    QVector3D direction;
-    const QVector3D &front = camera->front();
-    const QVector3D &up = camera->up();
-    const QVector3D &right = camera->right();
+    Vector3D direction;
+    const Vector3D &front = camera->front();
+    const Vector3D &up = camera->up();
+    const Vector3D &right = camera->right();
     if (m_direction & Forward) { direction += front; }
     if (m_direction & Backward) { direction -= front; }
     if (m_direction & Left) { direction -= right; }
     if (m_direction & Right) { direction += right; }
     if (m_direction & Up) { direction += up; }
     if (m_direction & Down) { direction -= up; }
-    camera->position() += direction.normalized() * m_move_speed;
+    camera->translate(direction.normalized() * m_move_speed);
 }
 
 void lcf::GameController::processMouseMoveEvent(QMouseEvent *event)

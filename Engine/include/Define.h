@@ -57,6 +57,13 @@ namespace lcf {
         POLYGON = 0x0009,   
     };
 
+    enum GLTextureTarget
+    {
+        TEXTURE_2D = 0x0DE1,
+        TEXTURE_CUBE_MAP = 0x8513,
+    };
+
+
     enum TextureType
     {
         None = 0,
@@ -103,5 +110,12 @@ namespace lcf {
     {
         UserCustom,
         Phong,
+    };
+
+    enum LightType
+    {
+        Directional,
+        Point,
+        Spot
     };
 }
