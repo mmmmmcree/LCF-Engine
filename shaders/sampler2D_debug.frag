@@ -12,4 +12,5 @@ void main() {
     vec4 color = texture(channel0, fs_in.uv);
     if (color.a < 0.3) { discard; }
     frag_color = color;
+    frag_color = vec4(1.0);
 }

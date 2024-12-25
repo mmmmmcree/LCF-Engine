@@ -58,7 +58,7 @@ lcf::MaterialController::SharedPtr lcf::AssimpLoader::processMaterial(aiMaterial
                 unsigned char *data = reinterpret_cast<unsigned char *>(ai_texture->pcData);
                 image = dataToImage(data, ai_texture->mWidth, ai_texture->mHeight);
             } else {
-                image = Image(m_path + texture_path.C_Str()).mirrored();
+                image = Image(m_path + texture_path.C_Str()).mirrored().convertToFormat(Image::Format_RGBA8888);
             }
             image_map.insert(std::make_pair(texture_path.C_Str(), image));
             mat_controller->setImageData(type, image);
@@ -136,24 +136,22 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     std::vector<float> colors;
     if (ai_mesh->HasVertexColors(0)) { colors.resize(num_vertices * 4); }
     std::vector<float> tangents;
-    // std::vector<float> bitangents;
     if (ai_mesh->HasTangentsAndBitangents()) {
         tangents.resize(num_vertices * 3);
-        // bitangents.resize(num_vertices * 3);
     }
     std::vector<unsigned int> indices;
-    for (int i = 0; i < num_vertices; ++i) {
-        memcpy(positions.data() + i * 3, ai_mesh->mVertices + i, sizeof(float) * 3);
-        memcpy(normals.data() + i * 3, ai_mesh->mNormals + i, sizeof(float) * 3); 
-        if (ai_mesh->mTextureCoords[0]) {
+    memcpy(positions.data(), ai_mesh->mVertices, sizeof(float) * positions.size());
+    memcpy(normals.data(), ai_mesh->mNormals, sizeof(float) * normals.size());
+    if (ai_mesh->mTextureCoords[0]) {
+        for (int i = 0; i < num_vertices; ++i) {
             memcpy(uvs.data() + i * 2, ai_mesh->mTextureCoords[0] + i, sizeof(float) * 2);
         }
-        if (ai_mesh->HasVertexColors(0)) {
-            memcpy(colors.data() + i * 4, ai_mesh->mColors[0] + i, sizeof(float) * 4);
-        }
-        if (ai_mesh->HasTangentsAndBitangents()) {
-            memcpy(tangents.data() + i * 3, ai_mesh->mTangents + i, sizeof(float) * 3);
-        }
+    }
+    if (ai_mesh->HasVertexColors(0)) {
+        memcpy(colors.data(), ai_mesh->mColors[0], sizeof(float) * colors.size());
+    }
+    if (ai_mesh->HasTangentsAndBitangents()) {
+        memcpy(tangents.data(), ai_mesh->mTangents, sizeof(float) * tangents.size());
     }
     for (unsigned int i = 0; i < ai_mesh->mNumFaces; ++i) {
         aiFace face = ai_mesh->mFaces[i];
@@ -195,7 +193,7 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     mesh->setMaterialController(mat_controller);
     Skeleton::MatricesPtr matrices_ptr = std::make_shared<Skeleton::Matrices>(std::move(offset_matrices));
     mesh->setSkeleton(std::make_unique<Skeleton>(std::move(bones), matrices_ptr));
-    if (matrices_ptr->empty()) { return mesh ; }
+    if (matrices_ptr->empty()) { return mesh ; }    
     geometry->addAttribute(bone_ids.data(), bone_ids.size(), 5, 4);
     geometry->addAttribute(bone_weights.data(), bone_weights.size(), 6, 4);
     return mesh;

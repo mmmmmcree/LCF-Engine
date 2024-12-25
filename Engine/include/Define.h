@@ -61,8 +61,18 @@ namespace lcf {
     {
         TEXTURE_2D = 0x0DE1,
         TEXTURE_CUBE_MAP = 0x8513,
+        TEXTURE_2D_MULTISAMPLE = 0x9100,
     };
 
+    enum GLTextureFormat
+    {
+        RGBA = 0x1908,
+        DEPTH24_STENCIL8 = 0x88F0,
+        RGB16F = 0x881B,
+        RGBA16F = 0x881A,
+        RGB32F = 0x8815,
+        RGBA32F = 0x8814,
+    };
 
     enum TextureType
     {

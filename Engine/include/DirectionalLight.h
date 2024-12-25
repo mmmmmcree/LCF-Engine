@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Light.h"
-#include "SingleAttachmentFBO.h"
+#include "DepthMapFBO.h"
 
 namespace lcf {
     class DirectionalLight : public Light
@@ -11,13 +11,13 @@ namespace lcf {
         using SharedPtr = std::shared_ptr<DirectionalLight>;
         static SharedPtr createShared();
         LightType lightType() const override;
+        int index() const;
         void bind() override;
         void release() override;
-        void bindAsShadowMap(int texture_unit) override;
         UniformList asUniformList() override;
-        SingleAttachmentFBO::UniquePtr &fbo();
+        const NativeTextureWrapper &shadowMapTexture() const;
     private:
-        SingleAttachmentFBO::UniquePtr m_fbo;
+        DepthMapFBO::UniquePtr m_fbo;
         Matrix4x4 m_light_matrix;
         int m_light_index = 0;
         inline static unsigned int s_ssbo = 0;

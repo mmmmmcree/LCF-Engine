@@ -1,7 +1,8 @@
 #include "Image.h"
 
-lcf::ImageLoader::ImageLoader(const QString &file_path, QObject *parent) :
-    QThread(parent), m_path(file_path)
+
+lcf::ImageLoader::ImageLoader(const QString &file_path, bool mirroed, Image::Format format, QObject *parent) :
+    QThread(parent), m_path(file_path), m_mirrored(mirroed), m_format(format)
 {
 }
 
@@ -9,7 +10,7 @@ void lcf::ImageLoader::run()
 {
     Image img(m_path);
     if (not img.isNull()) {
-        emit imageLoaded(img);
+        emit imageLoaded(m_mirrored ? img.mirrored().convertToFormat(m_format) : img.convertToFormat(m_format));
     }
 }
 

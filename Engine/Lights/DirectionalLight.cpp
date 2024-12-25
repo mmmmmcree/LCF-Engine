@@ -12,7 +12,7 @@ lcf::DirectionalLight::DirectionalLight() : Light()
     m_projection_provider.setFarPlane(80.0f);
     m_light_index = s_light_count;
     s_light_count++;
-    m_fbo = SingleAttachmentFBO::createUnique(4096, 4096, SingleAttachmentFBO::DepthMap);
+    m_fbo = DepthMapFBO::createUnique(4096, 4096);
 }
 
 lcf::UniformList lcf::DirectionalLight::asUniformList()
@@ -22,9 +22,9 @@ lcf::UniformList lcf::DirectionalLight::asUniformList()
     return uniform_list;
 }
 
-lcf::SingleAttachmentFBO::UniquePtr &lcf::DirectionalLight::fbo()
+const lcf::NativeTextureWrapper &lcf::DirectionalLight::shadowMapTexture() const
 {
-    return m_fbo;
+    return m_fbo->depthAttachment();
 }
 
 lcf::DirectionalLight::SharedPtr lcf::DirectionalLight::createShared()
@@ -35,6 +35,11 @@ lcf::DirectionalLight::SharedPtr lcf::DirectionalLight::createShared()
 lcf::LightType lcf::DirectionalLight::lightType() const
 {
     return LightType::Directional;
+}
+
+int lcf::DirectionalLight::index() const
+{
+    return m_light_index;
 }
 
 void lcf::DirectionalLight::bind()
@@ -61,18 +66,9 @@ void lcf::DirectionalLight::bind()
     }
     gl->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     m_fbo->bind();
-    gl->glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void lcf::DirectionalLight::release()
 {
     m_fbo->release();
-}
-
-void lcf::DirectionalLight::bindAsShadowMap(int texture_unit)
-{
-    m_fbo->texture().bind(texture_unit);
-    // auto gl = QOpenGLContext::currentContext()->functions();
-    // gl->glActiveTexture(GL_TEXTURE0 + texture_unit);
-    // gl->glBindTexture(GL_TEXTURE_2D, m_fbo->texture());
 }

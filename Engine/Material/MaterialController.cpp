@@ -1,5 +1,6 @@
 #include "MaterialController.h"
 #include "Define.h"
+#include "GLHelper.h"
 
 lcf::PhongMaterial::UniquePtr lcf::MaterialController::generatePhongMaterial()
 {
@@ -70,7 +71,8 @@ void lcf::MaterialController::create()
     for (const auto & [type, image] : m_image_data) {
         auto iter = m_textures.find(type);
         if (iter != m_textures.end()) { continue; }
-        m_textures.emplace(std::make_pair(type, std::make_shared<GLTexture>(image)));
+        auto texture = GLHelper::generateTextureByTextureType(static_cast<TextureType>(type), image);
+        m_textures.emplace(std::make_pair(type, texture));
     }
     m_image_data.clear();
     this->updateMaterial();

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Light.h"
-#include "SingleAttachmentFBO.h"
+#include "CubeDepthMapFBO.h"
 #include <array>
 
 namespace lcf {
@@ -16,12 +16,12 @@ namespace lcf {
         UniformList asUniformList() override;
         void bind() override;
         void release() override;
-        void bindAsShadowMap(int texture_unit) override;
-        SingleAttachmentFBO::UniquePtr &fbo();
+        int index() const;
+        const NativeTextureWrapper &shadowMapTexture() const;
     private:
         void updateLightMatrices();
     private:
-        SingleAttachmentFBO::UniquePtr m_fbo;
+        CubeDepthMapFBO::UniquePtr m_fbo;
         std::array<Matrix4x4, 6> m_light_matrices;
         float m_constant = 1.0f, m_linear = 0.09f, m_quadratic = 0.032f;
         int m_light_index = 0;

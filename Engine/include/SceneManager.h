@@ -16,6 +16,8 @@ namespace lcf {
         Scene *get(const QString& name);
         Scene *makeGrassLand();
         Scene *testScene();
+        Scene *testPointLightShadow();
+        Scene *testDirectionalLightShadow();
         Scene *testShaderToy();
     private:
         SceneManager() = default;

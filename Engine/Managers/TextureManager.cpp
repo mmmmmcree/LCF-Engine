@@ -1,5 +1,7 @@
 #include "TextureManager.h"
 #include <QFileInfo>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
 
 lcf::TextureManager *lcf::TextureManager::instance()
 {
@@ -7,10 +9,10 @@ lcf::TextureManager *lcf::TextureManager::instance()
     return &s_instance;
 }
 
-std::unique_ptr<lcf::GLTexture> lcf::TextureManager::load(const QString &image_path, bool mirrored)
+std::unique_ptr<lcf::GLTexture> lcf::TextureManager::load(const QString &image_path, GLTexture::TextureFormat internal_format, bool mirrored)
 {
-    auto loader = new ImageLoader(image_path, this);
-    GLTexture *texture = new GLTexture(QImage(1, 1, QImage::Format_RGBA8888));
+    auto loader = new ImageLoader(image_path, mirrored, Image::Format_RGBA8888, this);
+    GLTexture *texture = new GLTexture(Image(1, 1, Image::Format_RGBA8888));
     if (not QFileInfo(image_path).exists()) {
         qDebug() << "lcf::TextureManager::load: file not found: " << image_path;
     }
@@ -21,7 +23,13 @@ std::unique_ptr<lcf::GLTexture> lcf::TextureManager::load(const QString &image_p
         auto wrap_mode_t = texture->wrapMode(GLTexture::DirectionT);
         auto filters = texture->minMagFilters();
         texture->destroy();
-        texture->setData(mirrored ? image.mirrored() : image);
+        
+        auto gl = QOpenGLContext::currentContext()->functions();
+        texture->setSize(image.width(), image.height());
+        texture->setFormat(internal_format);
+        texture->allocateStorage();
+        texture->setData(GLTexture::RGBA, QOpenGLTexture::UInt8, image.constBits());
+
         texture->setWrapMode(GLTexture::DirectionR, wrap_mode_r);
         texture->setWrapMode(GLTexture::DirectionS, wrap_mode_s);
         texture->setWrapMode(GLTexture::DirectionT, wrap_mode_t);

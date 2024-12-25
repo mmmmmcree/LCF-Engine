@@ -27,7 +27,7 @@ lcf::TextureWrapper::TextureWrapper(unsigned int texture)
 
 lcf::TextureWrapper::TextureWrapper(const NativeTextureWrapper &texture)
 {
-    if (texture.texture()) {
+    if (texture.id()) {
         m_texture = texture;
     }
 }

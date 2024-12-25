@@ -13,7 +13,7 @@ lcf::PointLight::PointLight()
     m_projection_provider.setFarPlane(100.0f);
     m_projection_provider.setFov(90.0f);
     m_light_index = s_light_count++;
-    m_fbo = SingleAttachmentFBO::createUnique(4096, 4096, SingleAttachmentFBO::CubeDepthMap);
+    m_fbo = CubeDepthMapFBO::createUnique(4096, 4096);
     m_projection_provider.setAspect(m_fbo->width(), m_fbo->height());
 }
 
@@ -73,7 +73,6 @@ void lcf::PointLight::bind()
     }
     gl->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     m_fbo->bind();
-    gl->glClear(GL_DEPTH_BUFFER_BIT);
 }
 
 void lcf::PointLight::release()
@@ -81,14 +80,14 @@ void lcf::PointLight::release()
     m_fbo->release();
 }
 
-void lcf::PointLight::bindAsShadowMap(int texture_unit)
+int lcf::PointLight::index() const
 {
-    m_fbo->texture().bind(texture_unit);
+    return m_light_index;
 }
 
-lcf::SingleAttachmentFBO::UniquePtr &lcf::PointLight::fbo()
+const lcf::NativeTextureWrapper &lcf::PointLight::shadowMapTexture() const
 {
-    return m_fbo;
+    return m_fbo->depthAttachment();
 }
 
 void lcf::PointLight::updateLightMatrices()

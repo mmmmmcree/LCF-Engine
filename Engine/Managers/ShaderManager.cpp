@@ -75,6 +75,12 @@ lcf::ShaderManager::ShaderManager() :
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
     m_configured_shaders[Simple2D] = shader;
     shader = load({
+        {GLShader::Vertex, lcf::path::shaders_prefix + "simple2D.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "post_process.frag"}, 
+    });
+    GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
+    m_configured_shaders[PostProcess] = shader;
+    shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
     });

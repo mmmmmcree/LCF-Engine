@@ -6,10 +6,8 @@
 #include <QTimer>
 #include <QMouseEvent>
 #include <QWheelEvent>
-// #include <QOpenGLFunction_4_5_Core>
-#include <QOpenGLFunctions_4_5_Core>
 
-class GLWidget : public QOpenGLWidget , protected QOpenGLFunctions_4_5_Core
+class GLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 public:

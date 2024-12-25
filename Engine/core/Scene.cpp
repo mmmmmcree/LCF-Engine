@@ -55,7 +55,6 @@ void lcf::Scene::draw()
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
     gl->glEnable(GL_DEPTH_TEST);
     this->shadowPass();
-    GlobalCamera::instance()->bind();
     Object3D::draw();
 
     gl->glDepthFunc(GL_LEQUAL); 

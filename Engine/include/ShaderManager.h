@@ -22,6 +22,7 @@ namespace lcf {
             PointShadowMap,
             AnimatedPointShadowMap,
             DepthDebug,
+            PostProcess,
             SIZE
         };
         using ShaderInfo = std::pair<GLShader::ShaderTypeBit, QString>;

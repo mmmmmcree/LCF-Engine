@@ -19,7 +19,7 @@ namespace lcf {
             DefaultSpecular,
         };
         static TextureManager *instance();
-        std::unique_ptr<GLTexture> load(const QString &image_path, bool mirroed = false);
+        std::unique_ptr<GLTexture> load(const QString &image_path, GLTexture::TextureFormat internal_format = GLTexture::SRGB8_Alpha8, bool mirrored = true);
         std::unique_ptr<GLTexture> loadSingleThread(unsigned char *data, int width, int height);
         std::unique_ptr<GLTexture> loadSingleThread(const QString &image_path, bool mirrored = false);
         void initialize(QOpenGLContext *context);

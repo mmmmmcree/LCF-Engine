@@ -10,6 +10,7 @@ out VS_OUT {
 } vs_out;
 
 uniform mat4 model;
+uniform int light_index;
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 view;
@@ -31,7 +32,7 @@ void main()
 {
     vec4 world_position = model * vec4(position, 1.0);
     gl_Position = projection * view * world_position;
-    vs_out.light_space_coord = light_data[0].light_matrix * world_position;
+    vs_out.light_space_coord = light_data[light_index].light_matrix * world_position;
     vs_out.normal = normalize(normal);
-    vs_out.light_direction = normalize(light_data[0].light_direction);
+    vs_out.light_direction = normalize(light_data[light_index].light_direction);
 }
