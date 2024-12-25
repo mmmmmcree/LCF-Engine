@@ -17,7 +17,7 @@ namespace lcf {
         const Vector3D &right() const;
         Vector3D &right();
         void setProjectionType(ProjectionType type);
-        void setViewPort(int width, int height);
+        void setViewport(int width, int height);
     protected:
         GLuint m_ubo = 0;
         Vector3D m_up = {0, 1, 0};

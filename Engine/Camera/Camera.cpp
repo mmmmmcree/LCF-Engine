@@ -52,7 +52,7 @@ void lcf::Camera::setProjectionType(ProjectionType type)
     m_projection_provider.setType(type);
 }
 
-void lcf::Camera::setViewPort(int width, int height)
+void lcf::Camera::setViewport(int width, int height)
 {
     m_projection_provider.setAspect(width, height);
 }

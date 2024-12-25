@@ -255,9 +255,9 @@ lcf::Scene * lcf::SceneManager::testPointLightShadow()
     cube->setShader(shader);
     scene->addSharedChild(cube);
     connect(scene->timer(), &QTimer::timeout, this, [=] {
-        static float d = 0;
-        point_light->translateY(qSin(d) * 0.2f);
-        d += 0.02f;
+        // static float d = 0;
+        // point_light->translateY(qSin(d) * 0.2f);
+        // d += 0.02f;
     });
     scene->timer()->start(1000 / 60);
     return scene.get();

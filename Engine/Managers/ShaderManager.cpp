@@ -11,11 +11,6 @@ lcf::ShaderManager *lcf::ShaderManager::instance()
     return &s_instance;
 }
 
-void lcf::ShaderManager::initialize()
-{
-    this->instance();
-}
-
 lcf::UniqueGLShaderProgramPtr lcf::ShaderManager::load(const ShaderInfos &shader_infos)
 {
     GLShaderProgram *shader = new GLShaderProgram;

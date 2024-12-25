@@ -28,7 +28,6 @@ namespace lcf {
         using ShaderInfo = std::pair<GLShader::ShaderTypeBit, QString>;
         using ShaderInfos = QList<ShaderInfo>;
         static ShaderManager *instance();
-        void initialize();
         UniqueGLShaderProgramPtr load(const ShaderInfos &shader_infos);
         SharedGLShaderProgramPtr load(const QString &name, const ShaderInfos &shader_infos);
         SharedGLShaderProgramPtr get(const QString &name);
