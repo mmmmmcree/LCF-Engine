@@ -19,16 +19,7 @@ void lcf::Renderer::render(Scene *scene)
     auto gl = GLFunctions::global();
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     GlobalCamera::instance()->bind();
-    if (m_msaa_enabled) {
-        m_msaa_fbo->bind();
-        scene->draw();
-        m_msaa_fbo->release();
-        m_msaa_fbo->blitTo(m_post_process_fbo.get(), FrameBufferObject::ColorAttachment);
-    } else {
-        m_post_process_fbo->bind();
-        scene->draw();
-        m_post_process_fbo->release();
-    }
+    m_render_pass_func(scene);
     m_post_process_fbo->colorAttachment().bind(0);
     m_post_process_shader_binder->bind();
     Geometry::quad()->draw();
@@ -48,6 +39,20 @@ void lcf::Renderer::enableMSAA(bool enable)
 {
     if (m_msaa_enabled == enable) { return; }
     m_msaa_enabled = enable;
+    if (enable) {
+        m_render_pass_func = [this](Scene *scene) {
+            m_msaa_fbo->bind();
+            scene->draw();
+            m_msaa_fbo->release();
+            m_msaa_fbo->blitTo(m_post_process_fbo.get(), FrameBufferObject::ColorAttachment);
+        };
+    } else {
+        m_render_pass_func = [this](Scene *scene) {
+            m_post_process_fbo->bind();
+            scene->draw();
+            m_post_process_fbo->release();
+        };
+    }
 }
 
 lcf::Renderer::Renderer()

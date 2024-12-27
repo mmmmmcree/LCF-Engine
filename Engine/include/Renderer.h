@@ -5,6 +5,7 @@
 #include "ScreenFBO.h"
 #include "GLFunctions.h"
 #include "ShaderUniformBinder.h" 
+#include <functional>
 
 namespace lcf {
     class Renderer
@@ -20,8 +21,8 @@ namespace lcf {
     private:
         MSAAFBO::UniquePtr m_msaa_fbo;  
         ScreenFBO::UniquePtr m_post_process_fbo;
-        // SharedGLShaderProgramPtr m_post_process_shader;
         ShaderUniformBinder::SharedPtr m_post_process_shader_binder;
+        std::function<void(Scene *scene)> m_render_pass_func;
         bool m_hdr_enabled = false;
         bool m_msaa_enabled = false;
     };
