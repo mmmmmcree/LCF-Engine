@@ -1,6 +1,8 @@
 #include "Renderer.h"
 #include "GlobalCamera.h"
 #include "ShaderManager.h"
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
 
 lcf::Renderer *lcf::Renderer::instance()
 {
@@ -16,7 +18,7 @@ void lcf::Renderer::setRenderSize(int width, int height)
 
 void lcf::Renderer::render(Scene *scene)
 {
-    auto gl = GLFunctions::global();
+    auto gl = QOpenGLContext::currentContext()->functions();
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     GlobalCamera::instance()->bind();
     m_render_pass_func(scene);
