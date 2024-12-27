@@ -18,6 +18,7 @@ namespace lcf {
         void enableMSAA(bool enable);
     private:
         Renderer();
+        void updateRenderPassFunction();
     private:
         MSAAFBO::UniquePtr m_msaa_fbo;  
         ScreenFBO::UniquePtr m_post_process_fbo;

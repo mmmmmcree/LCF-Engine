@@ -41,7 +41,24 @@ void lcf::Renderer::enableMSAA(bool enable)
 {
     if (m_msaa_enabled == enable) { return; }
     m_msaa_enabled = enable;
-    if (enable) {
+    this->updateRenderPassFunction();
+}
+
+lcf::Renderer::Renderer()
+{
+    this->updateRenderPassFunction();
+    m_msaa_fbo = MSAAFBO::createUnique(0, 0, 4, GLTextureFormat::RGBA);
+    m_post_process_fbo = ScreenFBO::createUnique(0, 0, GLTextureFormat::RGBA);
+    const auto &post_process_shader = ShaderManager::instance()->get(ShaderManager::PostProcess);
+    m_post_process_shader_binder = ShaderUniformBinder::createShared(post_process_shader);
+    m_post_process_shader_binder->setSingleUniform({
+        "hdr_enabled", [this] { return m_hdr_enabled; }
+    });
+}
+
+void lcf::Renderer::updateRenderPassFunction()
+{
+    if (m_msaa_enabled) {
         m_render_pass_func = [this](Scene *scene) {
             m_msaa_fbo->bind();
             scene->draw();
@@ -55,15 +72,4 @@ void lcf::Renderer::enableMSAA(bool enable)
             m_post_process_fbo->release();
         };
     }
-}
-
-lcf::Renderer::Renderer()
-{
-    m_msaa_fbo = MSAAFBO::createUnique(0, 0, 4, GLTextureFormat::RGBA);
-    m_post_process_fbo = ScreenFBO::createUnique(0, 0, GLTextureFormat::RGBA);
-    const auto &post_process_shader = ShaderManager::instance()->get(ShaderManager::PostProcess);
-    m_post_process_shader_binder = ShaderUniformBinder::createShared(post_process_shader);
-    m_post_process_shader_binder->setSingleUniform({
-        "hdr_enabled", [this] { return m_hdr_enabled; }
-    });
 }
