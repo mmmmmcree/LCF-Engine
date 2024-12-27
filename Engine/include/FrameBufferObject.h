@@ -8,6 +8,12 @@ namespace lcf {
     class FrameBufferObject
     {
     public:
+        enum AttachmentType
+        {
+            ColorAttachment = 1,
+            DepthAttachment = 1 << 1,
+            DepthStencilAttachment = 1 << 2
+        };
         using UniquePtr = std::unique_ptr<FrameBufferObject>;
         using AttachmentList = std::vector<NativeTextureWrapper>;
         static UniquePtr createUnique(int width, int height);
@@ -15,7 +21,7 @@ namespace lcf {
         virtual ~FrameBufferObject();
         void checkStatus();
         void bind();
-        void blitTo(FrameBufferObject *target, bool color, bool depth, bool stencil);
+        void blitTo(FrameBufferObject *target, AttachmentType attachment_types);
         void release();
         int width() const;
         int height() const;

@@ -23,7 +23,7 @@ void lcf::Renderer::render(Scene *scene)
         m_msaa_fbo->bind();
         scene->draw();
         m_msaa_fbo->release();
-        m_msaa_fbo->blitTo(m_post_process_fbo.get(), true, false, false);
+        m_msaa_fbo->blitTo(m_post_process_fbo.get(), FrameBufferObject::ColorAttachment);
     } else {
         m_post_process_fbo->bind();
         scene->draw();
