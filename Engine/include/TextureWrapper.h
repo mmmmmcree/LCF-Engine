@@ -22,7 +22,7 @@ namespace lcf {
         TextureWrapper(const TextureWrapper &other) = default;
         TextureWrapper &operator=(const TextureWrapper &other) = default;
         void bind(unsigned int unit = 0);
-        void release();
+        void release(unsigned int unit = 0);
         bool isValid() const;
     private:
         std::optional<_Texture> m_texture;

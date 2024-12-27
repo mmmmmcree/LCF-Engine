@@ -42,16 +42,18 @@ void lcf::AssimpLoader::run()
 lcf::MaterialController::SharedPtr lcf::AssimpLoader::processMaterial(aiMaterial *ai_material, const aiScene *scene)
 {
     MaterialController::SharedPtr mat_controller = MaterialController::createShared();
-    std::unordered_map<std::string, Image> image_map;
+    std::unordered_map<std::string, SharedImagePtr> image_map;
     for (int type = aiTextureType_DIFFUSE; type <= aiTextureType_TRANSMISSION; ++type) {
         int count = ai_material->GetTextureCount(static_cast<aiTextureType>(type));
         for (int i = 0; i < count; ++i) {
             aiString texture_path;
             ai_material->Get(AI_MATKEY_TEXTURE(static_cast<aiTextureType>(type), i), texture_path);
             if (texture_path.length == 0) { continue; }
-            qDebug() << texture_path.C_Str();
             auto iter = image_map.find(texture_path.C_Str());
-            if (iter != image_map.end()) { continue; }
+            if (iter != image_map.end()) { 
+                mat_controller->setImageData(type, iter->second);
+                continue;
+            }
             const aiTexture *ai_texture = scene->GetEmbeddedTexture(texture_path.C_Str());
             Image image;
             if (ai_texture) {
@@ -60,14 +62,15 @@ lcf::MaterialController::SharedPtr lcf::AssimpLoader::processMaterial(aiMaterial
             } else {
                 image = Image(m_path + texture_path.C_Str()).mirrored().convertToFormat(Image::Format_RGBA8888);
             }
-            image_map.insert(std::make_pair(texture_path.C_Str(), image));
-            mat_controller->setImageData(type, image);
+            SharedImagePtr img_ptr = std::make_shared<Image>(image);
+            image_map.insert(std::make_pair(texture_path.C_Str(), img_ptr));
+            mat_controller->setImageData(type, img_ptr);
         }
     }
 
     ai_real shininess;
     ai_material->Get(AI_MATKEY_SHININESS, shininess);
-    mat_controller->m_shininess = shininess;
+    mat_controller->setShininess(shininess);
     return mat_controller;
 }
 

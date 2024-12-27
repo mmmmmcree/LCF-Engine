@@ -9,6 +9,7 @@
 #include "SpotLight.h"
 #include "ShaderToyManager.h"
 #include "UserCustomMaterial.h"
+#include "LightList.h"
 
 lcf::SceneManager *lcf::SceneManager::instance()
 {
@@ -164,29 +165,49 @@ lcf::Scene *lcf::SceneManager::testScene()
     texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
     scene->setSkyboxTexture(std::move(texture));
 
-    auto directional_light = DirectionalLight::createShared();
-    directional_light->rotateX(-90.0f);
-    directional_light->setName("directional_light[0]");
-    directional_light->setColor({100.0f, 100.0f, 100.0f});
-    scene->addLight(directional_light);
-    const auto &light_as_uniform_list = directional_light->asUniformList();
+    LightList<PointLight> point_lights;
+    point_lights.addLight(PointLight::createShared());
+    point_lights[0]->setColor({100.0f, 100.0f, 100.0f});
+    point_lights[0]->setPosition({1.8f, 0.0f, 0.0f});
+    point_lights[0]->scale(0.3f);
+    scene->addLight(point_lights[0]);
+    point_lights.addLight(PointLight::createShared());
+    point_lights[1]->setColor({20.0f, 20.0f, 20.0f});
+    point_lights[1]->setPosition({-1.8f, 0.0f, 0.0f});
+    point_lights[1]->scale(0.3f);
+    scene->addLight(point_lights[1]);
+    const auto &lights_as_uniform_list = point_lights.asUniformList();
 
     Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/abandoned_warehouse_-_interior_scene.glb");
     scene->addSharedChild(room);
     room->translateZ(40.0f);
     room->scale(8.0f);
-    SharedGLShaderProgramPtr shader = ShaderManager::instance()->load({
+    SharedGLShaderProgramPtr shader = ShaderManager::instance()->get(ShaderManager::Simple3D);
+    room->setShader(shader);
+
+    shader = ShaderManager::instance()->load({
         {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
-        {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
+        {GLShader::Fragment, path::shaders_prefix + "PBR.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"directional_light_num", 1}, {"point_light_num", 0}, {"spot_light_num", 0}
+        {"directional_light_num", 0}, {"point_light_num", point_lights.size()}, {"spot_light_num", 0}
     });
     auto su_binder = ShaderUniformBinder::createShared(shader);
-    su_binder->setUniforms(light_as_uniform_list);
-    room->setShaderUniformBinder(su_binder);
+    su_binder->setUniforms(lights_as_uniform_list);
+    Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
+    scene->addSharedChild(robot);
+    robot->setShaderUniformBinder(su_binder);
+    robot->materialController()->setType(MaterialType::PBR);
+    // // robot->scale(0.01f);
 
-    
+    connect(scene->timer(), &QTimer::timeout, this, [=] {
+        static float d = 0;
+        point_lights[0]->translateY(qSin(d) * 0.1f);
+        point_lights[1]->translateY(qCos(d) * 0.1f);
+        d += 0.02f;
+    });
+    scene->timer()->start(1000 / 60);
+
     return scene.get();
 }
 
@@ -255,9 +276,9 @@ lcf::Scene * lcf::SceneManager::testPointLightShadow()
     cube->setShader(shader);
     scene->addSharedChild(cube);
     connect(scene->timer(), &QTimer::timeout, this, [=] {
-        // static float d = 0;
-        // point_light->translateY(qSin(d) * 0.2f);
-        // d += 0.02f;
+        static float d = 0;
+        point_light->translateY(qSin(d) * 0.2f);
+        d += 0.02f;
     });
     scene->timer()->start(1000 / 60);
     return scene.get();

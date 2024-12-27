@@ -68,9 +68,10 @@ void lcf::NativeTextureWrapper::bind(int unit) const
     gl->glBindTexture(m_target, m_texture);
 }
 
-void lcf::NativeTextureWrapper::release() const
+void lcf::NativeTextureWrapper::release(int unit) const
 {
     auto gl = QOpenGLContext::currentContext()->functions();
+    gl->glActiveTexture(GL_TEXTURE0 + unit);
     gl->glBindTexture(m_target, 0);
 }
 

@@ -21,6 +21,42 @@ lcf::PhongMaterial::UniquePtr lcf::MaterialController::generatePhongMaterial()
     return material;
 }
 
+lcf::PBRMaterial::UniquePtr lcf::MaterialController::generatePBRMaterial()
+{
+    auto material = PBRMaterial::UniquePtr(new lcf::PBRMaterial);
+    auto iter = m_textures.find(TextureType::BaseColor);
+    if (iter != m_textures.end()) {
+        material->setAlbedoMap(iter->second);
+        qDebug() << "setAlbedoMap";
+    }
+    iter = m_textures.find(TextureType::Metalness);
+    if (iter != m_textures.end()) {
+        material->setMetallicMap(iter->second);
+        qDebug() << "setMetallicMap";
+    }
+    iter = m_textures.find(TextureType::Roughness);
+    if (iter != m_textures.end()) {
+        material->setRoughnessMap(iter->second);
+        qDebug() << "setRoughnessMap";
+    }
+    iter = m_textures.find(TextureType::Normal);
+    if (iter != m_textures.end()) {
+        material->setNormalMap(iter->second);
+        qDebug() << "setNormalMap";
+    }
+    iter = m_textures.find(TextureType::Emissive);
+    if (iter != m_textures.end()) {
+        material->setEmissiveMap(iter->second);
+        qDebug() << "setEmissiveMap";
+    }
+    iter = m_textures.find(TextureType::AmbientOcclusion);
+    if (iter != m_textures.end()) {
+        material->setAOMap(iter->second);
+        qDebug() << "setAOMap";
+    }
+    return material;
+}
+
 lcf::UserCustomMaterial::UniquePtr lcf::MaterialController::generateUserCustomMaterial()
 {
     auto material = UserCustomMaterial::UniquePtr(new lcf::UserCustomMaterial(&m_textures));
@@ -71,7 +107,7 @@ void lcf::MaterialController::create()
     for (const auto & [type, image] : m_image_data) {
         auto iter = m_textures.find(type);
         if (iter != m_textures.end()) { continue; }
-        auto texture = GLHelper::generateTextureByTextureType(static_cast<TextureType>(type), image);
+        auto texture = GLHelper::generateTextureByTextureType(static_cast<TextureType>(type), *image);
         m_textures.emplace(std::make_pair(type, texture));
     }
     m_image_data.clear();
@@ -108,29 +144,41 @@ lcf::MaterialType lcf::MaterialController::materialType() const
     return m_material_type;
 }
 
-void lcf::MaterialController::setImageData(int texture_type, unsigned char *data, int width, int height)
+void lcf::MaterialController::setShininess(float shininess)
 {
-    Image image = dataToImage(data, width, height);
-    if (image.isNull()) { return; }
-    m_image_data.emplace_back(std::make_pair(texture_type, std::move(image)));
+    m_shininess = std::max(shininess, std::numeric_limits<float>::min()); //! shinness <= 0.0f在计算镜面反射出现bug
 }
 
-void lcf::MaterialController::setImageData(int texture_type, const Image &image)
+void lcf::MaterialController::setImageData(int type, const SharedImagePtr &image)
 {
-    if (image.isNull()) { return; }
-    m_image_data.emplace_back(std::make_pair(texture_type, image));
+    if (not image or image->isNull()) { return; }
+    m_image_data.emplace_back(std::make_pair(type, image));
 }
 
-void lcf::MaterialController::setImageData(int texture_type, Image &&image)
-{
-    if (image.isNull()) { return; }
-    m_image_data.emplace_back(std::make_pair(texture_type, std::move(image)));
-}
+// void lcf::MaterialController::setImageData(int texture_type, unsigned char *data, int width, int height)
+// {
+//     Image image = dataToImage(data, width, height);
+//     if (image.isNull()) { return; }
+//     m_image_data.emplace_back(std::make_pair(texture_type, std::move(image)));
+// }
+
+// void lcf::MaterialController::setImageData(int texture_type, const Image &image)
+// {
+//     if (image.isNull()) { return; }
+//     m_image_data.emplace_back(std::make_pair(texture_type, image));
+// }
+
+// void lcf::MaterialController::setImageData(int texture_type, Image &&image)
+// {
+//     if (image.isNull()) { return; }
+//     m_image_data.emplace_back(std::make_pair(texture_type, std::move(image)));
+// }
 
 void lcf::MaterialController::updateMaterial()
 {
     switch (m_material_type) {
         case Phong : { m_material = this->generatePhongMaterial(); } break;
         case UserCustom : { m_material = this->generateUserCustomMaterial(); } break;
+        case PBR : { m_material = this->generatePBRMaterial(); } break;
     }
 }

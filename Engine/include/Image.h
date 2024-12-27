@@ -2,9 +2,12 @@
 
 #include <QImage>
 #include <QThread>
+#include <memory>
 
 namespace lcf {
     using Image = QImage;
+
+    using SharedImagePtr = std::shared_ptr<Image>;
 
     Image dataToImage(unsigned char *data, int width, int height);
 

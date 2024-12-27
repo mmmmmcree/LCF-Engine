@@ -9,9 +9,6 @@
 #include "Constants.h"
 #include "SceneManager.h"
 #include "GLFunctions.h"
-#include "MSAAFBO.h"
-#include "RegularFBO.h"
-#include "HDRFBO.h"
 #include "Renderer.h"
 
 using namespace lcf;
@@ -34,11 +31,13 @@ void GLWidget::initializeGL()
     SceneManager::instance()->initialize(this->context());
     ModelManager::instance()->initialize(this->context());
     // auto scene = SceneManager::instance()->makeGrassLand();
-    auto scene = SceneManager::instance()->testPointLightShadow();
-    // auto scene = SceneManager::instance()->testScene();
+    // auto scene = SceneManager::instance()->testPointLightShadow();
+    auto scene = SceneManager::instance()->testScene();
     // auto scene = SceneManager::instance()->testDirectionalLightShadow();
     // auto scene = SceneManager::instance()->testShaderToy();
     Scene::setCurrent(scene);
+    Renderer::instance()->enableHDR(true);
+    Renderer::instance()->enableMSAA(true);
 }
 
 void GLWidget::paintGL()

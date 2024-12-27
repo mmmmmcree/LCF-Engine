@@ -5,6 +5,7 @@
 #include "PhongMaterial.h"
 #include "Define.h"
 #include "UserCustomMaterial.h"
+#include "PBRMaterial.h"
 
 namespace lcf {
     class MaterialController
@@ -12,7 +13,7 @@ namespace lcf {
         friend class AssimpLoader;
     public:
         using TextureInfoMap = std::map<int, TextureWrapper>;
-        using TextureDataInfo = std::pair<int, Image>;
+        using TextureDataInfo = std::pair<int, SharedImagePtr>;
         using TextureDataInfoList = std::vector<TextureDataInfo>;
         using SharedPtr = std::shared_ptr<MaterialController>;
         MaterialController() = default;
@@ -27,12 +28,15 @@ namespace lcf {
         const UniformList &asUniformList() const;
         void setType(MaterialType type);
         MaterialType materialType() const;
+        void setShininess(float shininess);
     private:
-        void setImageData(int texture_type, unsigned char* data, int width, int height);
-        void setImageData(int texture_type, const Image& image);
-        void setImageData(int texture_type, Image&& image);
+        void setImageData(int type, const SharedImagePtr &image);
+        // void setImageData(int texture_type, unsigned char* data, int width, int height);
+        // void setImageData(int texture_type, const Image& image);
+        // void setImageData(int texture_type, Image&& image);
         void updateMaterial();
         PhongMaterial::UniquePtr generatePhongMaterial();
+        PBRMaterial::UniquePtr generatePBRMaterial();
         UserCustomMaterial::UniquePtr generateUserCustomMaterial();
     private:
         MaterialType m_material_type = MaterialType::Phong;

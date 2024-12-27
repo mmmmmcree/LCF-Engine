@@ -120,6 +120,7 @@ namespace lcf {
     {
         UserCustom,
         Phong,
+        PBR
     };
 
     enum LightType

@@ -22,7 +22,7 @@ namespace lcf {
         void update();
         GLuint texture() const;
         void bind(uint unit = 0);
-        void release();
+        void release(uint unit = 0);
     private:
         int m_width, m_height;
         ShaderToyBufferList m_buffers;

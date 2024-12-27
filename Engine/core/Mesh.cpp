@@ -40,9 +40,9 @@ void lcf::Mesh::draw()
     Object3D::draw();
     if (not m_shader_uniform_binder) { return; }
     if (not m_geometry->isCreated()) { return; }
+    m_shader_uniform_binder->setUniforms(m_material_controller->asUniformList());
     m_shader_uniform_binder->bind();
     m_material_controller->bind();
-    m_shader_uniform_binder->setUniforms(m_material_controller->asUniformList());
     this->_draw(m_shader_uniform_binder->shader().get());
     m_material_controller->release();
     m_shader_uniform_binder->release();

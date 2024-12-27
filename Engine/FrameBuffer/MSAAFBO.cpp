@@ -30,6 +30,7 @@ void lcf::MSAAFBO::setSamples(int samples)
 
 void lcf::MSAAFBO::setColorFormat(GLTextureFormat format)
 {
+    if (m_color_format == format) { return; }
     m_color_format = format;
     this->setColorAttachment(0, GLHelper::generateMSAATexture(m_width, m_height, m_samples, m_color_format));
 }

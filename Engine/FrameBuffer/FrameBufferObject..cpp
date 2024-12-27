@@ -68,6 +68,24 @@ void lcf::FrameBufferObject::bind()
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
+void lcf::FrameBufferObject::blitTo(FrameBufferObject *target, bool color, bool depth, bool stencil)
+{
+    auto gl = QOpenGLContext::currentContext()->extraFunctions();
+    gl->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_last_bound_fbo);
+    gl->glBindFramebuffer(GL_READ_FRAMEBUFFER, this->id());
+    gl->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target->id());
+    if (color) {
+        gl->glBlitFramebuffer(0, 0, this->width(), this->height(), 0, 0, target->width(), target->height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+    }
+    if (depth) {
+        gl->glBlitFramebuffer(0, 0, this->width(), this->height(), 0, 0, target->width(), target->height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    }
+    if (stencil) {
+        gl->glBlitFramebuffer(0, 0, this->width(), this->height(), 0, 0, target->width(), target->height(), GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    }
+    gl->glBindFramebuffer(GL_FRAMEBUFFER, m_last_bound_fbo);
+}
+
 void lcf::FrameBufferObject::release()
 {
     auto gl = QOpenGLContext::currentContext()->functions();

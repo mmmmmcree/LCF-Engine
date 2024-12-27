@@ -15,6 +15,7 @@ namespace lcf {
         virtual ~FrameBufferObject();
         void checkStatus();
         void bind();
+        void blitTo(FrameBufferObject *target, bool color, bool depth, bool stencil);
         void release();
         int width() const;
         int height() const;

@@ -40,13 +40,21 @@ void lcf::TextureWrapper::bind(unsigned int unit)
     }, m_texture.value());
 }
 
-void lcf::TextureWrapper::release()
+void lcf::TextureWrapper::release(unsigned int unit)
 {
     if (not m_texture.has_value()) { return; }
-    std::visit([](auto&& arg) {
-        arg->release();
+    std::visit([unit](auto&& arg) {
+        arg->release(unit);
     }, m_texture.value());
 }
+
+// void lcf::TextureWrapper::release()
+// {
+//     if (not m_texture.has_value()) { return; }
+//     std::visit([](auto&& arg) {
+//         arg->release();
+//     }, m_texture.value());
+// }
 
 bool lcf::TextureWrapper::isValid() const
 {

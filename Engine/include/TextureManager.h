@@ -17,6 +17,11 @@ namespace lcf {
             DefaultDiffuse,
             DefaultNormal,
             DefaultSpecular,
+            DefaultAlbedo,
+            DefaultEmissive,
+            DefaultRoughness,
+            DefaultMetallic,
+            DefaultAO,
         };
         static TextureManager *instance();
         std::unique_ptr<GLTexture> load(const QString &image_path, GLTexture::TextureFormat internal_format = GLTexture::SRGB8_Alpha8, bool mirrored = true);

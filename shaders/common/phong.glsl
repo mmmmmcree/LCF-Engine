@@ -1,35 +1,4 @@
-struct DirectionalLight
-{
-    vec3 color;
-    vec3 direction;
-    float diffuse_intensity;
-    float specular_intensity;
-    float ambient_intensity;
-};
-
-struct PointLight
-{
-    vec3 color;
-    vec3 position;
-    float constant;
-    float linear;
-    float quadratic;
-    float diffuse_intensity;
-    float specular_intensity;
-    float ambient_intensity;
-};
-
-struct SpotLight
-{
-    vec3 color;
-    vec3 position;
-    vec3 direction;
-    float cos_inner;
-    float cos_outer;
-    float diffuse_intensity;
-    float specular_intensity;
-    float ambient_intensity;
-};
+#include "common/Lights.glsl"
 
 struct Material
 {
@@ -62,6 +31,7 @@ vec3 calcDirectionalLight(DirectionalLight light, Material material, vec3 normal
     vec3 specular_color = vec3(specular_mask * specular_factor * light.specular_intensity);
     vec3 ambient_color = object_color * light.ambient_intensity;
     vec3 color = (diffuse_color + specular_color + ambient_color) * light.color;
+    // color = vec3(specular_mask);
     return color;
 }
 

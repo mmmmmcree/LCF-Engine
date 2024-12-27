@@ -8,6 +8,14 @@ void lcf::UserCustomMaterial::bind()
     }
 }
 
+void lcf::UserCustomMaterial::release()
+{
+    int unit = 0;
+    for (auto &[type, texture] : *m_textures) {
+        texture.release(unit++);
+    }
+}
+
 lcf::MaterialType lcf::UserCustomMaterial::type() const
 {
     return MaterialType::UserCustom;

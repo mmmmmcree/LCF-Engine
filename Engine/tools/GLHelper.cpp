@@ -138,8 +138,11 @@ lcf::SharedGLTexturePtr lcf::GLHelper::generateTextureByTextureType(TextureType 
     texture->setSize(width, height);
     if (type == Diffuse or type == Emissive or type == BaseColor or type == EmissionColor) {
         texture->setFormat(GLTexture::SRGB8_Alpha8);
+        texture->setMinMagFilters(GLTexture::LinearMipMapLinear, GLTexture::LinearMipMapLinear);
+        texture->generateMipMaps();
     } else {
         texture->setFormat(GLTexture::RGBA8_UNorm);
+        texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
     }
     texture->allocateStorage();
     texture->setData(GLTexture::RGBA, QOpenGLTexture::UInt8, data);

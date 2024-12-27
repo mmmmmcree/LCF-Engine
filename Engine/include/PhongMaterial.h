@@ -11,8 +11,6 @@ namespace lcf {
         friend class MaterialController;
     public:
         using UniquePtr = std::unique_ptr<PhongMaterial>;
-        using TextureList = std::vector<TextureWrapper>;
-        void bind() override;
         MaterialType type() const override;
         void setDiffuseMap(TextureWrapper texture);
         void setSpecularMap(TextureWrapper texture);
@@ -21,7 +19,6 @@ namespace lcf {
     private:
         PhongMaterial();
     private:
-        TextureList m_textures;
         float m_shininess = 32.0f;
     };
 }

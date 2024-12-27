@@ -66,6 +66,11 @@ lcf::SharedGLTexturePtr lcf::TextureManager::get(Type type)
         case DefaultDiffuse : { texture = m_textures["default_diffuse"]; } break;
         case DefaultSpecular : { texture = m_textures["default_specular"]; } break;
         case DefaultNormal : { texture = m_textures["default_normal"]; } break;
+        case DefaultAlbedo : { texture = m_textures["default_diffuse"]; } break;
+        case DefaultMetallic : { texture = m_textures["default_specular"]; } break;
+        case DefaultRoughness : { texture = m_textures["default_specular"]; } break;
+        case DefaultEmissive : { texture = m_textures["default_diffuse"]; } break;
+        case DefaultAO : { texture = m_textures["default_specular"]; } break;
     }
     return texture;
 }

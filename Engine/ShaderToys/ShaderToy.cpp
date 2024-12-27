@@ -86,9 +86,16 @@ void lcf::ShaderToy::bind(uint unit)
     gl->glBindTexture(GL_TEXTURE_2D, this->texture());
 }
 
-void lcf::ShaderToy::release()
+void lcf::ShaderToy::release(uint unit)
 {
     auto gl = QOpenGLContext::currentContext()->functions();
-    gl->glActiveTexture(GL_TEXTURE0);
+    gl->glActiveTexture(GL_TEXTURE0 + unit);
     gl->glBindTexture(GL_TEXTURE_2D, 0);
 }
+
+// void lcf::ShaderToy::release()
+// {
+//     auto gl = QOpenGLContext::currentContext()->functions();
+//     gl->glActiveTexture(GL_TEXTURE0);
+//     gl->glBindTexture(GL_TEXTURE_2D, 0);
+// }

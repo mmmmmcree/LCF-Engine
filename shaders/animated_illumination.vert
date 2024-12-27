@@ -14,7 +14,8 @@ out VS_OUT {
     vec3 color;
     vec3 view_direction;
     vec3 world_position;
-    mat3 TBN;
+    vec3 T;
+    vec3 B;
 } vs_out;
 
 uniform mat4 model;
@@ -39,5 +40,6 @@ void main()
     vec3 N = normalize(normal_matrix * normal);
     vec3 B = cross(N, T);
     vs_out.normal = N;
-    vs_out.TBN = mat3(T, B, N);
+    vs_out.T = T;
+    vs_out.B = B;
 }

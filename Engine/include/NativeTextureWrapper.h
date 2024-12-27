@@ -16,7 +16,7 @@ namespace lcf {
         void setTarget(int target);
         int target() const;
         void bind(int unit) const;
-        void release() const;
+        void release(int unit) const;
         unsigned int id() const;
     private:
         unsigned int m_texture = 0;

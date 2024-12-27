@@ -10,6 +10,7 @@ public:
         Orthographic
     };
     ProjectionProvider();
+    ProjectionProvider(const ProjectionProvider &other) = default;
     const QMatrix4x4 &projectionMatrix() const;
     void setType(Type type);
     void setOrthoSize(float size);
@@ -24,7 +25,6 @@ public:
 private:
     Type m_type;
     float m_fov, m_aspect, m_near, m_far;
-    // float m_left, m_right, m_bottom, m_top;
     float m_ortho_size;
     float m_scale, m_scale_speed;
     QMatrix4x4 m_projection;
