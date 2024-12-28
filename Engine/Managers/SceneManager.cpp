@@ -9,7 +9,7 @@
 #include "SpotLight.h"
 #include "ShaderToyManager.h"
 #include "UserCustomMaterial.h"
-#include "LightList.h"
+#include "LightArray.h"
 
 lcf::SceneManager *lcf::SceneManager::instance()
 {
@@ -161,22 +161,23 @@ lcf::Scene *lcf::SceneManager::testScene()
     static QString scene_name = "test";
     if (m_scenes.find(scene_name) != m_scenes.end()) { return m_scenes[scene_name].get(); }
     auto &scene = m_scenes.emplace(std::make_pair(scene_name, new Scene)).first->second;
-    UniqueGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "bk.jpg");
+    SharedGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "bk.jpg");
     texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-    scene->setSkyboxTexture(std::move(texture));
+    scene->setSkyboxTexture(texture);
 
-    LightList<PointLight> point_lights;
-    point_lights.addLight(PointLight::createShared());
-    point_lights[0]->setColor({100.0f, 100.0f, 100.0f});
-    point_lights[0]->setPosition({1.8f, 0.0f, 0.0f});
-    point_lights[0]->scale(0.3f);
-    scene->addLight(point_lights[0]);
-    point_lights.addLight(PointLight::createShared());
-    point_lights[1]->setColor({20.0f, 20.0f, 20.0f});
-    point_lights[1]->setPosition({-1.8f, 0.0f, 0.0f});
-    point_lights[1]->scale(0.3f);
-    scene->addLight(point_lights[1]);
-    const auto &lights_as_uniform_list = point_lights.asUniformList();
+    LightArray lights;
+    PointLight::SharedPtr point_light0 = lights.addPointLight();
+    point_light0->setColor({100.0f, 100.0f, 100.0f});
+    point_light0->setPosition({1.8f, 0.0f, 0.0f});
+    point_light0->scale(0.3f);
+    PointLight::SharedPtr point_light1 = lights.addPointLight();
+    point_light1->setColor({200.0f, 200.0f, 200.0f});
+    point_light1->setPosition({-1.8f, 0.0f, 0.0f});
+    point_light1->scale(0.3f);
+    for (const auto &light : lights.all()) {
+        scene->addSharedChild(light);
+    }
+    const auto &lights_as_uniform_list = lights.asUniformList();
 
     Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/abandoned_warehouse_-_interior_scene.glb");
     scene->addSharedChild(room);
@@ -190,7 +191,9 @@ lcf::Scene *lcf::SceneManager::testScene()
         {GLShader::Fragment, path::shaders_prefix + "PBR.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
-        {"directional_light_num", 0}, {"point_light_num", point_lights.size()}, {"spot_light_num", 0}
+        {"directional_light_num", lights.directionalLightCount()},
+        {"point_light_num", lights.pointLightCount()},
+        {"spot_light_num", lights.spotLightCount()}
     });
     auto su_binder = ShaderUniformBinder::createShared(shader);
     su_binder->setUniforms(lights_as_uniform_list);
@@ -198,12 +201,11 @@ lcf::Scene *lcf::SceneManager::testScene()
     scene->addSharedChild(robot);
     robot->setShaderUniformBinder(su_binder);
     robot->materialController()->setType(MaterialType::PBR);
-    // // robot->scale(0.01f);
 
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         static float d = 0;
-        point_lights[0]->translateY(qSin(d) * 0.1f);
-        point_lights[1]->translateY(qCos(d) * 0.1f);
+        point_light0->translateY(qSin(d) * 0.1f);
+        point_light1->translateY(qCos(d) * 0.1f);
         d += 0.02f;
     });
     scene->timer()->start(1000 / 60);

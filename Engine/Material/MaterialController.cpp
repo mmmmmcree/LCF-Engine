@@ -27,32 +27,26 @@ lcf::PBRMaterial::UniquePtr lcf::MaterialController::generatePBRMaterial()
     auto iter = m_textures.find(TextureType::BaseColor);
     if (iter != m_textures.end()) {
         material->setAlbedoMap(iter->second);
-        qDebug() << "setAlbedoMap";
     }
     iter = m_textures.find(TextureType::Metalness);
     if (iter != m_textures.end()) {
         material->setMetallicMap(iter->second);
-        qDebug() << "setMetallicMap";
     }
     iter = m_textures.find(TextureType::Roughness);
     if (iter != m_textures.end()) {
         material->setRoughnessMap(iter->second);
-        qDebug() << "setRoughnessMap";
     }
     iter = m_textures.find(TextureType::Normal);
     if (iter != m_textures.end()) {
         material->setNormalMap(iter->second);
-        qDebug() << "setNormalMap";
     }
     iter = m_textures.find(TextureType::Emissive);
     if (iter != m_textures.end()) {
         material->setEmissiveMap(iter->second);
-        qDebug() << "setEmissiveMap";
     }
     iter = m_textures.find(TextureType::AmbientOcclusion);
     if (iter != m_textures.end()) {
         material->setAOMap(iter->second);
-        qDebug() << "setAOMap";
     }
     return material;
 }

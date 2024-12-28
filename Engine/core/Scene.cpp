@@ -45,7 +45,7 @@ void lcf::Scene::addLight(const Light::SharedPtr &light)
 
 void lcf::Scene::addSharedChild(const Object3D::SharedPtr &child)
 {
-    if (not child) { return; }
+    if (not child or child->parent() == this) { return; }
     child->setParent(this);
     m_shared_children.emplace_back(child);
 }

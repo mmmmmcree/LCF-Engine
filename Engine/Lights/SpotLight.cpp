@@ -1,5 +1,10 @@
 #include "SpotLight.h"
 
+lcf::SpotLight::SharedPtr lcf::SpotLight::createShared()
+{
+    return std::make_shared<lcf::SpotLight>();
+}
+
 lcf::LightType lcf::SpotLight::lightType() const
 {
     return LightType::Spot;

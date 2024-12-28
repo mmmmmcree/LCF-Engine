@@ -8,6 +8,7 @@ namespace lcf {
     {
     public:
         using SharedPtr = std::shared_ptr<SpotLight>;
+        static SharedPtr createShared();
         SpotLight() = default;
         LightType lightType() const override;
         UniformList asUniformList() override;
