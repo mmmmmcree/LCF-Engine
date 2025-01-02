@@ -24,10 +24,10 @@ lcf::PointLight::SharedPtr lcf::PointLight::createShared()
 
 void lcf::PointLight::draw()
 {
-    static auto shader = ShaderManager::instance()->get(ShaderManager::GeometryDebug);
+    static auto shader = ShaderManager::instance()->get(ShaderManager::SingleColor);
     shader->bind();
     shader->setUniformValue("model", this->worldMatrix());
-    shader->setUniformValue("normal_matrix", this->normalMatrix());
+    shader->setUniformValue("color", m_color);
     Geometry::sphere()->draw();
     shader->release();
 }

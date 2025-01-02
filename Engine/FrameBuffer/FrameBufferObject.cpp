@@ -68,15 +68,14 @@ void lcf::FrameBufferObject::bind()
     gl->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void lcf::FrameBufferObject::blitTo(FrameBufferObject *target, AttachmentType attachment_types)
+void lcf::FrameBufferObject::blitTo(FrameBufferObject *target, AttachmentType attachment_types, GLTextureFilter color_filter)
 {
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
     gl->glGetIntegerv(GL_FRAMEBUFFER_BINDING, &m_last_bound_fbo);
     gl->glBindFramebuffer(GL_READ_FRAMEBUFFER, this->id());
     gl->glBindFramebuffer(GL_DRAW_FRAMEBUFFER, target->id());
     if (attachment_types & ColorAttachment) {
-        int filter = (this->width() == target->width() && this->height() == target->height()) ? GL_NEAREST : GL_LINEAR;
-        gl->glBlitFramebuffer(0, 0, this->width(), this->height(), 0, 0, target->width(), target->height(), GL_COLOR_BUFFER_BIT, filter);
+        gl->glBlitFramebuffer(0, 0, this->width(), this->height(), 0, 0, target->width(), target->height(), GL_COLOR_BUFFER_BIT, color_filter);
     }
     if (attachment_types & DepthAttachment) {
         gl->glBlitFramebuffer(0, 0, this->width(), this->height(), 0, 0, target->width(), target->height(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);

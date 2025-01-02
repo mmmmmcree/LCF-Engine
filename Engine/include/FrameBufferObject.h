@@ -18,10 +18,11 @@ namespace lcf {
         using AttachmentList = std::vector<NativeTextureWrapper>;
         static UniquePtr createUnique(int width, int height);
         FrameBufferObject(int width, int height);
+        FrameBufferObject(const FrameBufferObject &) = delete;
         virtual ~FrameBufferObject();
         void checkStatus();
         void bind();
-        void blitTo(FrameBufferObject *target, AttachmentType attachment_types);
+        void blitTo(FrameBufferObject *target, AttachmentType attachment_types, GLTextureFilter color_filter = GLTextureFilter::Nearest);
         void release();
         int width() const;
         int height() const;

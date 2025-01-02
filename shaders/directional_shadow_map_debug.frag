@@ -49,7 +49,7 @@ void poissonDiskSamples(vec2 random_seed){
 	const float da = 3.883222077450933;
 	float dr = radius;
 	for(int i = 0; i < samples_num; i++){
-		disk[i] = vec2(cos(angle), sin(angle)) * pow(radius, tightness);
+		disk[i] = vec2(cos(angle), sin(angle)) * radius;
 		radius += dr;
 		angle += da;
 	}

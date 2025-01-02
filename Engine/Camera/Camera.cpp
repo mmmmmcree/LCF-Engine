@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include <QOpenGLContext>
 #include <QOpenGLExtraFunctions>
+#include <QOpenGLBuffer>
 
 void lcf::Camera::bind()
 {
@@ -10,16 +11,15 @@ void lcf::Camera::bind()
     m_view.lookAt(this->localPosition(), this->localPosition() + this->front(), m_up);
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
     if (not m_ubo) {
-        gl->glGenBuffers(1, &m_ubo);
-        gl->glBindBuffer(GL_UNIFORM_BUFFER, m_ubo);
-        gl->glBufferData(GL_UNIFORM_BUFFER, 144, nullptr, GL_DYNAMIC_DRAW);
+        m_ubo.setBindingPoint(0);
+        m_ubo.setDataSizes({64, 64, 16});
+        m_ubo.create();
     }
-    gl->glBindBuffer(GL_UNIFORM_BUFFER, m_ubo);
-    gl->glBindBufferRange(GL_UNIFORM_BUFFER, 0, m_ubo, 0, 144);
-    gl->glBufferSubData(GL_UNIFORM_BUFFER, 0, 64, m_view.constData());
-    gl->glBufferSubData(GL_UNIFORM_BUFFER, 64, 64, m_projection_provider.projectionMatrix().constData());
-    gl->glBufferSubData(GL_UNIFORM_BUFFER, 128, 16, &this->localPosition());
-    gl->glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    m_ubo.bind();
+    m_ubo.updateData(0, m_view.constData());
+    m_ubo.updateData(1, m_projection_provider.projectionMatrix().constData());
+    m_ubo.updateData(2, &this->localPosition());
+    m_ubo.release();
 }
 
 lcf::Vector3D lcf::Camera::front()

@@ -88,6 +88,11 @@ lcf::ShaderManager::ShaderManager() :
     });
     m_configured_shaders[GeometryDebug] = shader;
     shader = load({
+        {GLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "single_color.frag"}, 
+    });
+    m_configured_shaders[SingleColor] = shader;
+    shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "skybox.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "sampler_spherical.frag"}, 
     });

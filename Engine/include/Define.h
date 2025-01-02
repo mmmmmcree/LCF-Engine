@@ -116,6 +116,12 @@ namespace lcf {
         UserCustom15,
     };
 
+    enum GLTextureFilter
+    {
+        Nearest = 0x2600,
+        Linear = 0x2601,
+    };
+
     enum MaterialType
     {
         UserCustom,

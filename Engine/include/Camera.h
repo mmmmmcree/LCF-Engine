@@ -2,6 +2,7 @@
 
 #include "Object3D.h"
 #include "ProjectionProvider.h"
+#include "UniformBufferObject.h"
 
 namespace lcf {
     class Camera : public Object3D
@@ -19,7 +20,7 @@ namespace lcf {
         void setProjectionType(ProjectionType type);
         void setViewport(int width, int height);
     protected:
-        GLuint m_ubo = 0;
+        UniformBufferObject m_ubo;
         Vector3D m_up = {0, 1, 0};
         Vector3D m_right = {1, 0, 0};
         Matrix4x4 m_view;

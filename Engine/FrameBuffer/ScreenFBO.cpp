@@ -16,6 +16,7 @@ lcf::ScreenFBO::ScreenFBO(int width, int height, GLTextureFormat color_format) :
 
 void lcf::ScreenFBO::resize(int width, int height)
 {
+    if (m_width == width and m_height == height) { return; }
     m_width = width;
     m_height = height;
     this->update();

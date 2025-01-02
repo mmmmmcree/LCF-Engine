@@ -16,6 +16,7 @@ namespace lcf {
             Simple2D,
             Simple3D,
             GeometryDebug,
+            SingleColor,
             Skybox,
             DirectionalShadowMap,
             AnimatedDirectionalShadowMap,

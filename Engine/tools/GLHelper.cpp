@@ -36,6 +36,8 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateColorTexture(int width, int hei
     gl->glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     gl->glBindTexture(GL_TEXTURE_2D, 0);
     NativeTextureWrapper texture_wrapper(texture);
     texture_wrapper.setTarget(GL_TEXTURE_2D);
@@ -120,6 +122,7 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateFloatingPointTexture(int width,
     gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
     gl->glBindTexture(GL_TEXTURE_2D, 0);
     NativeTextureWrapper texture_wrapper(texture);
     texture_wrapper.setTarget(GL_TEXTURE_2D);
