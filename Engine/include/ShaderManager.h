@@ -38,6 +38,7 @@ namespace lcf {
         ShaderManager();
     public:
         QString readShaderSourceCode(const QString &file_path); // 给shader文件添加include功能
+        QString _readShaderSourceCode(const QString &file_path, QSet<QString> &included_files); // 给shader文件添加include功能
     private:
         std::unordered_map<QString, SharedGLShaderProgramPtr> m_shader_map;
         std::vector<SharedGLShaderProgramPtr> m_configured_shaders;

@@ -15,7 +15,7 @@ lcf::UniqueGLShaderProgramPtr lcf::ShaderManager::load(const ShaderInfos &shader
 {
     GLShaderProgram *shader = new GLShaderProgram;
     for (const auto &[type, path] : shader_infos) {
-        shader->addShaderFromSourceCode(type, readShaderSourceCode(path));
+        shader->addShaderFromSourceCode(type, this->readShaderSourceCode(path));
     }
     if (not shader->link()) {
         qDebug() << shader->log();
@@ -128,7 +128,13 @@ lcf::ShaderManager::ShaderManager() :
     m_configured_shaders[DepthDebug] = shader;
 }
 
-QString lcf::ShaderManager::readShaderSourceCode(const QString &file_path)
+QString lcf::ShaderManager::readShaderSourceCode(const QString & file_path)
+{
+    QSet<QString> included_files;
+    return this->_readShaderSourceCode(file_path, included_files);
+}
+
+QString lcf::ShaderManager::_readShaderSourceCode(const QString &file_path, QSet<QString> &included_files)
 {
     QFile file(file_path);
     if (not file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -141,12 +147,15 @@ QString lcf::ShaderManager::readShaderSourceCode(const QString &file_path)
     while (not in.atEnd()) {
         QString line = in.readLine();
         auto match = include_regex.match(line);
-        if (match.hasMatch()) {
-            QString include_file_path = lcf::path::shaders_prefix + match.captured(1);
-            result += readShaderSourceCode(include_file_path);
-        } else {
+        if (not match.hasMatch()) {
             result += line + '\n';
+            continue;
         }
+        QString include_file_name = match.captured(1);
+        if (included_files.contains(include_file_name)) { continue; }
+        else { included_files.insert(include_file_name); }
+        QString include_file_path = lcf::path::shaders_prefix + "include/" + include_file_name;
+        result += _readShaderSourceCode(include_file_path, included_files);
     }
     return result;
 }

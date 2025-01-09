@@ -33,5 +33,7 @@ namespace lcf {
 
         static SharedGLTexturePtr generateTextureByTextureType(TextureType type, const Image &image);
         static SharedGLTexturePtr generateTextureByTextureType(TextureType type, int width, int height, const unsigned char *data);
+
+        static int maximumTextureUnits();
     };
 }

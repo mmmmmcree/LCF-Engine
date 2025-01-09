@@ -151,3 +151,11 @@ lcf::SharedGLTexturePtr lcf::GLHelper::generateTextureByTextureType(TextureType 
     texture->setData(GLTexture::RGBA, QOpenGLTexture::UInt8, data);
     return texture;
 }
+
+int lcf::GLHelper::maximumTextureUnits()
+{
+    auto gl = QOpenGLContext::currentContext()->functions();
+    int max_texture_units;
+    gl->glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
+    return max_texture_units;
+}

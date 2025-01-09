@@ -9,11 +9,9 @@
 
 lcf::Scene::Scene() : Object3D()
 {
-    // UserCustomMaterial::SharedPtr material = std::make_shared<UserCustomMaterial>();
     m_skybox = std::make_unique<Mesh>(Mesh::GeometryPtr(Geometry::cube()));
     m_skybox->setShader(ShaderManager::instance()->get(ShaderManager::Skybox));
     m_skybox->materialController()->setType(MaterialType::UserCustom);
-    // m_skybox->setMaterial(material);
 }
 
 lcf::Scene *lcf::Scene::global()

@@ -54,7 +54,6 @@ namespace lcf {
         bool castShadow() const;
     protected:
         void updateWorldMatrix();
-        void notifyWorldMatrixUpdatedToChildren();
         void addChildToChildren(Object3D* child);
         void removeChild(Object3D* child);
     protected:

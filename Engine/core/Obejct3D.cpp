@@ -267,16 +267,8 @@ void lcf::Object3D::updateWorldMatrix()
     if (m_world_need_update) { return; }
     m_world_need_update = true;
     m_normal_matrix_need_update = true;
-    this->notifyWorldMatrixUpdatedToChildren();
-}
-
-void lcf::Object3D::notifyWorldMatrixUpdatedToChildren()
-{
     for (auto child : m_children) {
-        if (child->m_world_need_update) { continue; }
-        child->m_world_need_update = true;
-        child->m_normal_matrix_need_update = true;
-        child->notifyWorldMatrixUpdatedToChildren();
+        child->updateWorldMatrix();
     }
 }
 

@@ -69,7 +69,7 @@ lcf::SharedGLTexturePtr lcf::TextureManager::get(Type type)
         case DefaultAlbedo : { texture = m_textures["default_diffuse"]; } break;
         case DefaultMetallic : { texture = m_textures["default_specular"]; } break;
         case DefaultRoughness : { texture = m_textures["default_specular"]; } break;
-        case DefaultEmissive : { texture = m_textures["default_diffuse"]; } break;
+        case DefaultEmissive : { texture = m_textures["default_specular"]; } break;
         case DefaultAO : { texture = m_textures["default_specular"]; } break;
     }
     return texture;
@@ -86,7 +86,7 @@ lcf::TextureManager::TextureManager()
     texture = std::make_shared<GLTexture>(image);
     texture->setWrapMode(GLTexture::ClampToEdge);
     m_textures.insert({"default_specular", texture});
-    image.fill(Qt::blue);
+    image.fill(QColor(128, 128, 255));
     texture = std::make_shared<GLTexture>(image);
     texture->setWrapMode(GLTexture::ClampToEdge);
     m_textures.insert({"default_normal", texture});

@@ -31,9 +31,6 @@ namespace lcf {
         void setShininess(float shininess);
     private:
         void setImageData(int type, const SharedImagePtr &image);
-        // void setImageData(int texture_type, unsigned char* data, int width, int height);
-        // void setImageData(int texture_type, const Image& image);
-        // void setImageData(int texture_type, Image&& image);
         void updateMaterial();
         PhongMaterial::UniquePtr generatePhongMaterial();
         PBRMaterial::UniquePtr generatePBRMaterial();

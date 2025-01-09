@@ -1,4 +1,4 @@
-#include "common/Lights.glsl"
+#include "Lights.glsl"
 
 struct Material
 {
@@ -27,11 +27,9 @@ vec3 calcDirectionalLight(DirectionalLight light, Material material, vec3 normal
     vec3 light_direction = normalize(light.direction);
     float diffuse_factor = calcDiffuse(normal, light_direction);
     float specular_factor = calcSpecular(normal, light_direction, view_direction, material.shininess, specular_mask);
-    vec3 diffuse_color = object_color * diffuse_factor * light.diffuse_intensity;
-    vec3 specular_color = vec3(specular_mask * specular_factor * light.specular_intensity);
-    vec3 ambient_color = object_color * light.ambient_intensity;
-    vec3 color = (diffuse_color + specular_color + ambient_color) * light.color;
-    // color = vec3(specular_mask);
+    vec3 diffuse_color = object_color * diffuse_factor;
+    vec3 specular_color = vec3(specular_mask * specular_factor);
+    vec3 color = (diffuse_color + specular_color) * light.color * light.intensity;
     return color;
 }
 
@@ -42,10 +40,9 @@ vec3 calcPointLight(PointLight light, Material material, vec3 normal, vec3 view_
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
     float diffuse_factor = calcDiffuse(normal, light_direction);
     float specular_factor = calcSpecular(normal, light_direction, view_direction, material.shininess, specular_mask);
-    vec3 diffuse_color = object_color * diffuse_factor * light.diffuse_intensity;
-    vec3 specular_color = vec3(specular_mask * specular_factor * light.specular_intensity);
-    vec3 ambient_color = object_color * light.ambient_intensity;
-    vec3 color = (diffuse_color + specular_color + ambient_color) * light.color * attenuation;
+    vec3 diffuse_color = object_color * diffuse_factor;
+    vec3 specular_color = vec3(specular_mask * specular_factor);
+    vec3 color = (diffuse_color + specular_color) * light.color * light.intensity * attenuation;
     return color;
 }
 
@@ -57,9 +54,8 @@ vec3 calcSpotLight(SpotLight light, Material material, vec3 normal, vec3 view_di
     float attenuation = clamp((cos_gamma - light.cos_outer) / (light.cos_inner - light.cos_outer), 0.0, 1.0);
     float diffuse_factor = calcDiffuse(normal, light_direction);
     float specular_factor = calcSpecular(normal, light_direction, view_direction, material.shininess, specular_mask);
-    vec3 diffuse_color = object_color * diffuse_factor * attenuation * light.diffuse_intensity;
-    vec3 specular_color = vec3(specular_mask * specular_factor * attenuation * light.specular_intensity);
-    vec3 ambient_color = object_color * light.ambient_intensity;
-    vec3 color = (diffuse_color + specular_color + ambient_color) * light.color;
+    vec3 diffuse_color = object_color * diffuse_factor * attenuation;
+    vec3 specular_color = vec3(specular_mask * specular_factor * attenuation);
+    vec3 color = (diffuse_color + specular_color) * light.color * light.intensity;
     return color;
 }

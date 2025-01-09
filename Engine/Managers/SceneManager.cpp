@@ -168,27 +168,30 @@ lcf::Scene *lcf::SceneManager::testScene()
     LightArray lights;
     PointLight::SharedPtr point_light0 = lights.addPointLight();
     point_light0->setColor({100.0f, 100.0f, 100.0f});
-    point_light0->setPosition({1.8f, 0.0f, 0.0f});
+    point_light0->setPosition({1.8f, 0.8f, 0.0f});
     point_light0->scale(0.3f);
-    PointLight::SharedPtr point_light1 = lights.addPointLight();
-    point_light1->setColor({200.0f, 200.0f, 200.0f});
-    point_light1->setPosition({-1.8f, 0.0f, 0.0f});
-    point_light1->scale(0.3f);
+    point_light0->setCastShadow(true);
+    // PointLight::SharedPtr point_light1 = lights.addPointLight();
+    // point_light1->setColor({200.0f, 200.0f, 200.0f});
+    // point_light1->setPosition({-1.8f, 0.0f, 0.0f});
+    // point_light1->scale(0.3f);
+    DirectionalLight::SharedPtr directional_light = lights.addDirectionalLight();
+    directional_light->setPosition({0.0f, 3.0f, 0.0f});
+    directional_light->rotateX(-90.0f);
+    directional_light->setColor({100.0f, 100.0f, 100.0f});
+    directional_light->setCastShadow(true);
     for (const auto &light : lights.all()) {
-        scene->addSharedChild(light);
+        scene->addLight(light);
     }
     const auto &lights_as_uniform_list = lights.asUniformList();
 
-    Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/abandoned_warehouse_-_interior_scene.glb");
+    Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
     scene->addSharedChild(room);
-    room->translateZ(40.0f);
-    room->scale(8.0f);
-    SharedGLShaderProgramPtr shader = ShaderManager::instance()->get(ShaderManager::Simple3D);
-    room->setShader(shader);
-
-    shader = ShaderManager::instance()->load({
+    room->scale(2.0f);
+    room->translateY(-0.12f);
+    SharedGLShaderProgramPtr shader = ShaderManager::instance()->load({
         {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
-        {GLShader::Fragment, path::shaders_prefix + "PBR.frag"},
+        {GLShader::Fragment, path::shaders_prefix + "phong_shadow.frag"},
     });
     GLHelper::setShaderUniforms(shader.get(), {
         {"directional_light_num", lights.directionalLightCount()},
@@ -197,15 +200,38 @@ lcf::Scene *lcf::SceneManager::testScene()
     });
     auto su_binder = ShaderUniformBinder::createShared(shader);
     su_binder->setUniforms(lights_as_uniform_list);
+    room->setShaderUniformBinder(su_binder);
+
+    shader = ShaderManager::instance()->load({
+        {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
+        {GLShader::Fragment, path::shaders_prefix + "PBR_shadow.frag"},
+    });
+    GLHelper::setShaderUniforms(shader.get(), {
+        {"directional_light_num", lights.directionalLightCount()},
+        {"point_light_num", lights.pointLightCount()},
+        {"spot_light_num", lights.spotLightCount()}
+    });
+    su_binder = ShaderUniformBinder::createShared(shader);
+    su_binder->setUniforms(lights_as_uniform_list);
     Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
     scene->addSharedChild(robot);
     robot->setShaderUniformBinder(su_binder);
     robot->materialController()->setType(MaterialType::PBR);
+    robot->setCastShadow(true);
+
+    Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
+    scene->addSharedChild(helmet);
+    helmet->scale(0.3f);
+    helmet->translateY(5.0f);
+    helmet->setShaderUniformBinder(su_binder);
+    helmet->materialController()->setType(MaterialType::PBR);
+    helmet->setCastShadow(true);
 
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         static float d = 0;
+        helmet->translateX(qSin(d) * 0.1f);
         point_light0->translateY(qSin(d) * 0.1f);
-        point_light1->translateY(qCos(d) * 0.1f);
+        // point_light1->translateY(qCos(d) * 0.1f);
         d += 0.02f;
     });
     scene->timer()->start(1000 / 60);
@@ -227,6 +253,7 @@ lcf::Scene * lcf::SceneManager::testPointLightShadow()
     point_light->setName("point_light[0]");
     point_light->setPosition({1.0f, -2.0f, 1.0f});
     point_light->scale(0.3f);
+    point_light->setShadowMapUnit(11);
     scene->addLight(point_light);
     const auto &light_as_uniform_list = point_light->asUniformList();
 
@@ -275,12 +302,13 @@ lcf::Scene * lcf::SceneManager::testPointLightShadow()
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
     su_binder = ShaderUniformBinder::createShared(shader);
     su_binder->setSingleUniform({"light_index", point_light->index()});
-    cube->setShader(shader);
+    su_binder->setUniforms(light_as_uniform_list);
+    cube->setShaderUniformBinder(su_binder);
     scene->addSharedChild(cube);
     connect(scene->timer(), &QTimer::timeout, this, [=] {
-        // static float d = 0;
-        // point_light->translateY(qSin(d) * 0.2f);
-        // d += 0.02f;
+        static float d = 0;
+        point_light->translateY(qSin(d) * 0.2f);
+        d += 0.02f;
     });
     scene->timer()->start(1000 / 60);
     return scene.get();
@@ -297,10 +325,11 @@ lcf::Scene *lcf::SceneManager::testDirectionalLightShadow()
 
     auto directional_light = DirectionalLight::createShared();
     directional_light->setCastShadow(true);
+    directional_light->setColor({1.0f, 1.0f, 1.0f});
     directional_light->setName("directional_light[0]");
+    directional_light->setShadowMapUnit(15);
     directional_light->setPosition({1.0f, 7.0f, 3.0f});
     directional_light->rotateX(-90.0f);
-    directional_light->setSpecularIntensity(10.0f);
     scene->addLight(directional_light);
     const auto &light_as_uniform_list = directional_light->asUniformList();
 
@@ -350,7 +379,8 @@ lcf::Scene *lcf::SceneManager::testDirectionalLightShadow()
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
     su_binder = ShaderUniformBinder::createShared(shader);
     su_binder->setSingleUniform({"light_index", directional_light->index()});
-    plane->setShader(shader);
+    su_binder->setUniforms(light_as_uniform_list);
+    plane->setShaderUniformBinder(su_binder);
     scene->addSharedChild(plane);
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         static float d = 0;

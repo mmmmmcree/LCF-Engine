@@ -149,25 +149,6 @@ void lcf::MaterialController::setImageData(int type, const SharedImagePtr &image
     m_image_data.emplace_back(std::make_pair(type, image));
 }
 
-// void lcf::MaterialController::setImageData(int texture_type, unsigned char *data, int width, int height)
-// {
-//     Image image = dataToImage(data, width, height);
-//     if (image.isNull()) { return; }
-//     m_image_data.emplace_back(std::make_pair(texture_type, std::move(image)));
-// }
-
-// void lcf::MaterialController::setImageData(int texture_type, const Image &image)
-// {
-//     if (image.isNull()) { return; }
-//     m_image_data.emplace_back(std::make_pair(texture_type, image));
-// }
-
-// void lcf::MaterialController::setImageData(int texture_type, Image &&image)
-// {
-//     if (image.isNull()) { return; }
-//     m_image_data.emplace_back(std::make_pair(texture_type, std::move(image)));
-// }
-
 void lcf::MaterialController::updateMaterial()
 {
     switch (m_material_type) {

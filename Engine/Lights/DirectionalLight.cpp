@@ -19,6 +19,8 @@ lcf::UniformList lcf::DirectionalLight::asUniformList()
 {
     UniformList uniform_list = Light::asUniformList();
     uniform_list.emplace_back(SingleUniform(uniformName("direction"), [this] { return this->direction(); }));
+    uniform_list.emplace_back(SingleUniform(uniformName("index"), [this] { return m_light_index; }));
+    uniform_list.emplace_back(SingleUniform(uniformName("shadow_map"), [this] { return m_shadow_map_unit; }));
     return uniform_list;
 }
 
@@ -44,6 +46,7 @@ int lcf::DirectionalLight::index() const
 
 void lcf::DirectionalLight::bind()
 {
+    m_fbo->depthAttachment().release(m_shadow_map_unit);
     const auto &shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), false);
     const auto &animated_shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), true);
     GLHelper::setShaderUniform(shadow_shader.get(), {"light_index", m_light_index});
@@ -71,4 +74,5 @@ void lcf::DirectionalLight::bind()
 void lcf::DirectionalLight::release()
 {
     m_fbo->release();
+    m_fbo->depthAttachment().bind(m_shadow_map_unit);
 }

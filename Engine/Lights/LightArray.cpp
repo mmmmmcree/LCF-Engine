@@ -1,4 +1,5 @@
 #include"LightArray.h"
+#include "GLHelper.h"
 
 const lcf::DirectionalLight::SharedPtr &lcf::LightArray::addDirectionalLight()
 {
@@ -56,18 +57,15 @@ int lcf::LightArray::spotLightCount() const
 
 lcf::UniformList lcf::LightArray::asUniformList()
 {
+    //- 还会根据光源是否投射阴影自动设置shadow map的纹理单元
     UniformList uniforms;
-    for (auto& light : m_directional_lights) {
+    int maximum_units = GLHelper::maximumTextureUnits();
+    for (auto &light : this->all()) {
         const auto& light_uniforms = light->asUniformList();
         uniforms.insert(uniforms.end(), light_uniforms.begin(), light_uniforms.end());
-    }
-    for (auto& light : m_point_lights) {
-        const auto& light_uniforms = light->asUniformList();
-        uniforms.insert(uniforms.end(), light_uniforms.begin(), light_uniforms.end());
-    }
-    for (auto& light : m_spot_lights) {
-        const auto& light_uniforms = light->asUniformList();
-        uniforms.insert(uniforms.end(), light_uniforms.begin(), light_uniforms.end());
+        if (light->castShadow()) {
+            light->setShadowMapUnit(--maximum_units);
+        }
     }
     return uniforms;
 }

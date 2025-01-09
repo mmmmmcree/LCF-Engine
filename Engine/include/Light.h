@@ -11,7 +11,7 @@ namespace lcf {
     {
     public:   
         using SharedPtr = std::shared_ptr<Light>;
-        Light();
+        Light() = default;
         void draw() override;
         virtual LightType lightType() const = 0;
         virtual void bind() { }
@@ -19,18 +19,16 @@ namespace lcf {
         virtual void bindAsShadowMap(int texture_unit) { }
         virtual UniformList asUniformList();
         void setColor(const Vector3D& color);
-        void setDiffuseIntensity(float intensity);
-        void setSpecularIntensity(float intensity);
-        void setAmbientIntensity(float intensity);
+        void setIntensity(float intensity);
         Vector3D direction();
+        void setShadowMapUnit(int unit);
     protected:
         std::string uniformName(const std::string &name) const;
     public:
         ProjectionProvider m_projection_provider;
         Vector3D m_direction;
         Vector3D m_color = {1.0f, 1.0f, 1.0f};
-        float m_diffuse_intensity = 1.0f;
-        float m_specular_intensity = 0.5f;
-        float m_ambient_intensity = 0.2f;
+        float m_intensity = 1.0f;
+        int m_shadow_map_unit = 0;
     };
 }

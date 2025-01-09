@@ -40,15 +40,19 @@ lcf::LightType lcf::PointLight::lightType() const
 lcf::UniformList lcf::PointLight::asUniformList()
 {
     UniformList uniform_list = Light::asUniformList();
-    uniform_list.emplace_back(SingleUniform(uniformName("position"), [this] { return this->localPosition(); }));
+    uniform_list.emplace_back(SingleUniform(uniformName("position"), [this] { return this->worldPosition(); }));
     uniform_list.emplace_back(SingleUniform(uniformName("constant"), [this] { return this->m_constant; }));
     uniform_list.emplace_back(SingleUniform(uniformName("linear"), [this] { return this->m_linear; }));
     uniform_list.emplace_back(SingleUniform(uniformName("quadratic"), [this] { return this->m_quadratic; }));
+    uniform_list.emplace_back(SingleUniform(uniformName("index"), [this] { return m_light_index; }));
+    uniform_list.emplace_back(SingleUniform(uniformName("far_plane"), [this] { return m_projection_provider.farPlane(); }));
+    uniform_list.emplace_back(SingleUniform(uniformName("shadow_map"), [this] { return m_shadow_map_unit; }));
     return uniform_list;
 }
 
 void lcf::PointLight::bind()
 {
+    m_fbo->depthAttachment().release(m_shadow_map_unit);
     const auto &shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), false);
     const auto &animated_shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), true);
     GLHelper::setShaderUniform(shadow_shader.get(), {"light_index", m_light_index});
@@ -78,6 +82,7 @@ void lcf::PointLight::bind()
 void lcf::PointLight::release()
 {
     m_fbo->release();
+    m_fbo->depthAttachment().bind(m_shadow_map_unit);
 }
 
 int lcf::PointLight::index() const

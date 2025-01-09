@@ -1,6 +1,6 @@
 #version 460 core
 
-#include "common/animation.glsl"
+#include "animation.glsl"
 
 layout (location = 0) in vec3 position;
 
