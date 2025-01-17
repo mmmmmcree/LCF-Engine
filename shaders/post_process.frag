@@ -8,17 +8,19 @@ in VS_OUT {
 
 uniform sampler2D channel0;
 uniform bool hdr_enabled;
+uniform bool gamma_correction_enabled;
+// uniform float exposure;
 
-vec3 toneMappingReinhard(vec3 hdr_color){
+vec3 tone_mapping_reinhard(vec3 hdr_color){
 	return hdr_color / (hdr_color + vec3(1.0));
 }
 
-vec3 toneMappingExposure(vec3 hdr_color){
+vec3 tone_mapping_exposure(vec3 hdr_color){
     const float exposure = 1.0; // uniform
 	return (vec3(1.0) - exp(-hdr_color * exposure));
 }
 
-vec3 gammaCorrection(vec3 color) {
+vec3 gamma_correction(vec3 color) {
     const float gamma = 2.2;
     return pow(color, vec3(1.0 / gamma));
 }
@@ -26,7 +28,8 @@ vec3 gammaCorrection(vec3 color) {
 void main() {
     vec3 color = texture(channel0, fs_in.uv).rgb;
     float hdr = float(hdr_enabled);
-    color = toneMappingExposure(color) * hdr + color * (1.0 - hdr);
-    color = gammaCorrection(color);
+    color = mix(color, tone_mapping_exposure(color), hdr);
+    float gamma = float(gamma_correction_enabled);
+    color = mix(color, gamma_correction(color), gamma);
     frag_color = vec4(color, 1.0);
 }

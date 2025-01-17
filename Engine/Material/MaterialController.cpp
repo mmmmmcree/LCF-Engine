@@ -111,6 +111,8 @@ void lcf::MaterialController::create()
 void lcf::MaterialController::bind()
 {
     if (not m_material) { this->updateMaterial(); }
+    if (m_material_type == MaterialType::UserCustom) {
+    }
     m_material->bind();
 }
 
@@ -127,7 +129,7 @@ const lcf::UniformList &lcf::MaterialController::asUniformList() const
     return m_material->asUniformList();
 }
 
-void lcf::MaterialController::setType(MaterialType type)
+void lcf::MaterialController::setMaterialType(MaterialType type)
 {
     m_material_type = type;
     this->updateMaterial();

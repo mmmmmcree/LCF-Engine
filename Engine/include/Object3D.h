@@ -3,6 +3,7 @@
 #include "Matrix.h"
 #include "GLShaderProgram.h"
 #include "Define.h"
+#include "SignalSender.h"
 
 namespace lcf {
     class Object3D
@@ -24,8 +25,8 @@ namespace lcf {
         void translateY(float y);
         void translateZ(float z);
         void translate(const Vector3D &translation);
-        void setPosition(float x, float y, float z);
-        void setPosition(const Vector3D &position);
+        void setTranslation(float x, float y, float z);
+        void setTranslation(const Vector3D &position);
         void rotate(const Quaternion &rotation);
         void rotate(float angle_deg, float x, float y, float z);
         void setRotation(float angle_deg, float x, float y, float z);
@@ -44,6 +45,9 @@ namespace lcf {
         void setScale(float factor);
         const Vector3D &localPosition() const;
         Vector3D worldPosition();
+        const Vector3D &translation() const;
+        const Quaternion &rotation() const;
+        const Vector3D &scale() const;
         const std::vector<Object3D*> &children() const;
         const Matrix4x4 &worldMatrix();
         const Matrix4x4  &inversedWorldMatrix();
@@ -52,6 +56,8 @@ namespace lcf {
         const std::string &name() const;
         void setCastShadow(bool cast_shadow);
         bool castShadow() const;
+        void setSignalSender(SignalSender *signal_sender);
+        SignalSender *signalSender() const;
     protected:
         void updateWorldMatrix();
         void addChildToChildren(Object3D* child);
@@ -67,6 +73,7 @@ namespace lcf {
         Object3D *m_parent = nullptr;
         std::string m_name;
         bool m_cast_shadow = false;
+        SignalSender *m_signal_sender = nullptr;
     private:
         std::vector<Object3D*> m_children;
     };

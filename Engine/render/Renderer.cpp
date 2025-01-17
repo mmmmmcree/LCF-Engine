@@ -3,11 +3,39 @@
 #include "ShaderManager.h"
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
+#include "Constants.h"
 
 lcf::Renderer *lcf::Renderer::instance()
 {
     static Renderer s_renderer;
     return &s_renderer;
+}
+
+void lcf::Renderer::initialize(QOpenGLContext *context)
+{
+    m_context = context;
+    m_surface = new QOffscreenSurface(nullptr, this);
+    m_surface->setFormat(context->format());
+    m_surface->create();
+    this->updateRenderPassProcedure();
+    this->updatePostProcessProcedure();
+    m_msaa_fbo = MSAAFBO::createUnique(0, 0, 8, GLTextureFormat::RGBA);
+    m_post_process_fbo = ScreenFBO::createUnique(0, 0, GLTextureFormat::RGBA);
+    SharedGLShaderProgramPtr post_process_shader = ShaderManager::instance()->load({
+        {GLShader::Vertex, lcf::path::shaders_prefix + "simple2D.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "post_process.frag"}, 
+    });
+    GLHelper::setShaderUniform(post_process_shader.get(), {"channel0", 0});
+    m_post_process_shader_binder = ShaderUniformBinder::createShared(post_process_shader);
+    m_post_process_shader_binder->setUniforms({
+        SingleUniform("hdr_enabled", [this] { return m_hdr_enabled; }),
+        SingleUniform("gamma_correction_enabled", [this] { return m_gamma_correction_enabled; })
+    });
+    m_bloomer = Bloomer::createUnique(2048, 2048);
+    this->enableGammaCorrection(m_gamma_correction_enabled);
+    this->enableHDR(m_hdr_enabled);
+    this->enableMSAA(m_msaa_enabled);
+    this->enableBloom(m_bloom_enabled);
 }
 
 void lcf::Renderer::setRenderSize(int width, int height)
@@ -27,39 +55,56 @@ void lcf::Renderer::render(Scene *scene)
 
 void lcf::Renderer::enableHDR(bool enable)
 {
-    if (m_hdr_enabled == enable) { return; }
+    m_context->makeCurrent(m_surface);
     m_hdr_enabled = enable;
     GLTextureFormat color_format = enable ? GLTextureFormat::RGBA16F : GLTextureFormat::RGBA;
     m_msaa_fbo->setColorFormat(color_format);
     m_post_process_fbo->setColorFormat(color_format);
+    m_context->doneCurrent();
+    if (not enable) {
+        this->enableBloom(false);
+    }
+    emit HDREnabledChanged(enable);
+}
+
+bool lcf::Renderer::isHDREnabled() const
+{
+    return m_hdr_enabled;
 }
 
 void lcf::Renderer::enableMSAA(bool enable)
 {
-    if (m_msaa_enabled == enable) { return; }
     m_msaa_enabled = enable;
     this->updateRenderPassProcedure();
+    emit MSAAEnabledChanged(enable);
+}
+
+bool lcf::Renderer::isMSAAEnabled() const
+{
+    return m_msaa_enabled;
 }
 
 void lcf::Renderer::enableBloom(bool enable)
 {
-    if (m_bloom_enabled == enable) { return; }
     m_bloom_enabled = enable;
     this->updatePostProcessProcedure();
+    emit BloomEnabledChanged(enable);
 }
 
-lcf::Renderer::Renderer()
+bool lcf::Renderer::isBloomEnabled() const
 {
-    this->updateRenderPassProcedure();
-    this->updatePostProcessProcedure();
-    m_msaa_fbo = MSAAFBO::createUnique(0, 0, 4, GLTextureFormat::RGBA);
-    m_post_process_fbo = ScreenFBO::createUnique(0, 0, GLTextureFormat::RGBA);
-    const auto &post_process_shader = ShaderManager::instance()->get(ShaderManager::PostProcess);
-    m_post_process_shader_binder = ShaderUniformBinder::createShared(post_process_shader);
-    m_post_process_shader_binder->setSingleUniform({
-        "hdr_enabled", [this] { return m_hdr_enabled; }
-    });
-    m_bloomer = Bloomer::createUnique(2048, 2048);
+    return m_bloom_enabled;
+}
+
+void lcf::Renderer::enableGammaCorrection(bool enable)
+{
+    m_gamma_correction_enabled = enable;
+    emit GammaCorrectionEnabledChanged(enable);
+}
+
+bool lcf::Renderer::isGammaCorrectionEnabled() const
+{
+    return m_gamma_correction_enabled;
 }
 
 void lcf::Renderer::updateRenderPassProcedure()

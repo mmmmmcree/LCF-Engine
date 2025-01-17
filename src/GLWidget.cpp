@@ -10,6 +10,7 @@
 #include "SceneManager.h"
 #include "GLFunctions.h"
 #include "Renderer.h"
+#include "ControlManager.h"
 
 using namespace lcf;
 
@@ -31,20 +32,16 @@ void GLWidget::initializeGL()
     SceneManager::instance()->initialize(this->context());
     ModelManager::instance()->initialize(this->context());
     // auto scene = SceneManager::instance()->makeGrassLand();
-    // auto scene = SceneManager::instance()->testPointLightShadow();
-    auto scene = SceneManager::instance()->testScene();
-    // auto scene = SceneManager::instance()->testDirectionalLightShadow();
-    // auto scene = SceneManager::instance()->testShaderToy();
-    Scene::setCurrent(scene);
-    Renderer::instance()->enableHDR(true);
-    Renderer::instance()->enableMSAA(true);
-    Renderer::instance()->enableBloom(true);
+    // SceneManager::instance()->makeTestScene();
+    SceneManager::instance()->testShaderToy();
+    Renderer::instance()->initialize(this->context());
 }
 
 void GLWidget::paintGL()
 {
     ShaderToyManager::instance()->updateActivated();
-    Renderer::instance()->render(Scene::current());
+    auto current_scene = ControlManager::instance()->currentScene();
+    Renderer::instance()->render(current_scene);
 }
 
 void GLWidget::resizeGL(int w, int h)

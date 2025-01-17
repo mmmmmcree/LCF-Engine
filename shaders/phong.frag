@@ -15,11 +15,11 @@ in VS_OUT {
 } fs_in;
 
 uniform DirectionalLight directional_light[6];
-uniform int directional_light_num;
+uniform int directional_light_count;
 uniform PointLight point_light[10];
-uniform int point_light_num;
+uniform int point_light_count;
 uniform SpotLight spot_light[4];
-uniform int spot_light_num;
+uniform int spot_light_count;
 uniform Material material;
 
 void main() {
@@ -30,13 +30,13 @@ void main() {
     normal = normal * 2.0 - 1.0;
     normal = normalize(TBN * normal);
     vec3 color = vec3(0.0);
-    for (int i = 0; i < directional_light_num; i++) {
+    for (int i = 0; i < directional_light_count; i++) {
         color += calcDirectionalLight(directional_light[i], material, normal, fs_in.view_direction, object_color, specular_mask);
     }
-    for (int i = 0; i < point_light_num; i++) {
+    for (int i = 0; i < point_light_count; i++) {
         color += calcPointLight(point_light[i], material, normal, fs_in.view_direction, fs_in.world_position, object_color, specular_mask);
     }
-    for (int i = 0; i < spot_light_num; i++) {
+    for (int i = 0; i < spot_light_count; i++) {
         color += calcSpotLight(spot_light[i], material, normal, fs_in.view_direction, fs_in.world_position, object_color, specular_mask);
     }
     vec3 ambient_color = vec3(0.08) * object_color;

@@ -57,6 +57,11 @@ lcf::DecomposedTransform::DecomposedTransform(Vector3D &&t, Vector3D &&s, Quater
 {
 }
 
+lcf::DecomposedTransform::DecomposedTransform(const DecomposedTransform &other) :
+    translation(other.translation), scale(other.scale), rotation(other.rotation)
+{
+}
+
 lcf::DecomposedTransform &lcf::DecomposedTransform::operator=(DecomposedTransform &&other)
 {
     translation = std::move(other.translation);

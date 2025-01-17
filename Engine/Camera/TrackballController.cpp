@@ -41,7 +41,7 @@ void lcf::TrackballController::updateCameraPitch(Camera *camera, double angle_de
     Matrix4x4 rot_matrix;
     rot_matrix.rotate(angle_deg, camera->right());
     camera->up() = Vector3D(rot_matrix * camera->up().toVector4D());
-    camera->setPosition(Vector3D(rot_matrix * Vector4D(camera->localPosition(), 1.0f)));
+    camera->setTranslation(Vector3D(rot_matrix * Vector4D(camera->localPosition(), 1.0f)));
 }
 
 void lcf::TrackballController::updateCameraYaw(Camera *camera, double angle_deg)
@@ -50,5 +50,5 @@ void lcf::TrackballController::updateCameraYaw(Camera *camera, double angle_deg)
     rot_matrix.rotate(angle_deg, 0.0f, 1.0f, 0.0f);
     camera->up() = Vector3D(rot_matrix * camera->up().toVector4D());
     camera->right() = Vector3D(rot_matrix * camera->right().toVector4D());
-    camera->setPosition(Vector3D(rot_matrix * Vector4D(camera->localPosition(), 1.0f)));
+    camera->setTranslation(Vector3D(rot_matrix * Vector4D(camera->localPosition(), 1.0f)));
 }

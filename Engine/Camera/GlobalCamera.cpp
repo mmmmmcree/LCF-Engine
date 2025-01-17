@@ -39,7 +39,7 @@ void lcf::GlobalCamera::setCameraType(Type type)
 
 void lcf::GlobalCamera::reset()
 {
-    this->setPosition({0.0f, 0.0f, 5.0f});
+    this->setTranslation({0.0f, 0.0f, 5.0f});
     this->right() = {1.0f, 0.0f, 0.0f};
     this->up() = {0.0f, 1.0f, 0.0f};
 }

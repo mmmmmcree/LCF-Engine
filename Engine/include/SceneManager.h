@@ -14,11 +14,9 @@ namespace lcf {
         static SceneManager* instance();
         void initialize(QOpenGLContext *context);
         Scene *get(const QString& name);
-        Scene *makeGrassLand();
-        Scene *testScene();
-        Scene *testPointLightShadow();
-        Scene *testDirectionalLightShadow();
-        Scene *testShaderToy();
+        void makeGrassLand();
+        void makeTestScene();
+        void testShaderToy();
     private:
         SceneManager() = default;
     private:

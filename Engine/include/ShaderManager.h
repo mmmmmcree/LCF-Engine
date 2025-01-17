@@ -5,6 +5,7 @@
 #include <memory>
 #include <QObject>
 #include "Define.h"
+#include "Model.h"
 
 namespace lcf {
     class ShaderManager : public QObject
@@ -23,7 +24,14 @@ namespace lcf {
             PointShadowMap,
             AnimatedPointShadowMap,
             DepthDebug,
-            PostProcess,
+            Phong,
+            AnimatedPhong,
+            ShadowedPhong,
+            AnimatedShadowedPhong,
+            PBR,
+            AnimatedPBR,
+            ShadowedPBR,
+            AnimatedShadowedPBR,
             SIZE
         };
         using ShaderInfo = std::pair<GLShader::ShaderTypeBit, QString>;
@@ -34,6 +42,7 @@ namespace lcf {
         SharedGLShaderProgramPtr get(const QString &name);
         const SharedGLShaderProgramPtr &get(ConfiguredShader type) const;
         const SharedGLShaderProgramPtr &getShadowShader(LightType light_type, bool animated) const;
+        const SharedGLShaderProgramPtr &getMaterialShader(MaterialType material_type, bool animated, bool shadowed) const;
     private:
         ShaderManager();
     public:

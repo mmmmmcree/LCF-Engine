@@ -10,8 +10,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     eApp->init();
     eApp->setIsEnableMica(true);
-    eTheme->setThemeMode(ElaThemeType::Dark); 
     Window w;
     w.show();
+    eTheme->setThemeMode(ElaThemeType::Dark); 
     return a.exec();
 }

@@ -6,43 +6,6 @@ lcf::Model::Model() :
 {
 }
 
-lcf::Model *lcf::Model::clone() const
-{
-    if (not m_created) {
-        qDebug() << "lcf::Model::clone() - Model is not created yet!";
-        return nullptr;
-    }
-    Model *cloned_model = new Model;
-    cloned_model->m_created = true;
-    for (auto &mesh : m_meshes) {
-        if (not mesh) { continue; }
-        auto cloned_mesh = std::make_unique<Mesh>(*mesh);
-        cloned_mesh->setParent(cloned_model);
-        cloned_model->addMesh(std::move(cloned_mesh));
-    }
-    cloned_model->m_root_bone = this->processSkeleton(cloned_model->m_bones, nullptr, m_root_bone);
-    for (int i = 0; i < cloned_model->m_meshes.size(); ++i) {
-        auto &mesh = m_meshes[i];
-        if (not mesh->skeleton()) { continue; }
-        auto &cloned_mesh = cloned_model->m_meshes[i];
-        Skeleton::BonePtrs bones;
-        for (auto &bone : mesh->skeleton()->bones()) {
-            auto it = cloned_model->m_bones.find(bone->name());
-            if (it == cloned_model->m_bones.end()) { continue; }
-            bones.emplace_back(it->second);
-        }
-        cloned_mesh->setSkeleton(std::make_unique<Skeleton>(std::move(bones), mesh->skeleton()->offsetMatrices()));
-    }
-    for (auto &animation : m_animations) {
-        if (not animation) { continue; }
-        auto cloned_animation = std::make_unique<Animation>(*animation);
-        cloned_animation->updateControlledBones(cloned_model->m_bones);
-        cloned_model->addAnimation(std::move(cloned_animation));
-    }
-    cloned_model->playAnimation();
-    return cloned_model;
-}
-
 void lcf::Model::draw()
 {
     if (m_shader_uniform_binder) {
@@ -65,6 +28,7 @@ void lcf::Model::create()
 {
     if (m_created) { return; }
     m_created = true;
+    this->passSettingsToMeshes();
     for (auto &mesh : m_meshes) {
         mesh->geometry()->create();
         mesh->materialController()->create();
@@ -98,6 +62,11 @@ void lcf::Model::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &sh
     }
 }
 
+const lcf::ShaderUniformBinder::SharedPtr &lcf::Model::shaderUniformBinder() const
+{
+    return m_shader_uniform_binder;
+}
+
 const lcf::MaterialController::SharedPtr &lcf::Model::materialController() const
 {
     return m_material_controller;
@@ -125,7 +94,7 @@ void lcf::Model::addAnimation(AnimationPtr &&animation)
 void lcf::Model::passSettingsToMeshes()
 {
     for (auto &mesh : m_meshes) {
-        mesh->materialController()->setType(m_material_controller->materialType());
+        mesh->materialController()->setMaterialType(m_material_controller->materialType());
         mesh->materialController()->setTextures(m_material_controller->textureInfoMap());
         mesh->setShaderUniformBinder(m_shader_uniform_binder);
         mesh->setInstanceHelper(m_instance_helper);

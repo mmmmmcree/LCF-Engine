@@ -26,7 +26,7 @@ namespace lcf {
         void bind();
         void release();
         const UniformList &asUniformList() const;
-        void setType(MaterialType type);
+        void setMaterialType(MaterialType type);
         MaterialType materialType() const;
         void setShininess(float shininess);
     private:

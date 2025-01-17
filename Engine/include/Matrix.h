@@ -31,7 +31,7 @@ namespace lcf {
         DecomposedTransform() = default;
         DecomposedTransform(const Vector3D &t, const Vector3D &s, const Quaternion &r);
         DecomposedTransform(Vector3D &&t, Vector3D &&s, Quaternion &&r);
-        DecomposedTransform(const DecomposedTransform &other) = default;
+        DecomposedTransform(const DecomposedTransform &other);
         DecomposedTransform &operator=(const DecomposedTransform &other) = default;
         DecomposedTransform &operator=(DecomposedTransform &&other);
         Matrix4x4 toTransform() const;

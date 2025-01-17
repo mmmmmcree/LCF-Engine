@@ -12,22 +12,30 @@ namespace lcf {
         using DirectionalLightList = std::vector<typename DirectionalLight::SharedPtr>;
         using PointLightList = std::vector<typename PointLight::SharedPtr>;
         using SpotLightList = std::vector<typename SpotLight::SharedPtr>;
-        using LightList = std::vector<Light::SharedPtr>;
+        using LightList = std::vector<Light *>;
         LightArray() = default;
-        const DirectionalLight::SharedPtr &addDirectionalLight();
-        const DirectionalLight::SharedPtr &directionalLight(size_t index) const;
+        const DirectionalLight::SharedPtr &addUnconfiguredDirectionalLight();
+        void addConfiguredDirectionalLight(const DirectionalLight::SharedPtr &light);
+        const DirectionalLight::SharedPtr &takeDirectionalLight(size_t index) const;
         int directionalLightCount() const;
-        const PointLight::SharedPtr &addPointLight();
-        const PointLight::SharedPtr &pointLight(size_t index) const;
+        const PointLight::SharedPtr &addUnconfiguredPointLight();
+        void addConfiguredPointLight(const PointLight::SharedPtr &light);
+        const PointLight::SharedPtr &takePointLight(size_t index) const;
         int pointLightCount() const;
-        const SpotLight::SharedPtr &addSpotLight();
-        const SpotLight::SharedPtr &spotLight(size_t index) const;
+        const SpotLight::SharedPtr &addUnconfiguredSpotLight();
+        void addConfiguredSpotLight(const SpotLight::SharedPtr &light);
+        const SpotLight::SharedPtr &takeSpotLight(size_t index) const;
         int spotLightCount() const;
         UniformList asUniformList();
-        LightList all() const;
+        void allocateShadowMapUnits();
+        typename LightList::iterator begin();
+        typename LightList::iterator end();
+        typename LightList::const_iterator begin() const;
+        typename LightList::const_iterator end() const;
     private:
         DirectionalLightList m_directional_lights;
         PointLightList m_point_lights;
         SpotLightList m_spot_lights;
+        LightList m_lights;
     };
 }

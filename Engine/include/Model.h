@@ -24,8 +24,6 @@ namespace lcf {
         using AnimationList = std::vector<AnimationPtr>;
         using InstanceHelperPtr = std::shared_ptr<InstanceHelper>;
         Model();
-        Model(const Model &other) = delete;
-        Model *clone() const;
         void draw() override;
         void drawShadow(LightType light_type) override;
         void create();
@@ -33,6 +31,7 @@ namespace lcf {
         bool hasAnimation() const;
         void setShader(const SharedGLShaderProgramPtr &shader);
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
+        const ShaderUniformBinder::SharedPtr &shaderUniformBinder() const;
         const MaterialController::SharedPtr &materialController() const;
         InstanceHelperPtr &instanceHelper();
         void playAnimation(int i, float speed = 1.0f);

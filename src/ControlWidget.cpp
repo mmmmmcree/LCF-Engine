@@ -3,17 +3,26 @@
 #include <QLayout>
 #include <QPlainTextEdit>
 #include <QMessageBox>
-#include "CameraControlPanel.h"
 #include "ElaMenuBar.h"
+#include "CameraControlPanel.h"
+#include "ModelLoaderPanel.h"
+#include "RenderSettingsPanel.h"
 
 ControlWidget::ControlWidget(QWidget *parent) : ElaWindow(parent)
 {
     this->setWindowButtonFlags(ElaAppBarType::StayTopButtonHint | ElaAppBarType::CloseButtonHint | ElaAppBarType::ThemeChangeButtonHint);
     this->setNavigationBarDisplayMode(ElaNavigationType::Compact);
     this->setUserInfoCardVisible(false);
-    CameraControlPanel *camera_control_pannel = new CameraControlPanel(this);
-    this->addPageNode("Camera Control Panel", camera_control_pannel, ElaIconType::CameraMovie);
-    this->resize(620, 480);
+
+    ModelLoaderPanel *model_loader_panel = new ModelLoaderPanel(this);
+    this->addPageNode("Model Loader Panel", model_loader_panel, ElaIconType::Dragon);
+    RenderSettingsPanel *render_settings_panel = new RenderSettingsPanel(this);
+    this->addPageNode("Render Settings Panel", render_settings_panel, ElaIconType::PresentationScreen);
+    CameraControlPanel *camera_control_panel = new CameraControlPanel(this);
+    this->addPageNode("Camera Control Panel", camera_control_panel, ElaIconType::CameraMovie);
+
+    this->setMinimumWidth(720);
+    this->resize(720, 480);
     this->setMinimumHeight(20);
     ElaMenuBar* menu_bar = new ElaMenuBar(this);
     connect(menu_bar->addElaIconAction(ElaIconType::WindowRestore, ""), &QAction::triggered, this, [this] {

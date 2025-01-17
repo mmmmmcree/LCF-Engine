@@ -4,13 +4,14 @@ lcf::Object3D::Object3D(const Object3D &other) :
     m_local(other.m_local),
     m_world(other.m_world),
     m_inversed_world(other.m_inversed_world),
-    m_world_need_update(other.m_world_need_update),
-    m_normal_matrix_need_update(other.m_normal_matrix_need_update),
+    m_world_need_update(true),
+    m_normal_matrix_need_update(true),
     m_local_decomposed(other.m_local_decomposed),
     m_children(),
     m_parent(nullptr),
     m_name(other.m_name),
-    m_cast_shadow(other.m_cast_shadow)
+    m_cast_shadow(other.m_cast_shadow),
+    m_signal_sender(nullptr)
 {
 }
 
@@ -93,12 +94,12 @@ void lcf::Object3D::translate(const Vector3D &translation)
     this->updateWorldMatrix();
 }
 
-void lcf::Object3D::setPosition(float x, float y, float z)
+void lcf::Object3D::setTranslation(float x, float y, float z)
 {
-    this->setPosition(Vector3D(x, y, z));
+    this->setTranslation(Vector3D(x, y, z));
 }
 
-void lcf::Object3D::setPosition(const Vector3D &position)
+void lcf::Object3D::setTranslation(const Vector3D &position)
 {
     m_local_decomposed.translation = position;
     m_local = m_local_decomposed.toTransform();
@@ -206,6 +207,21 @@ lcf::Vector3D lcf::Object3D::worldPosition()
     return this->worldMatrix().column(3).toVector3D();
 }
 
+const lcf::Vector3D &lcf::Object3D::translation() const
+{
+    return m_local_decomposed.translation;
+}
+
+const lcf::Quaternion &lcf::Object3D::rotation() const
+{
+    return m_local_decomposed.rotation;
+}
+
+const lcf::Vector3D &lcf::Object3D::scale() const
+{
+    return m_local_decomposed.scale;
+}
+
 const std::vector<lcf::Object3D *> &lcf::Object3D::children() const
 {
     return m_children;
@@ -258,12 +274,23 @@ bool lcf::Object3D::castShadow() const
     return m_cast_shadow;
 }
 
+void lcf::Object3D::setSignalSender(SignalSender *signal_sender)
+{
+    m_signal_sender = signal_sender;
+}
+
+lcf::SignalSender *lcf::Object3D::signalSender() const
+{
+    return m_signal_sender;
+}
+
 void lcf::Object3D::updateWorldMatrix()
 {
     /*
     - 不处理矩阵更新，只向子结点传递更新需求，并标记自己需要更新
     - 如果自己已经被标记，说明已经向下传递过更新需求，并且该需求没有被处理，不需要再向下传递
     */
+    if (m_signal_sender) { m_signal_sender->sendTransformUpdatedSignal(); }
     if (m_world_need_update) { return; }
     m_world_need_update = true;
     m_normal_matrix_need_update = true;

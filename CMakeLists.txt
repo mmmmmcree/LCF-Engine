@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-DSOURCE_DIR="${CMAKE_SOURCE_DIR}")
 file(GLOB libs "./lib/*" "./Engine/lib/*")  
-  
+   
 file(COPY ${libs} DESTINATION ${CMAKE_BINARY_DIR}/Release)
 find_package(Qt6 COMPONENTS Widgets REQUIRED) 
 include_directories(./include/Ela Engine/include Engine)
@@ -17,7 +17,7 @@ add_subdirectory(Engine)
 # Specify MSVC UTF-8 encoding 
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-    
+           
 add_executable(${PROJECT_NAME}
     WIN32 # If you need a terminal for debug, please comment this statement 
     ${srcs}

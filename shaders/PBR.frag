@@ -15,11 +15,11 @@ in VS_OUT {
 } fs_in;
 
 uniform DirectionalLight directional_light[6];
-uniform int directional_light_num;
+uniform int directional_light_count;
 uniform PointLight point_light[10];
-uniform int point_light_num;
+uniform int point_light_count;
 uniform SpotLight spot_light[4];
-uniform int spot_light_num;
+uniform int spot_light_count;
 
 uniform PBRMaterial material;
 
@@ -35,10 +35,10 @@ void main() {
     vec3 F0 = vec3(0.04);
     F0 = mix(F0, albedo, metallic);
     vec3 color = vec3(0.0);
-    for (int i = 0; i < directional_light_num; ++i) {
+    for (int i = 0; i < directional_light_count; ++i) {
         color += calcDirectionalLight(directional_light[i], normal, fs_in.view_direction, albedo, metallic, roughness, F0);
     }
-    for (int i = 0; i < point_light_num; ++i) {
+    for (int i = 0; i < point_light_count; ++i) {
         color += calcPointLight(point_light[i], normal, fs_in.view_direction, fs_in.world_position, albedo, metallic, roughness, F0);
     }
     vec3 ambient = albedo * (ao + (1.0 - ao) * 0.003);

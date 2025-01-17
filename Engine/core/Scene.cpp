@@ -11,34 +11,47 @@ lcf::Scene::Scene() : Object3D()
 {
     m_skybox = std::make_unique<Mesh>(Mesh::GeometryPtr(Geometry::cube()));
     m_skybox->setShader(ShaderManager::instance()->get(ShaderManager::Skybox));
-    m_skybox->materialController()->setType(MaterialType::UserCustom);
+    m_skybox->materialController()->setMaterialType(MaterialType::UserCustom);
+    m_timer.setInterval(1000 / 60);
 }
 
-lcf::Scene *lcf::Scene::global()
+lcf::LightArray &lcf::Scene::lights()
 {
-    static Scene s_instance;
-    return &s_instance;
-}
-
-lcf::Scene *lcf::Scene::current()
-{
-    if (not s_current) { return global(); }
-    return s_current;
-}
-
-void lcf::Scene::setCurrent(Scene *scene)
-{
-    if (not scene) { return; }
-    current()->timer()->stop();
-    s_current = scene;
-    s_current->timer()->start();
+    return m_lights;
 }
 
 void lcf::Scene::addLight(const Light::SharedPtr &light)
 {
-    if (not light or light->parent() == this) { return; }
-    light->setParent(this);
-    m_lights.emplace_back(light);
+    switch (light->lightType()) {
+        case LightType::Directional : {
+            m_lights.addConfiguredDirectionalLight(std::static_pointer_cast<DirectionalLight>(light));
+        } break;
+        case LightType::Point : {
+            m_lights.addConfiguredPointLight(std::static_pointer_cast<PointLight>(light));
+        } break;
+        case LightType::Spot : {
+            m_lights.addConfiguredSpotLight(std::static_pointer_cast<SpotLight>(light));
+        } break;
+    }
+    this->addSharedChild(light);
+    m_lights.allocateShadowMapUnits();
+}
+
+void lcf::Scene::addModel(const Model::SharedPtr &model)
+{
+    if (not model or model->parent() == this) { return; }
+    model->setParent(this);
+    m_models.emplace_back(model);
+    if (m_signal_sender) {
+        m_signal_sender->sendModelsUpdatedSignal(model.get());
+    }
+}
+
+void lcf::Scene::addMesh(const Mesh::SharedPtr &mesh)
+{
+    if (not mesh or mesh->parent() == this) { return; }
+    mesh->setParent(this);
+    m_meshes.emplace_back(mesh);
 }
 
 void lcf::Scene::addSharedChild(const Object3D::SharedPtr &child)
@@ -54,7 +67,6 @@ void lcf::Scene::draw()
     gl->glEnable(GL_DEPTH_TEST);
     this->shadowPass();
     Object3D::draw();
-
     gl->glDepthFunc(GL_LEQUAL); 
     m_skybox->draw();
     gl->glDepthFunc(GL_LESS);
@@ -75,6 +87,17 @@ void lcf::Scene::setSkyboxTexture(TextureWrapper texture)
 QTimer *lcf::Scene::timer()
 {
     return &m_timer;
+}
+
+lcf::Model *lcf::Scene::takeModel(int index)
+{
+    if (index < 0 or index >= m_models.size()) { return nullptr; }
+    return m_models[index].get();
+}
+
+const lcf::Scene::ModelList &lcf::Scene::models() const
+{
+    return m_models;
 }
 
 void lcf::Scene::shadowPass()

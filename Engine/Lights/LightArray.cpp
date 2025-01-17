@@ -1,15 +1,23 @@
 #include"LightArray.h"
 #include "GLHelper.h"
 
-const lcf::DirectionalLight::SharedPtr &lcf::LightArray::addDirectionalLight()
+const lcf::DirectionalLight::SharedPtr &lcf::LightArray::addUnconfiguredDirectionalLight()
 {
     m_directional_lights.push_back(DirectionalLight::createShared());
     auto &light = m_directional_lights.back();
     light->setName("directional_light[" + std::to_string(m_directional_lights.size() -1) + "]");
+    m_lights.push_back(light.get());
     return light;
 }
 
-const lcf::DirectionalLight::SharedPtr &lcf::LightArray::directionalLight(size_t index) const
+void lcf::LightArray::addConfiguredDirectionalLight(const DirectionalLight::SharedPtr &light)
+{
+    m_directional_lights.push_back(light);
+    light->setName("directional_light[" + std::to_string(m_directional_lights.size() - 1) + "]");
+    m_lights.push_back(light.get());
+}
+
+const lcf::DirectionalLight::SharedPtr &lcf::LightArray::takeDirectionalLight(size_t index) const
 {
     return m_directional_lights[index];
 }
@@ -19,15 +27,23 @@ int lcf::LightArray::directionalLightCount() const
     return static_cast<int>(m_directional_lights.size());
 }
 
-const lcf::PointLight::SharedPtr &lcf::LightArray::addPointLight()
+const lcf::PointLight::SharedPtr &lcf::LightArray::addUnconfiguredPointLight()
 {
     m_point_lights.push_back(PointLight::createShared());
     auto &light = m_point_lights.back();
     light->setName("point_light[" + std::to_string(m_point_lights.size() - 1) + "]");
+    m_lights.push_back(light.get());
     return light;
 }
 
-const lcf::PointLight::SharedPtr &lcf::LightArray::pointLight(size_t index) const
+void lcf::LightArray::addConfiguredPointLight(const PointLight::SharedPtr &light)
+{
+    m_point_lights.push_back(light);
+    light->setName("point_light[" + std::to_string(m_point_lights.size() - 1) + "]");
+    m_lights.push_back(light.get());
+}
+
+const lcf::PointLight::SharedPtr &lcf::LightArray::takePointLight(size_t index) const
 {
     return m_point_lights[index];
 }
@@ -37,15 +53,23 @@ int lcf::LightArray::pointLightCount() const
     return static_cast<int>(m_point_lights.size());
 }
 
-const lcf::SpotLight::SharedPtr &lcf::LightArray::addSpotLight()
+const lcf::SpotLight::SharedPtr &lcf::LightArray::addUnconfiguredSpotLight()
 {
     m_spot_lights.push_back(SpotLight::createShared());
     auto &light = m_spot_lights.back();
     light->setName("spot_light[" + std::to_string(m_spot_lights.size() - 1) + "]");
+    m_lights.push_back(light.get());
     return light;
 }
 
-const lcf::SpotLight::SharedPtr &lcf::LightArray::spotLight(size_t index) const
+void lcf::LightArray::addConfiguredSpotLight(const SpotLight::SharedPtr &light)
+{
+    m_spot_lights.push_back(light);
+    light->setName("spot_light[" + std::to_string(m_spot_lights.size() - 1) + "]");
+    m_lights.push_back(light.get());
+}
+
+const lcf::SpotLight::SharedPtr &lcf::LightArray::takeSpotLight(size_t index) const
 {
     return m_spot_lights[index];
 }
@@ -57,24 +81,42 @@ int lcf::LightArray::spotLightCount() const
 
 lcf::UniformList lcf::LightArray::asUniformList()
 {
-    //- 还会根据光源是否投射阴影自动设置shadow map的纹理单元
     UniformList uniforms;
-    int maximum_units = GLHelper::maximumTextureUnits();
-    for (auto &light : this->all()) {
+    for (Light *light : m_lights) {
         const auto& light_uniforms = light->asUniformList();
         uniforms.insert(uniforms.end(), light_uniforms.begin(), light_uniforms.end());
-        if (light->castShadow()) {
-            light->setShadowMapUnit(--maximum_units);
-        }
     }
+    uniforms.push_back(SingleUniform("directional_light_count", [this] { return this->directionalLightCount(); }));
+    uniforms.push_back(SingleUniform("point_light_count", [this] { return this->pointLightCount(); }));
+    uniforms.push_back(SingleUniform("spot_light_count", [this] { return this->spotLightCount(); }));
     return uniforms;
 }
 
-lcf::LightArray::LightList lcf::LightArray::all() const
+void lcf::LightArray::allocateShadowMapUnits()
 {
-    LightList lights;
-    lights.insert(lights.end(), m_directional_lights.begin(), m_directional_lights.end());
-    lights.insert(lights.end(), m_point_lights.begin(), m_point_lights.end());
-    lights.insert(lights.end(), m_spot_lights.begin(), m_spot_lights.end());
-    return lights;
+    int maximum_units = GLHelper::maximumTextureUnits();
+    for (Light *light : m_lights) {
+        if (not light->castShadow()) { continue; }
+        light->setShadowMapUnit(--maximum_units);
+    }
+}
+
+typename lcf::LightArray::LightList::iterator lcf::LightArray::begin()
+{
+    return m_lights.begin();
+}
+
+typename lcf::LightArray::LightList::iterator lcf::LightArray::end()
+{
+    return m_lights.end();
+}
+
+typename lcf::LightArray::LightList::const_iterator lcf::LightArray::begin() const
+{
+    return m_lights.begin();
+}
+
+typename lcf::LightArray::LightList::const_iterator lcf::LightArray::end() const
+{
+    return m_lights.end();
 }
