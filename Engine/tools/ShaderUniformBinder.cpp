@@ -3,19 +3,36 @@
 #include <QOpenGLFunctions>
 
 
-lcf::ShaderUniformBinder::ShaderUniformBinder(const SharedGLShaderProgramPtr &shader) :
-    m_shader(shader),
-    m_bound_count(0)
+lcf::ShaderUniformBinder::SharedPtr lcf::ShaderUniformBinder::createShared()
 {
+    return std::make_shared<ShaderUniformBinder>();
 }
 
 lcf::ShaderUniformBinder::SharedPtr lcf::ShaderUniformBinder::createShared(const SharedGLShaderProgramPtr &shader)
 {
-    return SharedPtr(new ShaderUniformBinder(shader));
+    SharedPtr result = createShared();
+    result->setShader(shader);
+    return result;
+}
+
+void lcf::ShaderUniformBinder::setShader(const SharedGLShaderProgramPtr &shader)
+{
+    if (m_shader == shader) { return; }
+    m_shader = shader;
+    m_uniforms.clear();
+    m_name_to_index_map.clear();
+    if (m_shader) {
+        this->setUniforms(m_unset_uniforms);
+        m_unset_uniforms.clear();
+    }
 }
 
 void lcf::ShaderUniformBinder::setUniform(const Uniform &uniform)
 {
+    if (not m_shader) {
+        m_unset_uniforms.push_back(uniform);
+        return;
+    }
     std::visit([&](auto &&arg) {
         auto &name = arg.name();
         int location = m_shader->uniformLocation(name.c_str());
@@ -70,6 +87,7 @@ const lcf::SharedGLShaderProgramPtr &lcf::ShaderUniformBinder::shader() const
 
 void lcf::ShaderUniformBinder::bind()
 {
+    if (not m_shader) { return; }
     ++m_bound_count;
     if (m_bound_count > 1) { return; }
     m_shader->bind();
@@ -82,10 +100,16 @@ void lcf::ShaderUniformBinder::bind()
 
 void lcf::ShaderUniformBinder::release()
 {
+    if (not m_shader) { return; }
     --m_bound_count;
     if (m_bound_count == 0) {
         m_shader->release();
     }
+}
+
+bool lcf::ShaderUniformBinder::hasShader() const
+{
+    return m_shader.get();
 }
 
 void lcf::ShaderUniformBinder::setUniformLocation(Uniform &uniform, int location)

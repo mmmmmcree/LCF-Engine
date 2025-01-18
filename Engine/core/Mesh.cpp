@@ -6,10 +6,10 @@
 lcf::Mesh::Mesh(const GeometryPtr &geometry) :
     Object3D(),
     m_geometry(geometry),
-    m_material_controller(std::make_shared<MaterialController>()), 
+    m_material_controller(MaterialController::createShared()), 
     m_skeleton(nullptr),
     m_skeleton_activated(false),
-    m_shader_uniform_binder(nullptr),
+    m_shader_uniform_binder(ShaderUniformBinder::createShared()),
     m_instance_helper(std::make_shared<InstanceHelper>())
 {
 }
@@ -43,7 +43,7 @@ lcf::Mesh::SharedPtr lcf::Mesh::createShared(const Mesh &other)
 void lcf::Mesh::draw()
 {
     Object3D::draw();
-    if (not m_shader_uniform_binder) { return; }
+    if (not m_shader_uniform_binder or not m_shader_uniform_binder->shader()) { return; }
     if (not m_geometry->isCreated()) { return; }
     m_shader_uniform_binder->setUniforms(m_material_controller->asUniformList());
     m_shader_uniform_binder->bind();
@@ -91,7 +91,8 @@ void lcf::Mesh::activateSkeleton(bool active)
 
 void lcf::Mesh::setShader(const SharedGLShaderProgramPtr &shader)
 {
-    m_shader_uniform_binder = std::make_shared<ShaderUniformBinder>(shader);
+    // m_shader_uniform_binder = ShaderUniformBinder::createShared(shader);
+    m_shader_uniform_binder->setShader(shader);
 }
 
 void lcf::Mesh::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder)

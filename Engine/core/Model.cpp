@@ -3,7 +3,8 @@
 
 lcf::Model::Model() :
     m_instance_helper(std::make_shared<InstanceHelper>()),
-    m_material_controller(std::make_shared<MaterialController>())
+    m_material_controller(std::make_shared<MaterialController>()),
+    m_shader_uniform_binder(ShaderUniformBinder::createShared())
 {
 }
 
@@ -50,7 +51,8 @@ bool lcf::Model::isCreated() const
 
 void lcf::Model::setShader(const SharedGLShaderProgramPtr &shader)
 {
-    m_shader_uniform_binder = std::make_shared<ShaderUniformBinder>(shader);
+    // m_shader_uniform_binder = ShaderUniformBinder::createShared(shader);
+    m_shader_uniform_binder->setShader(shader);
     auto current_scene = ControlManager::instance()->currentScene();
     m_shader_uniform_binder->setUniforms(current_scene->lights().asUniformList());
     for (auto &mesh : m_meshes) {

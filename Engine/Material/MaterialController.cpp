@@ -111,8 +111,6 @@ void lcf::MaterialController::create()
 void lcf::MaterialController::bind()
 {
     if (not m_material) { this->updateMaterial(); }
-    if (m_material_type == MaterialType::UserCustom) {
-    }
     m_material->bind();
 }
 

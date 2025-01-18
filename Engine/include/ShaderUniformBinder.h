@@ -12,8 +12,10 @@ namespace lcf {
         using SingleUniformList = std::vector<SingleUniform>;
         using ArrayUniformList = std::vector<ArrayUniform>;
         using NameToIndexMap = std::unordered_map<std::string, int>;
-        ShaderUniformBinder(const SharedGLShaderProgramPtr &shader);
+        ShaderUniformBinder() = default;
+        static SharedPtr createShared();
         static SharedPtr createShared(const SharedGLShaderProgramPtr &shader);
+        void setShader(const SharedGLShaderProgramPtr &shader);
         void setUniform(const Uniform &uniform);
         void setUniforms(const UniformList &uniforms);
         void setSingleUniform(const SingleUniform &uniform);
@@ -23,12 +25,14 @@ namespace lcf {
         const SharedGLShaderProgramPtr& shader() const;
         void bind();
         void release();
+        bool hasShader() const;
     private:
         void setUniformLocation(Uniform &uniform, int location);
     private:
         int m_bound_count = 0;
         SharedGLShaderProgramPtr m_shader;
         UniformList m_uniforms;
+        UniformList m_unset_uniforms;
         NameToIndexMap m_name_to_index_map;
     };
 }
