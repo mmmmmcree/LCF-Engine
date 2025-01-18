@@ -135,4 +135,13 @@ namespace lcf {
         Point,
         Spot
     };
+
+    enum class Object3DType
+    {
+        Group,
+        Mesh,
+        Model, 
+        Light, 
+        Scene
+    };
 }

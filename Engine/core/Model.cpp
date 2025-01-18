@@ -6,6 +6,11 @@ lcf::Model::Model() :
 {
 }
 
+lcf::Object3DType lcf::Model::type() const
+{
+    return Object3DType::Model;
+}
+
 void lcf::Model::draw()
 {
     if (m_shader_uniform_binder) {

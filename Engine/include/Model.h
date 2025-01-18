@@ -24,6 +24,7 @@ namespace lcf {
         using AnimationList = std::vector<AnimationPtr>;
         using InstanceHelperPtr = std::shared_ptr<InstanceHelper>;
         Model();
+        Object3DType type() const override;
         void draw() override;
         void drawShadow(LightType light_type) override;
         void create();

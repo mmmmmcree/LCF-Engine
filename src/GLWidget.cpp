@@ -32,8 +32,8 @@ void GLWidget::initializeGL()
     SceneManager::instance()->initialize(this->context());
     ModelManager::instance()->initialize(this->context());
     // auto scene = SceneManager::instance()->makeGrassLand();
-    // SceneManager::instance()->makeTestScene();
-    SceneManager::instance()->testShaderToy();
+    SceneManager::instance()->makeTestScene();
+    // SceneManager::instance()->testShaderToy();
     Renderer::instance()->initialize(this->context());
 }
 

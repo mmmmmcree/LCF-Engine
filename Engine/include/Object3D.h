@@ -15,6 +15,7 @@ namespace lcf {
         virtual ~Object3D() = default;
         virtual void draw();
         virtual void drawShadow(LightType light_type);
+        virtual Object3DType type() const;
         Object3D *root() const;
         Object3D *parent() const;
         void setParent(Object3D* parent);

@@ -2,6 +2,11 @@
 #include "ShaderManager.h"
 #include "Geometry.h"
 
+lcf::Object3DType lcf::Light::type() const
+{
+    return Object3DType::Light;    
+}
+
 void lcf::Light::draw()
 {
     static auto shader = ShaderManager::instance()->get(ShaderManager::GeometryDebug);

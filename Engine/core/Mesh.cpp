@@ -25,6 +25,11 @@ lcf::Mesh::Mesh(const Mesh &other) :
 {
 }
 
+lcf::Object3DType lcf::Mesh::type() const
+{
+    return Object3DType::Mesh;
+}
+
 lcf::Mesh::SharedPtr lcf::Mesh::createShared(const GeometryPtr &geometry)
 {
     return std::make_shared<Mesh>(geometry);

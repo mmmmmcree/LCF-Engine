@@ -53,11 +53,11 @@ void lcf::SceneManager::makeGrassLand()
     DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
     directional_light->rotateX(-90.0f);
     directional_light->setName("directional_light[0]");
-    scene->addSharedChild(directional_light);
+    scene->addObject3D(directional_light);
     const auto &directional_light_as_uniform_list = directional_light->asUniformList();
 
     Model::SharedPtr dinasour = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
-    scene->addSharedChild(dinasour);
+    scene->addObject3D(dinasour);
     dinasour->scale(0.3f);
     dinasour->translate(3.0f, 0.0f, 0.0f);
     SharedGLShaderProgramPtr shader = ShaderManager::instance()->load({
@@ -72,12 +72,12 @@ void lcf::SceneManager::makeGrassLand()
     dinasour->setShaderUniformBinder(su_binder);
     dinasour->playAnimation(0, 1.0f);
     Model::SharedPtr dinasour2 = ModelManager::instance()->clone(dinasour.get());
-    scene->addSharedChild(dinasour2);
+    scene->addObject3D(dinasour2);
     dinasour2->scale(0.3f);
     dinasour2->playAnimation(1, 2.0f);
 
     Model::SharedPtr grass = ModelManager::instance()->load(path::source_dir + "models/grassNew.obj");
-    scene->addSharedChild(grass);
+    scene->addObject3D(grass);
     Matrix4x4 grass_mat;
     grass_mat.translate(-16.0f, 0.0f, 16.0f);
     for (int i = 0; i < 160; ++i) {
@@ -112,7 +112,7 @@ void lcf::SceneManager::makeGrassLand()
     grass->setShaderUniformBinder(su_binder);
 
     Model::SharedPtr tree1 = ModelManager::instance()->load(path::source_dir + "models/stylized_hand_painted_tree.glb");
-    scene->addSharedChild(tree1);
+    scene->addObject3D(tree1);
     for (int i = 0; i < 16; ++i) {
         Matrix4x4 tree_mat;
         tree_mat.translate(utils::random_bounded(-32.0f, 32.0f), utils::random_bounded(-32.0f, 32.0f), 0.0f);
@@ -128,7 +128,7 @@ void lcf::SceneManager::makeGrassLand()
     tree1->setShader(shader);
 
     Model::SharedPtr ground = ModelManager::instance()->load(path::source_dir + "models/grassland.glb");
-    scene->addSharedChild(ground);
+    scene->addObject3D(ground);
     ground->materialController()->setMaterialType(MaterialType::UserCustom);
     ground->materialController()->setTexture(TextureType::Diffuse, grass_color);
     ground->scale(0.7f);
@@ -140,7 +140,7 @@ void lcf::SceneManager::makeGrassLand()
     ground->setShader(shader);
 
     Model::SharedPtr house1 = ModelManager::instance()->load(path::source_dir + "models/house.fbx");
-    scene->addSharedChild(house1);
+    scene->addObject3D(house1);
     house1->translate(4.0f, 0.9f, 0.0f);
     shader = ShaderManager::instance()->load({
         {QOpenGLShader::Vertex, path::shaders_prefix + "illumination.vert"},
@@ -176,14 +176,14 @@ void lcf::SceneManager::makeTestScene()
     point_light0->setTranslation({1.8f, 0.8f, 0.0f});
     point_light0->scale(0.3f);
     point_light0->setCastShadow(true);
-    scene->addLight(point_light0);
+    scene->addObject3D(point_light0);
 
     DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
     directional_light->setTranslation({0.0f, 3.0f, 0.0f});
     directional_light->rotateX(-90.0f);
     directional_light->setColor({10.0f, 10.0f, 10.0f});
     directional_light->setCastShadow(true);
-    scene->addLight(directional_light);
+    scene->addObject3D(directional_light);
     const auto &lights_as_uniform_list = scene->lights().asUniformList();
 
     Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
@@ -192,7 +192,7 @@ void lcf::SceneManager::makeTestScene()
     SharedGLShaderProgramPtr shader = ShaderManager::instance()->get(ShaderManager::ShadowedPhong);
     room->setShader(shader);
     room->shaderUniformBinder()->setUniforms(lights_as_uniform_list);
-    scene->addModel(room);
+    scene->addObject3D(room);
 
     Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
     robot->materialController()->setMaterialType(MaterialType::PBR);
@@ -200,7 +200,7 @@ void lcf::SceneManager::makeTestScene()
     shader = ShaderManager::instance()->get(ShaderManager::ShadowedPBR);
     robot->setShader(shader);
     robot->shaderUniformBinder()->setUniforms(lights_as_uniform_list);
-    scene->addModel(robot);
+    scene->addObject3D(robot);
 
     Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
     helmet->scale(0.3f);
@@ -208,7 +208,7 @@ void lcf::SceneManager::makeTestScene()
     helmet->setShaderUniformBinder(robot->shaderUniformBinder());
     helmet->materialController()->setMaterialType(MaterialType::PBR);
     helmet->setCastShadow(true);
-    scene->addModel(helmet);
+    scene->addObject3D(helmet);
 
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         static float d = 0;
@@ -238,5 +238,5 @@ void lcf::SceneManager::testShaderToy()
     mesh->materialController()->setMaterialType(MaterialType::UserCustom);
     mesh->materialController()->setTexture(TextureType::UserCustom0, shader_toy);
     mesh->setShader(ShaderManager::instance()->get(ShaderManager::Simple2D));
-    scene->addSharedChild(mesh);
+    scene->addObject3D(mesh);
 }

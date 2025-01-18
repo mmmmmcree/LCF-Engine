@@ -18,12 +18,11 @@ namespace lcf {
         using UniquePtr = std::unique_ptr<Scene>;
         using ModelList = std::vector<Model::SharedPtr>;
         using MeshList = std::vector<Mesh::SharedPtr>;
+        using GroupList = std::vector<Object3D::SharedPtr>;
         Scene();
+        Object3DType type() const override;
         LightArray &lights();
-        void addLight(const Light::SharedPtr &light);
-        void addModel(const Model::SharedPtr &model);
-        void addMesh(const Mesh::SharedPtr &mesh);
-        void addSharedChild(const Object3D::SharedPtr &child);
+        void addObject3D(const Object3D::SharedPtr &object3d);
         void draw() override;
         void setSkyboxTexture(TextureWrapper texture);
         QTimer *timer();
@@ -31,13 +30,17 @@ namespace lcf {
         const ModelList &models() const;
     private:
         void shadowPass();
+        void addLight(const Light::SharedPtr &light);
+        void addModel(const Model::SharedPtr &model);
+        void addMesh(const Mesh::SharedPtr &mesh);
+        void addGroup(const Object3D::SharedPtr &child);
     private:
         inline static Scene *s_current = nullptr;
     private:
         LightArray m_lights;
         ModelList m_models;
         MeshList m_meshes;
-        std::vector<Object3D::SharedPtr> m_shared_children;
+        GroupList m_groups;
         Mesh::SharedPtr m_skybox;
         QTimer m_timer;
         UniqueGLFrameBufferObjectPtr m_fbo;

@@ -74,7 +74,7 @@ ModelControlWidget::ModelControlWidget(QWidget *parent) :
             return;
         }
         ElaMessageBar::success(ElaMessageBarType::TopRight, "Tip", "Loading Success", 2000, this);
-        lcf::ControlManager::instance()->currentScene()->addModel(model);
+        lcf::ControlManager::instance()->currentScene()->addObject3D(model);
         auto shader = lcf::ShaderManager::instance()->get(lcf::ShaderManager::Simple3D);
         model->setShader(shader);
         model->materialController()->setMaterialType(lcf::MaterialType::UserCustom);

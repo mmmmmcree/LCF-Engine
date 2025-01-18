@@ -15,6 +15,11 @@ lcf::Scene::Scene() : Object3D()
     m_timer.setInterval(1000 / 60);
 }
 
+lcf::Object3DType lcf::Scene::type() const
+{
+    return Object3DType::Scene;
+}
+
 lcf::LightArray &lcf::Scene::lights()
 {
     return m_lights;
@@ -33,14 +38,14 @@ void lcf::Scene::addLight(const Light::SharedPtr &light)
             m_lights.addConfiguredSpotLight(std::static_pointer_cast<SpotLight>(light));
         } break;
     }
-    this->addSharedChild(light);
     m_lights.allocateShadowMapUnits();
 }
 
 void lcf::Scene::addModel(const Model::SharedPtr &model)
 {
-    if (not model or model->parent() == this) { return; }
-    model->setParent(this);
+    for (const auto &existing_model : m_models) {
+        if (model == existing_model) { return; }
+    }
     m_models.emplace_back(model);
     if (m_signal_sender) {
         m_signal_sender->sendModelsUpdatedSignal(model.get());
@@ -49,16 +54,41 @@ void lcf::Scene::addModel(const Model::SharedPtr &model)
 
 void lcf::Scene::addMesh(const Mesh::SharedPtr &mesh)
 {
-    if (not mesh or mesh->parent() == this) { return; }
-    mesh->setParent(this);
+    for (const auto &existing_mesh : m_meshes) {
+        if (mesh == existing_mesh) { return; }
+    }
     m_meshes.emplace_back(mesh);
 }
 
-void lcf::Scene::addSharedChild(const Object3D::SharedPtr &child)
+void lcf::Scene::addGroup(const Object3D::SharedPtr &group)
 {
-    if (not child or child->parent() == this) { return; }
-    child->setParent(this);
-    m_shared_children.emplace_back(child);
+    for (const auto &existing_group : m_groups) {
+        if (group == existing_group) { return; }
+    }
+    m_groups.emplace_back(group);
+}
+
+void lcf::Scene::addObject3D(const Object3D::SharedPtr &object3d)
+{
+    if (not object3d) { return; }
+    if (not object3d->parent()) {
+        object3d->setParent(this);
+    }
+    switch (object3d->type()) {
+        case Object3DType::Group : {
+            this->addGroup(std::static_pointer_cast<Object3D>(object3d));
+        } break;
+        case Object3DType::Model : {
+            this->addModel(std::static_pointer_cast<Model>(object3d));
+        } break;
+        case Object3DType::Mesh : {
+            this->addMesh(std::static_pointer_cast<Mesh>(object3d));
+        } break;
+        case Object3DType::Light : {
+            this->addLight(std::static_pointer_cast<Light>(object3d));
+        } break;
+        default : { return; }
+    }
 }
 
 void lcf::Scene::draw()

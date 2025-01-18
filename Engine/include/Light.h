@@ -12,6 +12,7 @@ namespace lcf {
     public:   
         using SharedPtr = std::shared_ptr<Light>;
         Light() = default;
+        Object3DType type() const override;
         void draw() override;
         virtual LightType lightType() const = 0;
         virtual void bind() { }

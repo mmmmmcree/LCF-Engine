@@ -29,6 +29,11 @@ void lcf::Object3D::drawShadow(LightType light_type)
     }
 }
 
+lcf::Object3DType lcf::Object3D::type() const
+{
+    return Object3DType::Group;
+}
+
 lcf::Object3D *lcf::Object3D::root() const
 {
     Object3D *p = m_parent; 
