@@ -35,7 +35,6 @@ void lcf::AssimpLoader::run()
     this->processNode(scene->mRootNode, scene, materials, bone_map);
     this->processAnimations(scene, bone_map);
     m_model->setBones(root_bone, std::move(bone_map));
-    // m_model->passSettingsToMeshes();
     emit loaded(m_model);
 }
 

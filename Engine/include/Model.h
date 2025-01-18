@@ -29,12 +29,12 @@ namespace lcf {
         void drawShadow(LightType light_type) override;
         void create();
         bool isCreated() const;
-        bool hasAnimation() const;
         void setShader(const SharedGLShaderProgramPtr &shader);
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
         const ShaderUniformBinder::SharedPtr &shaderUniformBinder() const;
         const MaterialController::SharedPtr &materialController() const;
         InstanceHelperPtr &instanceHelper();
+        bool animated() const;
         void playAnimation(int i, float speed = 1.0f);
         void playAnimation();
         void stopAnimation();
@@ -49,14 +49,11 @@ namespace lcf {
         ShaderUniformBinder::SharedPtr m_shader_uniform_binder;
         MeshList m_meshes;
         InstanceHelperPtr m_instance_helper;
-        AnimationList m_animations;
         AnimationPlayer m_animation_player;
         BoneMap m_bones;
         Bone *m_root_bone = nullptr;
         bool m_created = false;
     private: // 为多线程加载模型准备的，在加载之前设置的状态在加载完毕后可能需要重新设置一遍，故需要保存
         void passSettingsToMeshes();
-        using AnimationPlayState = std::pair<int, float>;
-        AnimationPlayState m_animation_play_state = { -1, 1.0f };
     };
 }

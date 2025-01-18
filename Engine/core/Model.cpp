@@ -1,4 +1,5 @@
 #include "Model.h"
+#include "ControlManager.h"
 
 lcf::Model::Model() :
     m_instance_helper(std::make_shared<InstanceHelper>()),
@@ -39,6 +40,7 @@ void lcf::Model::create()
         mesh->materialController()->create();
         mesh->setInstanceHelper(m_instance_helper);
     }
+    this->playAnimation();
 }
 
 bool lcf::Model::isCreated() const
@@ -46,14 +48,11 @@ bool lcf::Model::isCreated() const
     return m_created;
 }
 
-bool lcf::Model::hasAnimation() const
-{
-    return not m_animations.empty();
-}
-
 void lcf::Model::setShader(const SharedGLShaderProgramPtr &shader)
 {
     m_shader_uniform_binder = std::make_shared<ShaderUniformBinder>(shader);
+    auto current_scene = ControlManager::instance()->currentScene();
+    m_shader_uniform_binder->setUniforms(current_scene->lights().asUniformList());
     for (auto &mesh : m_meshes) {
         mesh->setShaderUniformBinder(m_shader_uniform_binder);
     }
@@ -85,6 +84,11 @@ lcf::Model::InstanceHelperPtr &lcf::Model::instanceHelper()
     return m_instance_helper;
 }
 
+bool lcf::Model::animated() const
+{
+    return m_animation_player.hasAnimation();
+}
+
 void lcf::Model::setBones(Bone *root_bone, BoneMap &&bone_map)
 {
     m_root_bone = root_bone;
@@ -93,7 +97,7 @@ void lcf::Model::setBones(Bone *root_bone, BoneMap &&bone_map)
 
 void lcf::Model::addAnimation(AnimationPtr &&animation)
 {
-    m_animations.emplace_back(std::move(animation));
+    m_animation_player.playList().emplace_back(std::move(animation)); 
 }
 
 void lcf::Model::passSettingsToMeshes()
@@ -105,32 +109,26 @@ void lcf::Model::passSettingsToMeshes()
         mesh->setInstanceHelper(m_instance_helper);
         mesh->setCastShadow(m_cast_shadow);
     }
-    this->playAnimation();
 }
 
 void lcf::Model::playAnimation(int i, float speed)
 {
-    m_animation_play_state = {i, speed};
+    m_animation_player.play(i, speed);
+    if (not this->animated()) { return; }
     for (auto &mesh : m_meshes) { mesh->activateSkeleton(true); }
-    if (m_animations.empty()) {
-        qDebug() << "No animations found!";
-        return;
-    }
-    i = std::clamp(i, 0, static_cast<int>(m_animations.size()) - 1);
-    m_animation_player.play(m_animations[i].get(), speed);
 }
 
 void lcf::Model::playAnimation()
 {
-    const auto &[index, speed] = m_animation_play_state;
-    if (index == -1) { return; }
-    this->playAnimation(index, speed);
+    m_animation_player.play();
+    if (not this->animated()) { return; }
+    for (auto &mesh : m_meshes) { mesh->activateSkeleton(true); }
 }
 
 void lcf::Model::stopAnimation()
 {
-    m_animation_play_state = {-1, 1.0f};
     m_animation_player.stop();
+    if (not this->animated()) { return; }
     for (auto &mesh : m_meshes) { mesh->activateSkeleton(false); }
 }
 

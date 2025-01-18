@@ -1,17 +1,25 @@
 #include "AnimationPlayer.h"
 
 
-void lcf::AnimationPlayer::play(Animation *animation, float speed)
+lcf::AnimationPlayer::AnimationPlayList &lcf::AnimationPlayer::playList()
 {
-    if (not animation) { return; }
-    m_animation = animation;
-    m_speed = speed;
+    return m_animations;
+}
+
+bool lcf::AnimationPlayer::hasAnimation() const
+{
+    return not m_animations.empty();
+}
+
+void lcf::AnimationPlayer::play(int index, float speed)
+{
+    m_playing_index = index;
     m_playing = true;
+    m_speed = speed;
 }
 
 void lcf::AnimationPlayer::play()
 {
-    if (not m_animation) { return; }
     m_playing = true;
 }
 
@@ -22,10 +30,11 @@ void lcf::AnimationPlayer::stop()
 
 void lcf::AnimationPlayer::update(float delta_time)
 {
-    if (not m_playing) { return; }
-    float delta_ticks = delta_time * m_animation->ticksPerSecond() * m_speed;
-    m_current_time = fmod(m_current_time + delta_ticks, m_animation->duration());
-    m_animation->update(m_current_time);
+    if (not m_playing or m_playing_index < 0 or m_playing_index >= static_cast<int>(m_animations.size())) { return; }
+    auto &animation = m_animations[m_playing_index];
+    float delta_ticks = delta_time * animation->ticksPerSecond() * m_speed;
+    m_current_time = fmod(m_current_time + delta_ticks, animation->duration());
+    animation->update(m_current_time);
 }
 
 bool lcf::AnimationPlayer::isPlaying() const

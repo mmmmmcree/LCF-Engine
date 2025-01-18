@@ -184,14 +184,12 @@ void lcf::SceneManager::makeTestScene()
     directional_light->setColor({10.0f, 10.0f, 10.0f});
     directional_light->setCastShadow(true);
     scene->addObject3D(directional_light);
-    const auto &lights_as_uniform_list = scene->lights().asUniformList();
 
     Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
     room->scale(2.0f);
     room->translateY(-0.12f);
     SharedGLShaderProgramPtr shader = ShaderManager::instance()->get(ShaderManager::ShadowedPhong);
     room->setShader(shader);
-    room->shaderUniformBinder()->setUniforms(lights_as_uniform_list);
     scene->addObject3D(room);
 
     Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
@@ -199,16 +197,29 @@ void lcf::SceneManager::makeTestScene()
     robot->setCastShadow(true);
     shader = ShaderManager::instance()->get(ShaderManager::ShadowedPBR);
     robot->setShader(shader);
-    robot->shaderUniformBinder()->setUniforms(lights_as_uniform_list);
     scene->addObject3D(robot);
 
     Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
     helmet->scale(0.3f);
     helmet->translateY(5.0f);
-    helmet->setShaderUniformBinder(robot->shaderUniformBinder());
     helmet->materialController()->setMaterialType(MaterialType::PBR);
     helmet->setCastShadow(true);
     scene->addObject3D(helmet);
+
+    Model::SharedPtr dinosaur = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
+    dinosaur->scale(0.3f);
+    dinosaur->translate(-3.0f, 0.0f, 0.0f);
+    dinosaur->setCastShadow(true);
+    shader = ShaderManager::instance()->get(ShaderManager::AnimatedPhong);
+    dinosaur->setShader(shader);
+    scene->addObject3D(dinosaur);
+    dinosaur->playAnimation(1, 1.0f);
+
+    Model::SharedPtr dinosaur2 = ModelManager::instance()->clone(dinosaur.get());
+    dinosaur2->translate(3.0f, 0.0f, 0.0f);
+    dinosaur2->setCastShadow(true);
+    scene->addObject3D(dinosaur2);
+    dinosaur2->playAnimation(0, 1.0f);
 
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         static float d = 0;

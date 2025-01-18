@@ -80,7 +80,7 @@ void lcf::ModelManager::clone(Model *model, Model *cloned)
         }
         cloned_mesh->setSkeleton(std::make_unique<Skeleton>(std::move(bones), mesh->skeleton()->offsetMatrices()));
     }
-    for (auto &animation : model->m_animations) {
+    for (auto &animation : model->m_animation_player.playList()) {
         if (not animation) { continue; }
         auto cloned_animation = std::make_unique<Animation>(*animation);
         cloned_animation->updateControlledBones(cloned->m_bones);
