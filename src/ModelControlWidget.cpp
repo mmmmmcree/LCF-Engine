@@ -77,7 +77,7 @@ ModelControlWidget::ModelControlWidget(QWidget *parent) :
         lcf::ControlManager::instance()->currentScene()->addObject3D(model);
         auto shader = lcf::ShaderManager::instance()->get(lcf::ShaderManager::Simple3D);
         model->setShader(shader);
-        model->materialController()->setMaterialType(lcf::MaterialType::UserCustom);
+        model->setMaterialType(lcf::MaterialType::UserCustom);
     });
     connect(lcf::ControlManager::instance(), &lcf::ControlManager::currentModelChanged, [=](lcf::Model *model) {
         object3d_control_widget->controlledObjectChanged(model);

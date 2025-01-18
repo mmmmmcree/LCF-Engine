@@ -11,7 +11,7 @@ lcf::Scene::Scene() : Object3D()
 {
     m_skybox = std::make_unique<Mesh>(Mesh::GeometryPtr(Geometry::cube()));
     m_skybox->setShader(ShaderManager::instance()->get(ShaderManager::Skybox));
-    m_skybox->materialController()->setMaterialType(MaterialType::UserCustom);
+    m_skybox->setMaterialType(MaterialType::UserCustom);
     m_timer.setInterval(1000 / 60);
 }
 
@@ -111,7 +111,7 @@ void lcf::Scene::draw()
 
 void lcf::Scene::setSkyboxTexture(TextureWrapper texture)
 {
-    m_skybox->materialController()->setTexture(TextureType::UserCustom0, texture);
+    m_skybox->setTexture(TextureType::UserCustom0, texture);
 }
 
 QTimer *lcf::Scene::timer()

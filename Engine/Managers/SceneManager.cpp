@@ -193,7 +193,7 @@ void lcf::SceneManager::makeTestScene()
     scene->addObject3D(room);
 
     Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
-    robot->materialController()->setMaterialType(MaterialType::PBR);
+    robot->setMaterialType(MaterialType::PBR);
     robot->setCastShadow(true);
     shader = ShaderManager::instance()->get(ShaderManager::ShadowedPBR);
     robot->setShader(shader);
@@ -202,7 +202,7 @@ void lcf::SceneManager::makeTestScene()
     Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
     helmet->scale(0.3f);
     helmet->translateY(5.0f);
-    helmet->materialController()->setMaterialType(MaterialType::PBR);
+    helmet->setMaterialType(MaterialType::PBR);
     helmet->setCastShadow(true);
     scene->addObject3D(helmet);
 
@@ -246,8 +246,8 @@ void lcf::SceneManager::testShaderToy()
     shader_toy->setBuffer(0, {texture, 0});
     shader_toy->setBuffer(1, {0});
     Mesh::SharedPtr mesh = Mesh::createShared(Geometry::quad());
-    mesh->materialController()->setMaterialType(MaterialType::UserCustom);
-    mesh->materialController()->setTexture(TextureType::UserCustom0, shader_toy);
+    mesh->setMaterialType(MaterialType::UserCustom);
+    mesh->setTexture(TextureType::UserCustom0, shader_toy);
     mesh->setShader(ShaderManager::instance()->get(ShaderManager::Simple2D));
     scene->addObject3D(mesh);
 }

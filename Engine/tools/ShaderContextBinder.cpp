@@ -25,44 +25,12 @@ void lcf::ShaderContextBinder::release()
     m_shader_uniform_binder->release();
 }
 
-void lcf::ShaderContextBinder::setMaterialController(MaterialController::SharedPtr material_controller)
-{
-    m_material_controller = material_controller;
-    m_shader_uniform_binder->setUniforms(m_material_controller->asUniformList());
-}
-
-const lcf::MaterialController::SharedPtr &lcf::ShaderContextBinder::materialController() const
-{
-    return m_material_controller;
-}
-
-void lcf::ShaderContextBinder::setMaterialType(MaterialType type)
-{
-    m_material_controller->setMaterialType(type);
-    m_shader_uniform_binder->setUniforms(m_material_controller->asUniformList());
-}
-
-lcf::MaterialType lcf::ShaderContextBinder::materialType() const
-{
-    return m_material_controller->materialType();
-}
-
 void lcf::ShaderContextBinder::setShader(const SharedGLShaderProgramPtr &shader)
 {
     m_shader_uniform_binder->setShader(shader);
     m_shader_uniform_binder->setUniforms(m_material_controller->asUniformList());
     auto current_scene = ControlManager::instance()->currentScene();
     m_shader_uniform_binder->setUniforms(current_scene->lights().asUniformList());
-}
-
-void lcf::ShaderContextBinder::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr & shader_uniform_binder)
-{
-    m_shader_uniform_binder = shader_uniform_binder;
-}
-
-const lcf::ShaderUniformBinder::SharedPtr & lcf::ShaderContextBinder::shaderUniformBinder() const
-{
-    return m_shader_uniform_binder;
 }
 
 void lcf::ShaderContextBinder::setUniform(const Uniform &uniform)

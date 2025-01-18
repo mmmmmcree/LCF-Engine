@@ -23,6 +23,7 @@ namespace lcf {
         const TextureInfoMap &textureInfoMap() const;
         void setTextures(const TextureInfoMap& texture_info_map);
         void create();
+        bool isCreated() const;
         void bind();
         void release();
         const UniformList &asUniformList() const;

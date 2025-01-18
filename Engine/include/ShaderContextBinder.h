@@ -13,13 +13,7 @@ namespace lcf {
         ShaderContextBinder(const ShaderContextBinder &other);
         void bind();
         void release();
-        void setMaterialController(MaterialController::SharedPtr material_controller);
-        const MaterialController::SharedPtr& materialController() const;
-        void setMaterialType(MaterialType type);
-        MaterialType materialType() const;
         void setShader(const SharedGLShaderProgramPtr &shader);
-        void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
-        const ShaderUniformBinder::SharedPtr& shaderUniformBinder() const;
         void setUniform(const Uniform &uniform);
         void setUniforms(const UniformList &uniforms);
         void setSingleUniform(const SingleUniform &uniform);

@@ -37,8 +37,7 @@ void lcf::Model::create()
     m_created = true;
     this->passSettingsToMeshes();
     for (auto &mesh : m_meshes) {
-        mesh->geometry()->create();
-        mesh->materialController()->create();
+        mesh->create();
         mesh->setInstanceHelper(m_instance_helper);
     }
     this->playAnimation();
@@ -73,9 +72,14 @@ const lcf::ShaderUniformBinder::SharedPtr &lcf::Model::shaderUniformBinder() con
     return m_shader_uniform_binder;
 }
 
-const lcf::MaterialController::SharedPtr &lcf::Model::materialController() const
+// const lcf::MaterialController::SharedPtr &lcf::Model::materialController() const
+// {
+//     return m_material_controller;
+// }
+
+void lcf::Model::setMaterialType(MaterialType material_type)
 {
-    return m_material_controller;
+    m_material_controller->setMaterialType(material_type);
 }
 
 lcf::Model::InstanceHelperPtr &lcf::Model::instanceHelper()
@@ -105,8 +109,8 @@ void lcf::Model::addAnimation(AnimationPtr &&animation)
 void lcf::Model::passSettingsToMeshes()
 {
     for (auto &mesh : m_meshes) {
-        mesh->materialController()->setMaterialType(m_material_controller->materialType());
-        mesh->materialController()->setTextures(m_material_controller->textureInfoMap());
+        mesh->setMaterialType(m_material_controller->materialType());
+        mesh->setTextures(m_material_controller->textureInfoMap());
         mesh->setShaderUniformBinder(m_shader_uniform_binder);
         mesh->setInstanceHelper(m_instance_helper);
         mesh->setCastShadow(m_cast_shadow);

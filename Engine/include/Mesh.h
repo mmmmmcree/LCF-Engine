@@ -12,8 +12,10 @@
 #include "ShaderUniformBinder.h"
 
 namespace lcf {
+    class AssimpLoader;
     class Mesh : public Object3D
     {
+        friend class AssimpLoader;
     public:
         using GeometryPtr = std::shared_ptr<Geometry>;
         using SkeletonPtr = std::unique_ptr<Skeleton>;
@@ -24,6 +26,8 @@ namespace lcf {
         Object3DType type() const override;
         static SharedPtr createShared(const GeometryPtr &geometry);
         static SharedPtr createShared(const Mesh& other);
+        void create();
+        bool isCreated() const;
         void draw() override;
         void drawShadow(LightType light_type) override;
         void setSkeleton(SkeletonPtr &&skeleton);
@@ -35,8 +39,10 @@ namespace lcf {
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
         InstanceHelperPtr &instanceHelper();
         void setInstanceHelper(const InstanceHelperPtr &instance_helper);
-        const MaterialController::SharedPtr &materialController() const;
-        void setMaterialController(const MaterialController::SharedPtr &material_controller);
+        void setMaterialType(MaterialType material_type);
+        void setTexture(int texture_type, TextureWrapper texture);
+        // const MaterialController::SharedPtr &materialController() const;
+        void setTextures(const MaterialController::TextureInfoMap& texture_info_map);
     private:
         void _draw(GLShaderProgram *shader);
     protected:

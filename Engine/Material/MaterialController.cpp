@@ -108,6 +108,11 @@ void lcf::MaterialController::create()
     this->updateMaterial();
 }
 
+bool lcf::MaterialController::isCreated() const
+{
+    return m_image_data.empty();
+}
+
 void lcf::MaterialController::bind()
 {
     if (not m_material) { this->updateMaterial(); }

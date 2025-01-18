@@ -32,7 +32,8 @@ namespace lcf {
         void setShader(const SharedGLShaderProgramPtr &shader);
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
         const ShaderUniformBinder::SharedPtr &shaderUniformBinder() const;
-        const MaterialController::SharedPtr &materialController() const;
+        // const MaterialController::SharedPtr &materialController() const;
+        void setMaterialType(MaterialType material_type);
         InstanceHelperPtr &instanceHelper();
         bool animated() const;
         void playAnimation(int i, float speed = 1.0f);

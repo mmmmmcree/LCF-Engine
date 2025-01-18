@@ -40,6 +40,17 @@ lcf::Mesh::SharedPtr lcf::Mesh::createShared(const Mesh &other)
     return std::make_shared<Mesh>(other);
 }
 
+void lcf::Mesh::create()
+{
+    m_geometry->create();
+    m_material_controller->create();
+}
+
+bool lcf::Mesh::isCreated() const
+{
+    return m_geometry->isCreated() and m_material_controller->isCreated();
+}
+
 void lcf::Mesh::draw()
 {
     Object3D::draw();
@@ -110,14 +121,19 @@ void lcf::Mesh::setInstanceHelper(const InstanceHelperPtr &instance_helper)
     m_instance_helper = instance_helper;
 }
 
-const lcf::MaterialController::SharedPtr &lcf::Mesh::materialController() const
+void lcf::Mesh::setMaterialType(MaterialType material_type)
 {
-    return m_material_controller;
+    m_material_controller->setMaterialType(material_type);
 }
 
-void lcf::Mesh::setMaterialController(const MaterialController::SharedPtr &material_controller)
+void lcf::Mesh::setTexture(int texture_type, TextureWrapper texture)
 {
-    m_material_controller = material_controller;
+    m_material_controller->setTexture(texture_type, texture);
+}
+
+void lcf::Mesh::setTextures(const MaterialController::TextureInfoMap & texture_info_map)
+{
+    m_material_controller->setTextures(texture_info_map);
 }
 
 void lcf::Mesh::_draw(GLShaderProgram * shader)
