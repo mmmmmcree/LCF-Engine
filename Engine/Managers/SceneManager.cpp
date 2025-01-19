@@ -172,11 +172,11 @@ void lcf::SceneManager::makeTestScene()
     scene->setSkyboxTexture(texture);
 
     PointLight::SharedPtr point_light0 = PointLight::createShared();
+    scene->addObject3D(point_light0);
     point_light0->setColor({100.0f, 100.0f, 100.0f});
     point_light0->setTranslation({1.8f, 0.8f, 0.0f});
     point_light0->scale(0.3f);
     point_light0->setCastShadow(true);
-    scene->addObject3D(point_light0);
 
     DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
     directional_light->setTranslation({0.0f, 3.0f, 0.0f});
@@ -204,6 +204,7 @@ void lcf::SceneManager::makeTestScene()
     helmet->translateY(5.0f);
     helmet->setMaterialType(MaterialType::PBR);
     helmet->setCastShadow(true);
+    helmet->setShader(shader);
     scene->addObject3D(helmet);
 
     Model::SharedPtr dinosaur = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");

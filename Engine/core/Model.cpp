@@ -1,10 +1,9 @@
 #include "Model.h"
-#include "ControlManager.h"
 
 lcf::Model::Model() :
     m_instance_helper(std::make_shared<InstanceHelper>()),
-    m_material_controller(std::make_shared<MaterialController>()),
-    m_shader_uniform_binder(ShaderUniformBinder::createShared())
+    m_material_controller(MaterialController::createShared())
+    // m_shader_uniform_binder(ShaderUniformBinder::createShared())
 {
 }
 
@@ -15,13 +14,19 @@ lcf::Object3DType lcf::Model::type() const
 
 void lcf::Model::draw()
 {
-    if (m_shader_uniform_binder) {
-        m_shader_uniform_binder->bind();
+    // if (m_shader_uniform_binder) {
+    //     m_shader_uniform_binder->bind();
+    // }
+    if (m_material_controller->shaderUniformBinder()) {
+        m_material_controller->shaderUniformBinder()->bind();
     }
     Object3D::draw();
-    if (m_shader_uniform_binder) {
-        m_shader_uniform_binder->release();
+    if (m_material_controller->shaderUniformBinder()) {
+        m_material_controller->shaderUniformBinder()->release();
     }
+    // if (m_shader_uniform_binder) {
+    //     m_shader_uniform_binder->release();
+    // }
     m_animation_player.update(1.0f / 60.0f);
 }
 
@@ -38,7 +43,6 @@ void lcf::Model::create()
     this->passSettingsToMeshes();
     for (auto &mesh : m_meshes) {
         mesh->create();
-        mesh->setInstanceHelper(m_instance_helper);
     }
     this->playAnimation();
 }
@@ -50,32 +54,13 @@ bool lcf::Model::isCreated() const
 
 void lcf::Model::setShader(const SharedGLShaderProgramPtr &shader)
 {
-    // m_shader_uniform_binder = ShaderUniformBinder::createShared(shader);
-    m_shader_uniform_binder->setShader(shader);
-    auto current_scene = ControlManager::instance()->currentScene();
-    m_shader_uniform_binder->setUniforms(current_scene->lights().asUniformList());
-    for (auto &mesh : m_meshes) {
-        mesh->setShaderUniformBinder(m_shader_uniform_binder);
-    }
+    m_material_controller->setShader(shader);
 }
 
-void lcf::Model::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder)
+void lcf::Model::setUniforms(const UniformList &uniforms)
 {
-    m_shader_uniform_binder = shader_uniform_binder;
-    for (auto &mesh : m_meshes) {
-        mesh->setShaderUniformBinder(shader_uniform_binder);
-    }
+    m_material_controller->shaderUniformBinder()->setUniforms(uniforms);
 }
-
-const lcf::ShaderUniformBinder::SharedPtr &lcf::Model::shaderUniformBinder() const
-{
-    return m_shader_uniform_binder;
-}
-
-// const lcf::MaterialController::SharedPtr &lcf::Model::materialController() const
-// {
-//     return m_material_controller;
-// }
 
 void lcf::Model::setMaterialType(MaterialType material_type)
 {
@@ -111,8 +96,6 @@ void lcf::Model::passSettingsToMeshes()
     for (auto &mesh : m_meshes) {
         mesh->setMaterialType(m_material_controller->materialType());
         mesh->setTextures(m_material_controller->textureInfoMap());
-        mesh->setShaderUniformBinder(m_shader_uniform_binder);
-        mesh->setInstanceHelper(m_instance_helper);
         mesh->setCastShadow(m_cast_shadow);
     }
 }
@@ -140,6 +123,8 @@ void lcf::Model::stopAnimation()
 
 void lcf::Model::addMesh(MeshPtr && mesh)
 {
+    mesh->m_material_controller->setShaderUniformBinder(m_material_controller->shaderUniformBinder());
+    mesh->setInstanceHelper(m_instance_helper);
     m_meshes.emplace_back(std::move(mesh));
 }
 

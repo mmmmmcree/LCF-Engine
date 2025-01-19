@@ -6,6 +6,7 @@
 #include "GLShaderProgram.h"
 #include "InstanceHelper.h"
 #include "ShaderUniformBinder.h"
+#include "LightArray.h"
 
 namespace lcf {
     class ModelManager;
@@ -30,9 +31,7 @@ namespace lcf {
         void create();
         bool isCreated() const;
         void setShader(const SharedGLShaderProgramPtr &shader);
-        void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
-        const ShaderUniformBinder::SharedPtr &shaderUniformBinder() const;
-        // const MaterialController::SharedPtr &materialController() const;
+        void setUniforms(const UniformList &uniforms);
         void setMaterialType(MaterialType material_type);
         InstanceHelperPtr &instanceHelper();
         bool animated() const;
@@ -47,7 +46,6 @@ namespace lcf {
         void addAnimation(AnimationPtr &&animation);
     private:
         MaterialController::SharedPtr m_material_controller;
-        ShaderUniformBinder::SharedPtr m_shader_uniform_binder;
         MeshList m_meshes;
         InstanceHelperPtr m_instance_helper;
         AnimationPlayer m_animation_player;

@@ -13,8 +13,10 @@
 
 namespace lcf {
     class AssimpLoader;
+    class Model;
     class Mesh : public Object3D
     {
+        friend class Model;
         friend class AssimpLoader;
     public:
         using GeometryPtr = std::shared_ptr<Geometry>;
@@ -36,12 +38,11 @@ namespace lcf {
         const SkeletonPtr &skeleton() const;
         void activateSkeleton(bool active);
         void setShader(const SharedGLShaderProgramPtr &shader);
-        void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder);
+        void setUniforms(const UniformList &uniforms);
         InstanceHelperPtr &instanceHelper();
         void setInstanceHelper(const InstanceHelperPtr &instance_helper);
         void setMaterialType(MaterialType material_type);
         void setTexture(int texture_type, TextureWrapper texture);
-        // const MaterialController::SharedPtr &materialController() const;
         void setTextures(const MaterialController::TextureInfoMap& texture_info_map);
     private:
         void _draw(GLShaderProgram *shader);
@@ -51,6 +52,5 @@ namespace lcf {
         SkeletonPtr m_skeleton;
         InstanceHelperPtr m_instance_helper;
         bool m_skeleton_activated = false;
-        ShaderUniformBinder::SharedPtr m_shader_uniform_binder;
     };
 }

@@ -1,6 +1,7 @@
 #include "MaterialController.h"
 #include "Define.h"
 #include "GLHelper.h"
+#include "ControlManager.h"
 
 lcf::PhongMaterial::UniquePtr lcf::MaterialController::generatePhongMaterial()
 {
@@ -62,9 +63,9 @@ lcf::MaterialController::SharedPtr lcf::MaterialController::createShared()
     return std::make_shared<lcf::MaterialController>();
 }
 
-const lcf::Material::SharedPtr & lcf::MaterialController::material() const
+bool lcf::MaterialController::isValid() const
 {
-    return m_material;
+    return m_shader_uniform_binder->hasShader();
 }
 
 void lcf::MaterialController::setTexture(int texture_type, TextureWrapper texture)
@@ -117,18 +118,19 @@ void lcf::MaterialController::bind()
 {
     if (not m_material) { this->updateMaterial(); }
     m_material->bind();
+    m_shader_uniform_binder->bind();
 }
 
 void lcf::MaterialController::release()
 {
     if (not m_material) { return; }
     m_material->release();
+    m_shader_uniform_binder->release();
 }
 
-const lcf::UniformList &lcf::MaterialController::asUniformList() const
+lcf::UniformList lcf::MaterialController::asUniformList() const
 {
-    static const lcf::UniformList empty_list;
-    if (not m_material) { return empty_list; }
+    if (not m_material) { return lcf::UniformList{}; }
     return m_material->asUniformList();
 }
 
@@ -148,6 +150,32 @@ void lcf::MaterialController::setShininess(float shininess)
     m_shininess = std::max(shininess, std::numeric_limits<float>::min()); //! shinness <= 0.0f在计算镜面反射出现bug
 }
 
+void lcf::MaterialController::setShader(const SharedGLShaderProgramPtr & shader)
+{
+    m_shader_uniform_binder->setShader(shader);
+}
+
+lcf::GLShaderProgram * lcf::MaterialController::shader() const
+{
+    return m_shader_uniform_binder->shader().get();
+}
+
+void lcf::MaterialController::copyShaderUniformBinderFrom(const MaterialController *other)
+{
+    m_shader_uniform_binder = ShaderUniformBinder::createShared(*other->m_shader_uniform_binder);
+}
+
+void lcf::MaterialController::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &su_binder)
+{
+    if (not su_binder) { return; }
+    m_shader_uniform_binder = su_binder;
+}
+
+const lcf::ShaderUniformBinder::SharedPtr &lcf::MaterialController::shaderUniformBinder() const
+{
+    return m_shader_uniform_binder;
+}
+
 void lcf::MaterialController::setImageData(int type, const SharedImagePtr &image)
 {
     if (not image or image->isNull()) { return; }
@@ -161,4 +189,5 @@ void lcf::MaterialController::updateMaterial()
         case UserCustom : { m_material = this->generateUserCustomMaterial(); } break;
         case PBR : { m_material = this->generatePBRMaterial(); } break;
     }
+    m_shader_uniform_binder->setUniforms(m_material->asUniformList());
 }

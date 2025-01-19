@@ -1,16 +1,7 @@
 #include"LightArray.h"
 #include "GLHelper.h"
 
-const lcf::DirectionalLight::SharedPtr &lcf::LightArray::addUnconfiguredDirectionalLight()
-{
-    m_directional_lights.push_back(DirectionalLight::createShared());
-    auto &light = m_directional_lights.back();
-    light->setName("directional_light[" + std::to_string(m_directional_lights.size() -1) + "]");
-    m_lights.push_back(light.get());
-    return light;
-}
-
-void lcf::LightArray::addConfiguredDirectionalLight(const DirectionalLight::SharedPtr &light)
+void lcf::LightArray::addDirectionalLight(const DirectionalLight::SharedPtr &light)
 {
     m_directional_lights.push_back(light);
     light->setName("directional_light[" + std::to_string(m_directional_lights.size() - 1) + "]");
@@ -27,16 +18,7 @@ int lcf::LightArray::directionalLightCount() const
     return static_cast<int>(m_directional_lights.size());
 }
 
-const lcf::PointLight::SharedPtr &lcf::LightArray::addUnconfiguredPointLight()
-{
-    m_point_lights.push_back(PointLight::createShared());
-    auto &light = m_point_lights.back();
-    light->setName("point_light[" + std::to_string(m_point_lights.size() - 1) + "]");
-    m_lights.push_back(light.get());
-    return light;
-}
-
-void lcf::LightArray::addConfiguredPointLight(const PointLight::SharedPtr &light)
+void lcf::LightArray::addPointLight(const PointLight::SharedPtr &light)
 {
     m_point_lights.push_back(light);
     light->setName("point_light[" + std::to_string(m_point_lights.size() - 1) + "]");
@@ -53,16 +35,7 @@ int lcf::LightArray::pointLightCount() const
     return static_cast<int>(m_point_lights.size());
 }
 
-const lcf::SpotLight::SharedPtr &lcf::LightArray::addUnconfiguredSpotLight()
-{
-    m_spot_lights.push_back(SpotLight::createShared());
-    auto &light = m_spot_lights.back();
-    light->setName("spot_light[" + std::to_string(m_spot_lights.size() - 1) + "]");
-    m_lights.push_back(light.get());
-    return light;
-}
-
-void lcf::LightArray::addConfiguredSpotLight(const SpotLight::SharedPtr &light)
+void lcf::LightArray::addSpotLight(const SpotLight::SharedPtr &light)
 {
     m_spot_lights.push_back(light);
     light->setName("spot_light[" + std::to_string(m_spot_lights.size() - 1) + "]");

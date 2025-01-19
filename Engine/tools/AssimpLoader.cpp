@@ -192,9 +192,7 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     if (not tangents.empty()) { geometry->addAttribute(tangents.data(), tangents.size(), 4, 3); }
     geometry->setIndices(indices.data(), indices.size());
     Mesh *mesh = new Mesh(Mesh::GeometryPtr(geometry));
-    qDebug() << "before" << &(mesh->m_material_controller);
     mesh->m_material_controller = mat_controller;
-    qDebug() << "after" << &(mesh->m_material_controller);
     Skeleton::MatricesPtr matrices_ptr = std::make_shared<Skeleton::Matrices>(std::move(offset_matrices));
     mesh->setSkeleton(std::make_unique<Skeleton>(std::move(bones), matrices_ptr));
     if (matrices_ptr->empty()) { return mesh ; }    

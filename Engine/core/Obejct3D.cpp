@@ -272,6 +272,9 @@ const std::string &lcf::Object3D::name() const
 void lcf::Object3D::setCastShadow(bool cast_shadow)
 {
     m_cast_shadow = cast_shadow;
+    for (auto child : m_children) {
+        child->setCastShadow(cast_shadow);
+    }
 }
 
 bool lcf::Object3D::castShadow() const

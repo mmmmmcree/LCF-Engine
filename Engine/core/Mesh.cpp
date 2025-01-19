@@ -9,7 +9,7 @@ lcf::Mesh::Mesh(const GeometryPtr &geometry) :
     m_material_controller(MaterialController::createShared()), 
     m_skeleton(nullptr),
     m_skeleton_activated(false),
-    m_shader_uniform_binder(ShaderUniformBinder::createShared()),
+    // m_shader_uniform_binder(ShaderUniformBinder::createShared()),
     m_instance_helper(std::make_shared<InstanceHelper>())
 {
 }
@@ -20,7 +20,7 @@ lcf::Mesh::Mesh(const Mesh &other) :
     m_material_controller(other.m_material_controller),
     m_skeleton(nullptr),
     m_skeleton_activated(other.m_skeleton_activated),
-    m_shader_uniform_binder(other.m_shader_uniform_binder),
+    // m_shader_uniform_binder(other.m_shader_uniform_binder),
     m_instance_helper(other.m_instance_helper ? std::make_shared<InstanceHelper>(*other.m_instance_helper) : std::make_shared<InstanceHelper>())
 {
 }
@@ -54,14 +54,11 @@ bool lcf::Mesh::isCreated() const
 void lcf::Mesh::draw()
 {
     Object3D::draw();
-    if (not m_shader_uniform_binder or not m_shader_uniform_binder->shader()) { return; }
+    if (not m_material_controller->isValid()) { return; }
     if (not m_geometry->isCreated()) { return; }
-    m_shader_uniform_binder->setUniforms(m_material_controller->asUniformList());
-    m_shader_uniform_binder->bind();
     m_material_controller->bind();
-    this->_draw(m_shader_uniform_binder->shader().get());
+    this->_draw(m_material_controller->shader());
     m_material_controller->release();
-    m_shader_uniform_binder->release();
 }
 
 void lcf::Mesh::drawShadow(LightType light_type)
@@ -102,13 +99,12 @@ void lcf::Mesh::activateSkeleton(bool active)
 
 void lcf::Mesh::setShader(const SharedGLShaderProgramPtr &shader)
 {
-    // m_shader_uniform_binder = ShaderUniformBinder::createShared(shader);
-    m_shader_uniform_binder->setShader(shader);
+    m_material_controller->setShader(shader);
 }
 
-void lcf::Mesh::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &shader_uniform_binder)
+void lcf::Mesh::setUniforms(const UniformList & uniforms)
 {
-    m_shader_uniform_binder = shader_uniform_binder;
+    m_material_controller->shaderUniformBinder()->setUniforms(uniforms);
 }
 
 lcf::Mesh::InstanceHelperPtr &lcf::Mesh::instanceHelper()
