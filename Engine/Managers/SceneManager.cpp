@@ -208,8 +208,8 @@ void lcf::SceneManager::makeTestScene()
     scene->addObject3D(helmet);
 
     Model::SharedPtr dinosaur = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
-    dinosaur->scale(0.3f);
     dinosaur->translate(-3.0f, 0.0f, 0.0f);
+    dinosaur->scale(0.3f);
     dinosaur->setCastShadow(true);
     shader = ShaderManager::instance()->get(ShaderManager::AnimatedPhong);
     dinosaur->setShader(shader);

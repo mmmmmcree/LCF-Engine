@@ -45,13 +45,13 @@ namespace lcf {
         void setBones(Bone *root_bone, BoneMap &&bone_map);
         void addAnimation(AnimationPtr &&animation);
     private:
-        MaterialController::SharedPtr m_material_controller;
-        MeshList m_meshes;
-        InstanceHelperPtr m_instance_helper;
         AnimationPlayer m_animation_player;
+        MeshList m_meshes;
         BoneMap m_bones;
         Bone *m_root_bone = nullptr;
         bool m_created = false;
+        MaterialController::SharedPtr m_material_controller;
+        InstanceHelperPtr m_instance_helper;
     private: // 为多线程加载模型准备的，在加载之前设置的状态在加载完毕后可能需要重新设置一遍，故需要保存
         void passSettingsToMeshes();
     };

@@ -39,8 +39,8 @@ namespace lcf {
         void activateSkeleton(bool active);
         void setShader(const SharedGLShaderProgramPtr &shader);
         void setUniforms(const UniformList &uniforms);
-        InstanceHelperPtr &instanceHelper();
         void setInstanceHelper(const InstanceHelperPtr &instance_helper);
+        InstanceHelperPtr &instanceHelper();
         void setMaterialType(MaterialType material_type);
         void setTexture(int texture_type, TextureWrapper texture);
         void setTextures(const MaterialController::TextureInfoMap& texture_info_map);
