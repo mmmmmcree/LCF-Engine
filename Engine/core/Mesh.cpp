@@ -4,24 +4,18 @@
 
 
 lcf::Mesh::Mesh(const GeometryPtr &geometry) :
-    Object3D(),
+    DrawableObject3D(),
     m_geometry(geometry),
-    m_material_controller(MaterialController::createShared()), 
     m_skeleton(nullptr),
-    m_skeleton_activated(false),
-    // m_shader_uniform_binder(ShaderUniformBinder::createShared()),
-    m_instance_helper(std::make_shared<InstanceHelper>())
+    m_skeleton_activated(false)
 {
 }
 
 lcf::Mesh::Mesh(const Mesh &other) :
-    Object3D(other),
+    DrawableObject3D(other),
     m_geometry(other.m_geometry),
-    m_material_controller(other.m_material_controller),
     m_skeleton(nullptr),
-    m_skeleton_activated(other.m_skeleton_activated),
-    // m_shader_uniform_binder(other.m_shader_uniform_binder),
-    m_instance_helper(other.m_instance_helper ? std::make_shared<InstanceHelper>(*other.m_instance_helper) : std::make_shared<InstanceHelper>())
+    m_skeleton_activated(other.m_skeleton_activated)
 {
 }
 
@@ -95,31 +89,6 @@ const lcf::Mesh::SkeletonPtr &lcf::Mesh::skeleton() const
 void lcf::Mesh::activateSkeleton(bool active)
 {
     m_skeleton_activated = active;
-}
-
-void lcf::Mesh::setShader(const SharedGLShaderProgramPtr &shader)
-{
-    m_material_controller->setShader(shader);
-}
-
-void lcf::Mesh::setUniforms(const UniformList & uniforms)
-{
-    m_material_controller->shaderUniformBinder()->setUniforms(uniforms);
-}
-
-lcf::Mesh::InstanceHelperPtr &lcf::Mesh::instanceHelper()
-{
-    return m_instance_helper;
-}
-
-void lcf::Mesh::setInstanceHelper(const InstanceHelperPtr &instance_helper)
-{
-    m_instance_helper = instance_helper;
-}
-
-void lcf::Mesh::setMaterialType(MaterialType material_type)
-{
-    m_material_controller->setMaterialType(material_type);
 }
 
 void lcf::Mesh::setTexture(int texture_type, TextureWrapper texture)

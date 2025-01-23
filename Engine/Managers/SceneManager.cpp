@@ -188,15 +188,11 @@ void lcf::SceneManager::makeTestScene()
     Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
     room->scale(2.0f);
     room->translateY(-0.12f);
-    SharedGLShaderProgramPtr shader = ShaderManager::instance()->get(ShaderManager::ShadowedPhong);
-    room->setShader(shader);
     scene->addObject3D(room);
 
     Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
     robot->setMaterialType(MaterialType::PBR);
     robot->setCastShadow(true);
-    shader = ShaderManager::instance()->get(ShaderManager::ShadowedPBR);
-    robot->setShader(shader);
     scene->addObject3D(robot);
 
     Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
@@ -204,15 +200,12 @@ void lcf::SceneManager::makeTestScene()
     helmet->translateY(5.0f);
     helmet->setMaterialType(MaterialType::PBR);
     helmet->setCastShadow(true);
-    helmet->setShader(shader);
     scene->addObject3D(helmet);
 
     Model::SharedPtr dinosaur = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
     dinosaur->translate(-3.0f, 0.0f, 0.0f);
     dinosaur->scale(0.3f);
     dinosaur->setCastShadow(true);
-    shader = ShaderManager::instance()->get(ShaderManager::AnimatedPhong);
-    dinosaur->setShader(shader);
     scene->addObject3D(dinosaur);
     dinosaur->playAnimation(1, 1.0f);
 

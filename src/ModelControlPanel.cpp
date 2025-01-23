@@ -1,4 +1,4 @@
-#include "ModelLoaderPanel.h"
+#include "ModelControlPanel.h"
 #include <QLayout>
 #include "ElaScrollPageArea.h"
 #include "ElaPushButton.h"
@@ -8,7 +8,7 @@
 #include "Object3DControlWidget.h"
 #include "ModelControlWidget.h"
 
-ModelLoaderPanel::ModelLoaderPanel(QWidget *parent) :
+ModelControlPanel::ModelControlPanel(QWidget *parent) :
     ElaScrollPage(parent)
 {
     ElaScrollPageArea *model_control_area = new ElaScrollPageArea(this);
@@ -17,7 +17,6 @@ ModelLoaderPanel::ModelLoaderPanel(QWidget *parent) :
     QVBoxLayout *vlayout = new QVBoxLayout(model_control_area);
     vlayout->addWidget(model_control_widget);
     vlayout->setContentsMargins(0, 3, 0, 3);
-
 
     QWidget *central_widget = new QWidget(this);
     central_widget->setWindowTitle("Model Loader Panel");

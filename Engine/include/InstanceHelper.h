@@ -9,7 +9,11 @@ namespace lcf {
     public:   
         using Matrices = QList<Matrix4x4>;
         using Data = QList<float>;
+        using SharedPtr = std::shared_ptr<InstanceHelper>;
+        static SharedPtr createShared();
+        static SharedPtr createShared(const InstanceHelper& other);
         InstanceHelper() = default;
+        InstanceHelper(const InstanceHelper&) = default;
         void bind();
         void addInstanceOffset(const Matrix4x4& matrix);
         void addInstanceData(const Matrix4x4* data, size_t size);

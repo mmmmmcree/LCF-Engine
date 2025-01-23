@@ -57,6 +57,8 @@ namespace lcf {
         const std::string &name() const;
         void setCastShadow(bool cast_shadow);
         bool castShadow() const;
+        virtual void setMaterialType(MaterialType material_type) { };
+        virtual MaterialType materialType() const { return MaterialType::Phong; };
         void setSignalSender(SignalSender *signal_sender);
         SignalSender *signalSender() const;
     protected:

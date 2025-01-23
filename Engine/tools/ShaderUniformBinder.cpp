@@ -9,6 +9,7 @@ lcf::ShaderUniformBinder::ShaderUniformBinder(const ShaderUniformBinder &other) 
     m_name_to_index_map(other.m_name_to_index_map),
     m_unset_uniforms(other.m_unset_uniforms)
 {
+
 }
 
 lcf::ShaderUniformBinder::SharedPtr lcf::ShaderUniformBinder::createShared()
@@ -30,19 +31,14 @@ lcf::ShaderUniformBinder::SharedPtr lcf::ShaderUniformBinder::createShared(const
 
 void lcf::ShaderUniformBinder::setShader(const SharedGLShaderProgramPtr &shader)
 {
-    if (m_shader == shader) { return; }
     m_shader = shader;
     m_name_to_index_map.clear();
-    if (not m_shader) {
-        m_uniforms.clear();
-        return;
-    }
-    auto prev_uniforms = m_uniforms;
+    m_unset_uniforms.insert(m_unset_uniforms.end(), m_uniforms.begin(), m_uniforms.end());
     m_uniforms.clear();
+    if (not m_shader) { return; }
     auto unset_uniforms = m_unset_uniforms;
     m_unset_uniforms.clear();
     this->setUniforms(unset_uniforms);
-    this->setUniforms(prev_uniforms);
 }
 
 void lcf::ShaderUniformBinder::setUniform(const Uniform &uniform)

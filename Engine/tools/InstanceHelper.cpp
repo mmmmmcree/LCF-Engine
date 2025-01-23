@@ -3,6 +3,16 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLExtraFunctions>
 
+lcf::InstanceHelper::SharedPtr lcf::InstanceHelper::createShared()
+{
+    return std::make_shared<InstanceHelper>();
+}
+
+lcf::InstanceHelper::SharedPtr lcf::InstanceHelper::createShared(const InstanceHelper &other)
+{
+    return std::make_shared<InstanceHelper>(other);
+}
+
 void lcf::InstanceHelper::bind()
 {
     auto gl = QOpenGLContext::currentContext()->extraFunctions();

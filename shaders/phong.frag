@@ -20,7 +20,7 @@ uniform PointLight point_light[10];
 uniform int point_light_count;
 uniform SpotLight spot_light[4];
 uniform int spot_light_count;
-uniform Material material;
+uniform PhongMaterial material;
 
 void main() {
     mat3 TBN = mat3(normalize(fs_in.T), normalize(fs_in.B), normalize(fs_in.normal));

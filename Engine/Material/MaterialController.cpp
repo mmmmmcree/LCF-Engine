@@ -58,9 +58,22 @@ lcf::UserCustomMaterial::UniquePtr lcf::MaterialController::generateUserCustomMa
     return material;
 }
 
+lcf::MaterialController::MaterialController(const MaterialController &other)
+{
+    m_textures = other.m_textures;
+    m_material_type = other.m_material_type;
+    m_shader_uniform_binder = ShaderUniformBinder::createShared(*other.m_shader_uniform_binder);
+    this->updateMaterial();
+}
+
 lcf::MaterialController::SharedPtr lcf::MaterialController::createShared()
 {
     return std::make_shared<lcf::MaterialController>();
+}
+
+lcf::MaterialController::SharedPtr lcf::MaterialController::createShared(const MaterialController &other)
+{
+    return std::make_shared<lcf::MaterialController>(other);
 }
 
 bool lcf::MaterialController::isValid() const
@@ -158,11 +171,6 @@ void lcf::MaterialController::setShader(const SharedGLShaderProgramPtr & shader)
 lcf::GLShaderProgram * lcf::MaterialController::shader() const
 {
     return m_shader_uniform_binder->shader().get();
-}
-
-void lcf::MaterialController::copyShaderUniformBinderFrom(const MaterialController *other)
-{
-    m_shader_uniform_binder = ShaderUniformBinder::createShared(*other->m_shader_uniform_binder);
 }
 
 void lcf::MaterialController::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &su_binder)

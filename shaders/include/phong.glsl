@@ -1,6 +1,6 @@
 #include "Lights.glsl"
 
-struct Material
+struct PhongMaterial
 {
     sampler2D diffuse_map;
     sampler2D specular_map;
@@ -22,7 +22,7 @@ float calcSpecular(vec3 normal, vec3 light_direction, vec3 view_direction, float
     return specular * positive_side * mask;
 }
 
-vec3 calcDirectionalLight(DirectionalLight light, Material material, vec3 normal, vec3 view_direction, vec3 object_color, float specular_mask)
+vec3 calcDirectionalLight(DirectionalLight light, PhongMaterial material, vec3 normal, vec3 view_direction, vec3 object_color, float specular_mask)
 {
     vec3 light_direction = normalize(light.direction);
     float diffuse_factor = calcDiffuse(normal, light_direction);
@@ -33,7 +33,7 @@ vec3 calcDirectionalLight(DirectionalLight light, Material material, vec3 normal
     return color;
 }
 
-vec3 calcPointLight(PointLight light, Material material, vec3 normal, vec3 view_direction, vec3 world_position, vec3 object_color, float specular_mask)
+vec3 calcPointLight(PointLight light, PhongMaterial material, vec3 normal, vec3 view_direction, vec3 world_position, vec3 object_color, float specular_mask)
 {
     vec3 light_direction = normalize(world_position - light.position);
     float distance = length(world_position - light.position);
@@ -46,7 +46,7 @@ vec3 calcPointLight(PointLight light, Material material, vec3 normal, vec3 view_
     return color;
 }
 
-vec3 calcSpotLight(SpotLight light, Material material, vec3 normal, vec3 view_direction, vec3 world_position, vec3 object_color, float specular_mask)
+vec3 calcSpotLight(SpotLight light, PhongMaterial material, vec3 normal, vec3 view_direction, vec3 world_position, vec3 object_color, float specular_mask)
 {
     vec3 light_direction = normalize(world_position - light.position);
     vec3 spot_direction = normalize(light.direction);

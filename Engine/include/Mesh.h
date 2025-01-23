@@ -10,14 +10,15 @@
 #include <QList>
 #include "InstanceHelper.h"
 #include "ShaderUniformBinder.h"
+#include "DrawableObject3D.h"
 
 namespace lcf {
     class AssimpLoader;
     class Model;
-    class Mesh : public Object3D
+    class Mesh : public DrawableObject3D
     {
-        friend class Model;
         friend class AssimpLoader;
+        friend class Model;
     public:
         using GeometryPtr = std::shared_ptr<Geometry>;
         using SkeletonPtr = std::unique_ptr<Skeleton>;
@@ -37,20 +38,13 @@ namespace lcf {
         const GeometryPtr &geometry() const;
         const SkeletonPtr &skeleton() const;
         void activateSkeleton(bool active);
-        void setShader(const SharedGLShaderProgramPtr &shader);
-        void setUniforms(const UniformList &uniforms);
-        void setInstanceHelper(const InstanceHelperPtr &instance_helper);
-        InstanceHelperPtr &instanceHelper();
-        void setMaterialType(MaterialType material_type);
         void setTexture(int texture_type, TextureWrapper texture);
         void setTextures(const MaterialController::TextureInfoMap& texture_info_map);
     private:
         void _draw(GLShaderProgram *shader);
     protected:
         GeometryPtr m_geometry;
-        MaterialController::SharedPtr m_material_controller;
         SkeletonPtr m_skeleton;
-        InstanceHelperPtr m_instance_helper;
         bool m_skeleton_activated = false;
     };
 }

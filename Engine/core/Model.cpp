@@ -1,11 +1,5 @@
 #include "Model.h"
-
-lcf::Model::Model() :
-    m_instance_helper(std::make_shared<InstanceHelper>()),
-    m_material_controller(MaterialController::createShared())
-    // m_shader_uniform_binder(ShaderUniformBinder::createShared())
-{
-}
+#include "ShaderManager.h"
 
 lcf::Object3DType lcf::Model::type() const
 {
@@ -14,19 +8,9 @@ lcf::Object3DType lcf::Model::type() const
 
 void lcf::Model::draw()
 {
-    // if (m_shader_uniform_binder) {
-    //     m_shader_uniform_binder->bind();
-    // }
-    if (m_material_controller->shaderUniformBinder()) {
-        m_material_controller->shaderUniformBinder()->bind();
-    }
+    m_material_controller->shaderUniformBinder()->bind();
     Object3D::draw();
-    if (m_material_controller->shaderUniformBinder()) {
-        m_material_controller->shaderUniformBinder()->release();
-    }
-    // if (m_shader_uniform_binder) {
-    //     m_shader_uniform_binder->release();
-    // }
+    m_material_controller->shaderUniformBinder()->release();
     m_animation_player.update(1.0f / 60.0f);
 }
 
@@ -44,6 +28,9 @@ void lcf::Model::create()
     for (auto &mesh : m_meshes) {
         mesh->create();
     }
+    //- 默认shader
+    auto shader = ShaderManager::instance()->getMaterialShader(m_material_controller->materialType(), this->animated(), true);
+    m_material_controller->setShader(shader);
     this->playAnimation();
 }
 
@@ -52,27 +39,14 @@ bool lcf::Model::isCreated() const
     return m_created;
 }
 
-void lcf::Model::setShader(const SharedGLShaderProgramPtr &shader)
-{
-    m_material_controller->setShader(shader);
-}
-
-void lcf::Model::setUniforms(const UniformList &uniforms)
-{
-    m_material_controller->shaderUniformBinder()->setUniforms(uniforms);
-}
-
 void lcf::Model::setMaterialType(MaterialType material_type)
 {
+    auto shader = ShaderManager::instance()->getMaterialShader(material_type, this->animated(), true);
+    m_material_controller->setShader(shader);
     m_material_controller->setMaterialType(material_type);
-}
-
-lcf::Model::InstanceHelperPtr &lcf::Model::instanceHelper()
-{
-    if (not m_instance_helper) {
-        m_instance_helper = std::make_shared<InstanceHelper>();
+    for (auto &mesh : m_meshes) {
+        mesh->setMaterialType(material_type);
     }
-    return m_instance_helper;
 }
 
 bool lcf::Model::animated() const
@@ -86,7 +60,7 @@ void lcf::Model::setBones(Bone *root_bone, BoneMap &&bone_map)
     m_bones = std::move(bone_map);
 }
 
-void lcf::Model::addAnimation(AnimationPtr &&animation)
+void lcf::Model::addAnimation(AnimationPlayer::AnimationPtr &&animation)
 {
     m_animation_player.playList().emplace_back(std::move(animation)); 
 }
@@ -121,9 +95,14 @@ void lcf::Model::stopAnimation()
     for (auto &mesh : m_meshes) { mesh->activateSkeleton(false); }
 }
 
+int lcf::Model::currentAnimationIndex() const
+{
+    return m_animation_player.playingIndex();
+}
+
 void lcf::Model::addMesh(MeshPtr && mesh)
 {
-    mesh->m_material_controller->setShaderUniformBinder(m_material_controller->shaderUniformBinder());
+    mesh->materialController()->setShaderUniformBinder(m_material_controller->shaderUniformBinder());
     mesh->setInstanceHelper(m_instance_helper);
     m_meshes.emplace_back(std::move(mesh));
 }
@@ -131,6 +110,11 @@ void lcf::Model::addMesh(MeshPtr && mesh)
 lcf::Model::MeshList & lcf::Model::meshes()
 {
     return m_meshes;
+}
+
+const lcf::AnimationPlayer::AnimationList &lcf::Model::animations()
+{
+    return m_animation_player.playList();
 }
 
 lcf::Bone *lcf::Model::processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const

@@ -92,7 +92,8 @@ Object3DControlWidget::Object3DControlWidget(QWidget *parent) :
     this->setFixedHeight(9 * spinbox_height + 20);
     this->updateControlArea();
     auto set_translation = [this](double value) {
-        auto object_3d = m_object_getter();
+
+        auto object_3d = m_controlled_object;
         if (not object_3d) { return; }
         QVector3D translation;
         for (int i = 0; i < 3; ++i) {
@@ -104,42 +105,35 @@ Object3DControlWidget::Object3DControlWidget(QWidget *parent) :
         connect(spinbox, &QDoubleSpinBox::valueChanged, set_translation);
     }
     auto set_rotation = [this](double value) {
-        auto object_3d = m_object_getter();
-        if (not object_3d) { return; }
+        if (not m_controlled_object) { return; }
         float x = m_rotation_group[0]->value();
         float y = m_rotation_group[1]->value();
         float z = m_rotation_group[2]->value();
         float degrees = m_rotation_group[3]->value();
-        object_3d->setRotation(degrees, x, y, z);
+        m_controlled_object->setRotation(degrees, x, y, z);
     };
     for (auto &spinbox : m_rotation_group) {
         connect(spinbox, &QDoubleSpinBox::valueChanged, set_rotation);
     }
     auto set_scale = [this](double value) {
-        auto object_3d = m_object_getter();
-        if (not object_3d) { return; }
+        if (not m_controlled_object) { return; }
         float scale_x = m_scale_group[0]->value();
         float scale_y = m_scale_group[1]->value();
         float scale_z = m_scale_group[2]->value();
-        object_3d->setScale(scale_x, scale_y, scale_z);
+        m_controlled_object->setScale(scale_x, scale_y, scale_z);
     };
     for (auto &spinbox : m_scale_group) {
         connect(spinbox, &QDoubleSpinBox::valueChanged, set_scale);
     }
     connect(set_name_button, &QPushButton::clicked, [this] {
-        auto object_3d = m_object_getter();
-        if (not object_3d) { return; }
-        object_3d->setName(m_object_name_edit->text().toStdString());
-        emit currentObjectNameChanged(object_3d->name());
+        if (not m_controlled_object) { return; }
+        m_controlled_object->setName(m_object_name_edit->text().toStdString());
+        emit currentObjectNameChanged(m_controlled_object->name());
     });
 }
 
-void Object3DControlWidget::setObject3DGetter(Object3DGetter getter)
-{
-    m_object_getter = getter;
-}
 
-void Object3DControlWidget::controlledObjectChanged(lcf::Object3D *object_3d)
+void Object3DControlWidget::setControlledObject(lcf::Object3D *object_3d)
 {
     if (m_controlled_object) {
         disconnect(m_controlled_object->signalSender(), &lcf::SignalSender::transformUpdated, this, &Object3DControlWidget::updateTexts);

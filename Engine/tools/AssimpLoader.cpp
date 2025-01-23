@@ -108,7 +108,7 @@ void lcf::AssimpLoader::processAnimations(const aiScene *scene, const BoneMap &b
         Animation::KeyFrameTracksPtr tracks_ptr = std::make_shared<Animation::KeyFrameTracks>(std::move(tracks));
         Animation *animation = new Animation(name, duration, ticks_per_second, tracks_ptr);
         animation->updateControlledBones(bone_map);
-        m_model->addAnimation(Model::AnimationPtr(animation));
+        m_model->addAnimation(AnimationPlayer::AnimationPtr(animation));
     }
 }
 

@@ -15,15 +15,13 @@ public:
     using SpinBoxGroup = std::vector<ElaDoubleSpinBox *>;
     using Object3DGetter = std::function<lcf::Object3D *()>;
     Object3DControlWidget(QWidget* parent = nullptr);
-    void setObject3DGetter(Object3DGetter getter);
-    void controlledObjectChanged(lcf::Object3D *object_3d);
+    void setControlledObject(lcf::Object3D *object_3d);
 private:
     void updateControlArea();
     void updateTexts();
 signals:
     void currentObjectNameChanged(const std::string &name);
 private:
-    Object3DGetter m_object_getter = [] { return nullptr; };
     SpinBoxGroup m_translation_group;
     SpinBoxGroup m_rotation_group;
     SpinBoxGroup m_scale_group;

@@ -22,7 +22,7 @@ uniform PointLight point_light[10];
 uniform int point_light_count;
 uniform SpotLight spot_light[4];
 uniform int spot_light_count;
-uniform Material material;
+uniform PhongMaterial material;
 
 const float pcf_radius = 0.0018;
 

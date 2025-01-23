@@ -61,13 +61,14 @@ lcf::Model::UniquePtr lcf::ModelManager::clone(Model *model, std::string name)
 void lcf::ModelManager::clone(Model *model, Model *cloned)
 {
     cloned->m_created = true;
-    cloned->m_material_controller->copyShaderUniformBinderFrom(model->m_material_controller.get());
+    cloned->setMaterialController(MaterialController::createShared(*model->m_material_controller));
     for (auto &mesh : model->m_meshes) {
         if (not mesh) { continue; }
         auto cloned_mesh = std::make_unique<Mesh>(*mesh);
         cloned_mesh->setParent(cloned);
+        cloned_mesh->setMaterialController(MaterialController::createShared(*mesh->m_material_controller));
         cloned->addMesh(std::move(cloned_mesh));
-    }
+    };
 
     cloned->m_root_bone = model->processSkeleton(cloned->m_bones, nullptr, model->m_root_bone);
     for (int i = 0; i < cloned->m_meshes.size(); ++i) {

@@ -18,7 +18,9 @@ namespace lcf {
         using TextureDataInfoList = std::vector<TextureDataInfo>;
         using SharedPtr = std::shared_ptr<MaterialController>;
         MaterialController() = default;
+        MaterialController(const MaterialController &other);
         static SharedPtr createShared();
+        static SharedPtr createShared(const MaterialController &other);
         bool isValid() const;
         void setTexture(int texture_type, TextureWrapper texture);
         const TextureInfoMap &textureInfoMap() const;
@@ -33,7 +35,6 @@ namespace lcf {
         void setShininess(float shininess);
         void setShader(const SharedGLShaderProgramPtr& shader);
         GLShaderProgram *shader() const;
-        void copyShaderUniformBinderFrom(const MaterialController *other);
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr& su_binder);
         const ShaderUniformBinder::SharedPtr& shaderUniformBinder() const;
     private:

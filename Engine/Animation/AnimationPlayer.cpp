@@ -1,7 +1,7 @@
 #include "AnimationPlayer.h"
 
 
-lcf::AnimationPlayer::AnimationPlayList &lcf::AnimationPlayer::playList()
+lcf::AnimationPlayer::AnimationList &lcf::AnimationPlayer::playList()
 {
     return m_animations;
 }
@@ -40,4 +40,10 @@ void lcf::AnimationPlayer::update(float delta_time)
 bool lcf::AnimationPlayer::isPlaying() const
 {
     return m_playing;
+}
+
+int lcf::AnimationPlayer::playingIndex() const
+{
+    if (m_playing) { return m_playing_index; }
+    return -1;
 }
