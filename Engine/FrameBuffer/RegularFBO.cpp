@@ -23,6 +23,6 @@ void lcf::RegularFBO::resize(int width, int height)
 
 void lcf::RegularFBO::update()
 {
-    this->setColorAttachment(0, GLHelper::generateColorTexture(m_width, m_height, GLTextureFormat::RGBA));
+    this->setColorAttachment(0, m_color_attachment_generator(m_width, m_height));
     this->setDepthStencilAttachment(GLHelper::generateDepthStencilTexture(m_width, m_height));
 }

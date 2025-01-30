@@ -57,6 +57,18 @@ namespace lcf {
         POLYGON = 0x0009,   
     };
 
+    enum class ImageFormat
+    {
+        RGB = 0x1907,
+        RGBA = 0x1908,
+    };
+
+    enum class ImageDataType
+    {
+        UNSIGNED_BYTE = 0x1401,
+        FLOAT = 0x1406,
+    };
+
     enum GLTextureTarget
     {
         TEXTURE_2D = 0x0DE1,

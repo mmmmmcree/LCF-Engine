@@ -18,7 +18,9 @@ namespace lcf {
             Simple3D,
             GeometryDebug,
             SingleColor,
-            Skybox,
+            SphericalSkybox,
+            CubicSkybox,
+            SphereToCube,
             DirectionalShadowMap,
             AnimatedDirectionalShadowMap,
             PointShadowMap,
@@ -32,6 +34,7 @@ namespace lcf {
             AnimatedPBR,
             ShadowedPBR,
             AnimatedShadowedPBR,
+            IBLConvolution,
             SIZE
         };
         using ShaderInfo = std::pair<GLShader::ShaderTypeBit, QString>;

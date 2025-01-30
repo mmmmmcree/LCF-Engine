@@ -116,8 +116,8 @@ void lcf::FrameBufferObject::addColorAttachment()
 void lcf::FrameBufferObject::addColorAttachment(const NativeTextureWrapper &color_attachment)
 {
     this->bind();
-    auto gl = QOpenGLContext::currentContext()->functions();
-    gl->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + static_cast<int>(m_color_attachments.size()), color_attachment.target(), color_attachment.id(), 0);
+    auto gl = QOpenGLContext::currentContext()->extraFunctions();
+    gl->glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + static_cast<int>(m_color_attachments.size()), color_attachment.id(), 0);
     this->release();
     m_color_attachments.push_back(color_attachment);
 }
@@ -126,9 +126,9 @@ void lcf::FrameBufferObject::setColorAttachment(int index, const NativeTextureWr
 {
     if (index < 0 or index >= static_cast<int>(m_color_attachments.size())) { return; }
     m_color_attachments[index] = color_attachment;
-    auto gl = QOpenGLContext::currentContext()->functions();
+    auto gl = QOpenGLContext::currentContext()->extraFunctions();
     this->bind();
-    gl->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, color_attachment.target(), color_attachment.id(), 0);
+    gl->glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, color_attachment.id(), 0);
     this->release();
 }
 
@@ -136,11 +136,7 @@ void lcf::FrameBufferObject::setDepthAttachment(const NativeTextureWrapper &dept
 {
     this->bind();
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
-    if (depth_attachment.target() == TEXTURE_CUBE_MAP) {
-        gl->glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_attachment.id(), 0);
-    } else {
-        gl->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_attachment.target(), depth_attachment.id(), 0);
-    }
+    gl->glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_attachment.id(), 0);
     this->release();
     m_depth_attachment = depth_attachment;
 }
@@ -148,8 +144,8 @@ void lcf::FrameBufferObject::setDepthAttachment(const NativeTextureWrapper &dept
 void lcf::FrameBufferObject::setDepthStencilAttachment(const NativeTextureWrapper &depth_stencil_attachment)
 {
     this->bind();
-    auto gl = QOpenGLContext::currentContext()->functions();
-    gl->glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, depth_stencil_attachment.target(), depth_stencil_attachment.id(), 0);
+    auto gl = QOpenGLContext::currentContext()->extraFunctions();
+    gl->glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, depth_stencil_attachment.id(), 0);
     this->release();
     m_depth_stencil_attachment = depth_stencil_attachment;
 }

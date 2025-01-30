@@ -11,6 +11,7 @@
 #include "GLFunctions.h"
 #include "Renderer.h"
 #include "ControlManager.h"
+#include "LImage.h"
 
 using namespace lcf;
 
@@ -31,10 +32,9 @@ void GLWidget::initializeGL()
     TextureManager::instance()->initialize(this->context());
     SceneManager::instance()->initialize(this->context());
     ModelManager::instance()->initialize(this->context());
-    // auto scene = SceneManager::instance()->makeGrassLand();
-    SceneManager::instance()->makeTestScene();
-    // SceneManager::instance()->testShaderToy();
     Renderer::instance()->initialize(this->context());
+    // SceneManager::instance()->testShaderToy();
+    SceneManager::instance()->makeTestScene();
 }
 
 void GLWidget::paintGL()

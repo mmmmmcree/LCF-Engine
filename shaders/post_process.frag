@@ -9,14 +9,13 @@ in VS_OUT {
 uniform sampler2D channel0;
 uniform bool hdr_enabled;
 uniform bool gamma_correction_enabled;
-// uniform float exposure;
+uniform float exposure;
 
 vec3 tone_mapping_reinhard(vec3 hdr_color){
 	return hdr_color / (hdr_color + vec3(1.0));
 }
 
 vec3 tone_mapping_exposure(vec3 hdr_color){
-    const float exposure = 1.0; // uniform
 	return (vec3(1.0) - exp(-hdr_color * exposure));
 }
 

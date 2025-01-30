@@ -6,6 +6,7 @@
 #include <QElapsedTimer>
 #include <vector>
 #include "Matrix.h"
+#include "NativeTextureWrapper.h"
 
 namespace lcf {
     class ShaderToy
@@ -20,9 +21,7 @@ namespace lcf {
         void setSize(int width, int height);
         void setBuffer(int index, const BufferTextureList &buffer_texture_list);
         void update();
-        GLuint texture() const;
-        void bind(uint unit = 0);
-        void release(uint unit = 0);
+        NativeTextureWrapper texture() const;
     private:
         int m_width, m_height;
         ShaderToyBufferList m_buffers;

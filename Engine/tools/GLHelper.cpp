@@ -39,8 +39,7 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateColorTexture(int width, int hei
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     gl->glBindTexture(GL_TEXTURE_2D, 0);
-    NativeTextureWrapper texture_wrapper(texture);
-    texture_wrapper.setTarget(GL_TEXTURE_2D);
+    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
     return texture_wrapper;
 }
 
@@ -54,8 +53,7 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateDepthStencilTexture(int width, 
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     gl->glBindTexture(GL_TEXTURE_2D, 0);
-    NativeTextureWrapper texture_wrapper(texture);
-    texture_wrapper.setTarget(GL_TEXTURE_2D);
+    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
     return texture_wrapper;
 }
 
@@ -74,31 +72,11 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateDepthMap(int width, int height)
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     gl->glBindTexture(GL_TEXTURE_2D, 0);
-    NativeTextureWrapper texture_wrapper(texture);
-    texture_wrapper.setTarget(GL_TEXTURE_2D);
+    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
     return texture_wrapper;
 }
 
-lcf::NativeTextureWrapper lcf::GLHelper::generateCubeDepthMap(int width, int height)
-{
-    auto gl = QOpenGLContext::currentContext()->functions();
-    unsigned int texture;
-    gl->glGenTextures(1, &texture);
-    gl->glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-    for (unsigned int i = 0; i < 6; i++) {
-        gl->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-            0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    }
-    gl->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    gl->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    gl->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gl->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    gl->glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    gl->glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    NativeTextureWrapper texture_wrapper(texture);
-    texture_wrapper.setTarget(GL_TEXTURE_CUBE_MAP);
-    return texture_wrapper;
-}
+
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateMSAATexture(int width, int height, int samples, GLTextureFormat format)
 {
@@ -108,8 +86,7 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateMSAATexture(int width, int heig
     gl->glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
     gl->glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_TRUE);
     gl->glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-    NativeTextureWrapper texture_wrapper(texture);
-    texture_wrapper.setTarget(GL_TEXTURE_2D_MULTISAMPLE);
+    NativeTextureWrapper texture_wrapper(GLTexture::Target2DMultisample, texture);
     return texture_wrapper;
 }
 
@@ -124,8 +101,45 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateFloatingPointTexture(int width,
     gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     gl->glBindTexture(GL_TEXTURE_2D, 0);
-    NativeTextureWrapper texture_wrapper(texture);
-    texture_wrapper.setTarget(GL_TEXTURE_2D);
+    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
+    return texture_wrapper;
+}
+
+lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMap(int width, int internal_format, int pixel_format, int pixel_data_type)
+{
+    auto gl = QOpenGLContext::currentContext()->functions();
+    unsigned int texture;
+    gl->glGenTextures(1, &texture);
+    gl->glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
+    for (unsigned int i = 0; i < 6; i++) {
+        gl->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
+            internal_format, width, width, 0, pixel_format, pixel_data_type, nullptr);
+    }
+    NativeTextureWrapper texture_wrapper(GLTexture::TargetCubeMap, texture);
+    return texture_wrapper;
+}
+
+lcf::NativeTextureWrapper lcf::GLHelper::generateDepthCubeMap(int width)
+{
+    NativeTextureWrapper texture_wrapper = generateCubeMap(width, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
+    texture_wrapper.setMinMagFilter(GLTexture::Nearest, GLTexture::Nearest);
+    texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
+    return texture_wrapper;
+}
+
+lcf::NativeTextureWrapper lcf::GLHelper::generateHDRCubeMap(int width)
+{
+    NativeTextureWrapper texture_wrapper = generateCubeMap(width, GL_RGB32F, GL_RGB, GL_FLOAT);
+    texture_wrapper.setMinMagFilter(GLTexture::Linear, GLTexture::Linear);
+    texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
+    return texture_wrapper;
+}
+
+lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMap(int width)
+{
+    NativeTextureWrapper texture_wrapper = generateCubeMap(width, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
+    texture_wrapper.setMinMagFilter(GLTexture::Linear, GLTexture::Linear);
+    texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
     return texture_wrapper;
 }
 
@@ -150,6 +164,16 @@ lcf::SharedGLTexturePtr lcf::GLHelper::generateTextureByTextureType(TextureType 
     texture->allocateStorage();
     texture->setData(GLTexture::RGBA, QOpenGLTexture::UInt8, data);
     return texture;
+}
+
+lcf::SharedGLTexturePtr lcf::GLHelper::fromImageToTexture(const LImage & image, GLTexture::TextureFormat texture_format)
+{
+    auto tex = std::make_shared<GLTexture>(GLTexture::Target2D);
+    tex->setSize(image.width(), image.height());
+    tex->setFormat(texture_format);
+    tex->allocateStorage();
+    tex->setData(static_cast<GLTexture::PixelFormat>(image.format()), static_cast<GLTexture::PixelType>(image.dataType()), image.data());
+    return tex;
 }
 
 int lcf::GLHelper::maximumTextureUnits()

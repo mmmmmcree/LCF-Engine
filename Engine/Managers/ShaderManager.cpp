@@ -100,7 +100,19 @@ lcf::ShaderManager::ShaderManager() :
         {GLShader::Vertex, lcf::path::shaders_prefix + "skybox.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "sampler_spherical.frag"}, 
     });
-    m_configured_shaders[Skybox] = shader;
+    m_configured_shaders[SphericalSkybox] = shader;
+    shader = load({
+        {GLShader::Vertex, lcf::path::shaders_prefix + "skybox.vert"}, 
+        {GLShader::Fragment, lcf::path::shaders_prefix + "sampler_cube.frag"}, 
+    });
+    m_configured_shaders[CubicSkybox] = shader;
+    GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
+    shader = load({
+        {GLShader::Vertex, path::shaders_prefix + "cube_map.vert"},
+        {GLShader::Geometry, path::shaders_prefix + "cube_map.geom"},
+        {GLShader::Fragment, path::shaders_prefix + "sphere_to_cube.frag"}
+    });
+    m_configured_shaders[SphereToCube] = shader;
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "directional_shadow_map.vert"}, 
@@ -170,6 +182,12 @@ lcf::ShaderManager::ShaderManager() :
         {GLShader::Fragment, path::shaders_prefix + "pbr_shadow.frag"},
     });
     m_configured_shaders[AnimatedShadowedPBR] = shader;
+    shader = m_configured_shaders[IBLConvolution] = load({
+        {GLShader::Vertex, path::shaders_prefix + "cube_map.vert"},
+        {GLShader::Geometry, path::shaders_prefix + "cube_map.geom"},
+        {GLShader::Fragment, path::shaders_prefix + "IBL/convolution.frag"},
+    });
+    GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
 }
 
 QString lcf::ShaderManager::readShaderSourceCode(const QString & file_path)

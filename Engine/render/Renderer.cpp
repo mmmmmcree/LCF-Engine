@@ -4,6 +4,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include "Constants.h"
+#include "GLHelper.h"
 
 lcf::Renderer *lcf::Renderer::instance()
 {
@@ -29,7 +30,8 @@ void lcf::Renderer::initialize(QOpenGLContext *context)
     m_post_process_shader_binder = ShaderUniformBinder::createShared(post_process_shader);
     m_post_process_shader_binder->setUniforms({
         SingleUniform("hdr_enabled", [this] { return m_hdr_enabled; }),
-        SingleUniform("gamma_correction_enabled", [this] { return m_gamma_correction_enabled; })
+        SingleUniform("gamma_correction_enabled", [this] { return m_gamma_correction_enabled; }),
+        SingleUniform("exposure", [this] { return m_hdr_exposure; })
     });
     m_bloomer = Bloomer::createUnique(2048, 2048);
     this->enableGammaCorrection(m_gamma_correction_enabled);
@@ -60,7 +62,6 @@ void lcf::Renderer::enableHDR(bool enable)
     GLTextureFormat color_format = enable ? GLTextureFormat::RGBA16F : GLTextureFormat::RGBA;
     m_msaa_fbo->setColorFormat(color_format);
     m_post_process_fbo->setColorFormat(color_format);
-    m_context->doneCurrent();
     if (not enable) {
         this->enableBloom(false);
     }
@@ -70,6 +71,11 @@ void lcf::Renderer::enableHDR(bool enable)
 bool lcf::Renderer::isHDREnabled() const
 {
     return m_hdr_enabled;
+}
+
+void lcf::Renderer::setHDRExposure(float exposure)
+{
+    m_hdr_exposure = exposure;
 }
 
 void lcf::Renderer::enableMSAA(bool enable)

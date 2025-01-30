@@ -1,6 +1,8 @@
 #pragma once
 
 #include "FrameBufferObject.h"
+#include <functional>
+#include "GLHelper.h"
 
 namespace lcf {
     class RegularFBO : public FrameBufferObject
@@ -17,5 +19,9 @@ namespace lcf {
         using FrameBufferObject::setColorAttachment;
         using FrameBufferObject::setDepthAttachment;
         using FrameBufferObject::setDepthStencilAttachment;
+    private:
+        std::function<NativeTextureWrapper(int, int)> m_color_attachment_generator = [](int width, int height) {
+            return GLHelper::generateColorTexture(width, height, GLTextureFormat::RGBA);
+        };
     };
 }

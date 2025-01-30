@@ -24,10 +24,12 @@ namespace lcf {
         using SkeletonPtr = std::unique_ptr<Skeleton>;
         using InstanceHelperPtr = std::shared_ptr<InstanceHelper>;
         using SharedPtr = std::shared_ptr<Mesh>;
+        using UniquePtr = std::unique_ptr<Mesh>;
         Mesh(const GeometryPtr &geometry);
         Mesh(const Mesh& other);
         Object3DType type() const override;
         static SharedPtr createShared(const GeometryPtr &geometry);
+        static UniquePtr createUnique(const GeometryPtr &geometry);
         static SharedPtr createShared(const Mesh& other);
         void create();
         bool isCreated() const;

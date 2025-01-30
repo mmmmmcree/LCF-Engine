@@ -29,6 +29,11 @@ lcf::Mesh::SharedPtr lcf::Mesh::createShared(const GeometryPtr &geometry)
     return std::make_shared<Mesh>(geometry);
 }
 
+lcf::Mesh::UniquePtr lcf::Mesh::createUnique(const GeometryPtr &geometry)
+{
+    return std::make_unique<Mesh>(geometry);
+}
+
 lcf::Mesh::SharedPtr lcf::Mesh::createShared(const Mesh &other)
 {
     return std::make_shared<Mesh>(other);

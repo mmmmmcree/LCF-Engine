@@ -11,6 +11,7 @@
 #include "UserCustomMaterial.h"
 #include "LightArray.h"
 #include "ControlManager.h"
+#include "LImage.h"
 
 lcf::SceneManager *lcf::SceneManager::instance()
 {
@@ -167,60 +168,72 @@ void lcf::SceneManager::makeTestScene()
     auto &scene = m_scenes.emplace(std::make_pair(scene_name, new Scene)).first->second;
     ControlManager::instance()->setCurrentScene(scene.get());
 
-    SharedGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "bk.jpg");
-    texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-    scene->setSkyboxTexture(texture);
+    // SharedGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "bk.jpg");
+    // texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
+    // scene->setSkyboxTexture(texture);
 
-    PointLight::SharedPtr point_light0 = PointLight::createShared();
-    scene->addObject3D(point_light0);
-    point_light0->setColor({100.0f, 100.0f, 100.0f});
-    point_light0->setTranslation({1.8f, 0.8f, 0.0f});
-    point_light0->scale(0.3f);
-    point_light0->setCastShadow(true);
+    auto img = LImage(path::res_prefix + "kloppenheim_06_puresky_4k.hdr", true);
+    SharedGLTexturePtr tex = GLHelper::fromImageToTexture(img, GLTexture::RGB32F);
+    tex->setWrapMode(GLTexture::ClampToEdge);
+    tex->setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
+    auto processed_tex = TextureManager::instance()->fromSphereToCubeRGBF(tex);
+    auto ibl_convolution = TextureManager::instance()->IBLConvolution(processed_tex);
+    scene->setSkyboxTexture(processed_tex);
+    scene->setSkyboxTexture(ibl_convolution);
 
-    DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
-    directional_light->setTranslation({0.0f, 3.0f, 0.0f});
-    directional_light->rotateX(-90.0f);
-    directional_light->setColor({10.0f, 10.0f, 10.0f});
-    directional_light->setCastShadow(true);
-    scene->addObject3D(directional_light);
+    
+    
 
-    Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
-    room->scale(2.0f);
-    room->translateY(-0.12f);
-    scene->addObject3D(room);
+    // PointLight::SharedPtr point_light0 = PointLight::createShared();
+    // scene->addObject3D(point_light0);
+    // point_light0->setColor({100.0f, 100.0f, 100.0f});
+    // point_light0->setTranslation({1.8f, 0.8f, 0.0f});
+    // point_light0->scale(0.3f);
+    // point_light0->setCastShadow(true);
 
-    Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
-    robot->setMaterialType(MaterialType::PBR);
-    robot->setCastShadow(true);
-    scene->addObject3D(robot);
+    // DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
+    // directional_light->setTranslation({0.0f, 3.0f, 0.0f});
+    // directional_light->rotateX(-90.0f);
+    // directional_light->setColor({10.0f, 10.0f, 10.0f});
+    // directional_light->setCastShadow(true);
+    // scene->addObject3D(directional_light);
 
-    Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
-    helmet->scale(0.3f);
-    helmet->translateY(5.0f);
-    helmet->setMaterialType(MaterialType::PBR);
-    helmet->setCastShadow(true);
-    scene->addObject3D(helmet);
+    // Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
+    // room->scale(2.0f);
+    // room->translateY(-0.12f);
+    // scene->addObject3D(room);
 
-    Model::SharedPtr dinosaur = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
-    dinosaur->translate(-3.0f, 0.0f, 0.0f);
-    dinosaur->scale(0.3f);
-    dinosaur->setCastShadow(true);
-    scene->addObject3D(dinosaur);
-    dinosaur->playAnimation(1, 1.0f);
+    // Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
+    // robot->setMaterialType(MaterialType::PBR);
+    // robot->setCastShadow(true);
+    // scene->addObject3D(robot);
 
-    Model::SharedPtr dinosaur2 = ModelManager::instance()->clone(dinosaur.get());
-    dinosaur2->translate(3.0f, 0.0f, 0.0f);
-    dinosaur2->setCastShadow(true);
-    scene->addObject3D(dinosaur2);
-    dinosaur2->playAnimation(0, 1.0f);
+    // Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
+    // helmet->scale(0.3f);
+    // helmet->translateY(5.0f);
+    // helmet->setMaterialType(MaterialType::PBR);
+    // helmet->setCastShadow(true);
+    // scene->addObject3D(helmet);
 
-    connect(scene->timer(), &QTimer::timeout, this, [=] {
-        static float d = 0;
-        helmet->translateX(qSin(d) * 0.1f);
-        point_light0->translateY(qSin(d) * 0.1f);
-        d += 0.02f;
-    });
+    // Model::SharedPtr dinosaur = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
+    // dinosaur->translate(-3.0f, 0.0f, 0.0f);
+    // dinosaur->scale(0.3f);
+    // dinosaur->setCastShadow(true);
+    // scene->addObject3D(dinosaur);
+    // dinosaur->playAnimation(1, 1.0f);
+
+    // Model::SharedPtr dinosaur2 = ModelManager::instance()->clone(dinosaur.get());
+    // dinosaur2->translate(3.0f, 0.0f, 0.0f);
+    // dinosaur2->setCastShadow(true);
+    // scene->addObject3D(dinosaur2);
+    // dinosaur2->playAnimation(0, 1.0f);
+
+    // connect(scene->timer(), &QTimer::timeout, this, [=] {
+    //     static float d = 0;
+    //     helmet->translateX(qSin(d) * 0.1f);
+    //     point_light0->translateY(qSin(d) * 0.1f);
+    //     d += 0.02f;
+    // });
 }
 
 void lcf::SceneManager::testShaderToy()
@@ -241,7 +254,7 @@ void lcf::SceneManager::testShaderToy()
     shader_toy->setBuffer(1, {0});
     Mesh::SharedPtr mesh = Mesh::createShared(Geometry::quad());
     mesh->setMaterialType(MaterialType::UserCustom);
-    mesh->setTexture(TextureType::UserCustom0, shader_toy);
+    mesh->setTexture(TextureType::UserCustom0, shader_toy->texture());
     mesh->setShader(ShaderManager::instance()->get(ShaderManager::Simple2D));
     scene->addObject3D(mesh);
 }

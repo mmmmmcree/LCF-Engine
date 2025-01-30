@@ -2,25 +2,39 @@
 
 #include "Define.h"
 #include <atomic>
+#include <utility>
+#include "GLTexture.h"
 
 namespace lcf {
     class NativeTextureWrapper
     {
     public:
-        NativeTextureWrapper();
+        NativeTextureWrapper() = default;
         ~NativeTextureWrapper();
-        NativeTextureWrapper(unsigned int texture);
+        NativeTextureWrapper(GLTexture::Target target, unsigned int texture, bool managed = true);
         NativeTextureWrapper(const NativeTextureWrapper &other);
         NativeTextureWrapper *operator->();
         NativeTextureWrapper& operator=(const NativeTextureWrapper &other);
-        void setTarget(int target);
-        int target() const;
+        GLTexture::Target target() const;
         void bind(int unit) const;
         void release(int unit) const;
         unsigned int id() const;
+        bool isValid() const;
+        std::pair<int, int> size() const;
+        int width() const;
+        int height() const;
+        GLTexture::TextureFormat format() const;
+        void setWrapMode(GLTexture::WrapMode wrap_mode);
+        void setMinMagFilter(GLTexture::Filter min_filter, GLTexture::Filter mag_filter);
     private:
-        unsigned int m_texture = 0;
-        int m_target = TEXTURE_2D;
-        std::atomic<int> *m_ref_count = nullptr;
+        struct TextureInfo
+        {
+            unsigned int texture = 0;
+            int target = GLTexture::Target2D;
+            int width = 0, height = 0;
+            int format = GLTexture::TextureFormat::RGB8U;
+            std::atomic<int> m_ref_count = 2;
+        };
+        TextureInfo *m_info = nullptr;
     };
 }

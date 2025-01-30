@@ -5,11 +5,6 @@ lcf::TextureWrapper::TextureWrapper(GLTexture *texture)
     if (texture) { m_texture = texture; }
 }
 
-lcf::TextureWrapper::TextureWrapper(ShaderToy *texture)
-{
-    if (texture) { m_texture = texture; }
-}
-
 lcf::TextureWrapper::TextureWrapper(const std::shared_ptr<GLTexture> &texture)
 {
     if (texture) { m_texture = texture; }
@@ -18,11 +13,6 @@ lcf::TextureWrapper::TextureWrapper(const std::shared_ptr<GLTexture> &texture)
 lcf::TextureWrapper::TextureWrapper(std::unique_ptr<GLTexture> &&texture)
 {
     if (texture) { m_texture = std::move(texture); }
-}
-
-lcf::TextureWrapper::TextureWrapper(unsigned int texture)
-{
-    if (texture) { m_texture = NativeTextureWrapper(texture); }
 }
 
 lcf::TextureWrapper::TextureWrapper(const NativeTextureWrapper &texture)
@@ -48,15 +38,35 @@ void lcf::TextureWrapper::release(unsigned int unit)
     }, m_texture.value());
 }
 
-// void lcf::TextureWrapper::release()
-// {
-//     if (not m_texture.has_value()) { return; }
-//     std::visit([](auto&& arg) {
-//         arg->release();
-//     }, m_texture.value());
-// }
-
 bool lcf::TextureWrapper::isValid() const
 {
     return m_texture.has_value();
+}
+
+int lcf::TextureWrapper::target()
+{
+    int target = 0;
+    if (not this->isValid()) { return target; }
+    std::visit([&target](auto&& arg) {
+        target = arg->target();
+    }, m_texture.value());
+    return target;
+}
+
+int lcf::TextureWrapper::format()
+{
+    int format = GLTexture::TextureFormat::NoFormat;
+    if (not this->isValid()) { return format; }
+    std::visit([&format](auto&& arg) {
+        format = arg->format();
+    }, m_texture.value());
+    return format;
+}
+
+void lcf::TextureWrapper::setWrapMode(GLTexture::WrapMode wrap_mode)
+{
+    if (not m_texture.has_value()) { return; }
+    std::visit([wrap_mode](auto&& arg) {
+        arg->setWrapMode(wrap_mode);
+    }, m_texture.value());
 }

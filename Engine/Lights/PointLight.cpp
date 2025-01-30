@@ -13,7 +13,7 @@ lcf::PointLight::PointLight()
     m_projection_provider.setFarPlane(100.0f);
     m_projection_provider.setFov(90.0f);
     m_light_index = s_light_count++;
-    m_fbo = CubeDepthMapFBO::createUnique(4096, 4096);
+    m_fbo = DepthCubeMapFBO::createUnique(4096);
     m_projection_provider.setAspect(m_fbo->width(), m_fbo->height());
 }
 

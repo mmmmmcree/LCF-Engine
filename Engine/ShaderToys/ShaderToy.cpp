@@ -70,32 +70,7 @@ void lcf::ShaderToy::update()
     ++iFrame;
 }
 
-GLuint lcf::ShaderToy::texture() const
+lcf::NativeTextureWrapper lcf::ShaderToy::texture() const
 {
-    return m_buffers.back().texture();
+    return NativeTextureWrapper(GLTexture::Target2D, m_buffers.back().texture(), false);
 }
-
-void lcf::ShaderToy::bind(uint unit)
-{
-    if (m_buffers.empty()) {
-        qDebug() << "No buffer to bind";
-        return;
-    }
-    auto gl = QOpenGLContext::currentContext()->functions();
-    gl->glActiveTexture(GL_TEXTURE0 + unit);
-    gl->glBindTexture(GL_TEXTURE_2D, this->texture());
-}
-
-void lcf::ShaderToy::release(uint unit)
-{
-    auto gl = QOpenGLContext::currentContext()->functions();
-    gl->glActiveTexture(GL_TEXTURE0 + unit);
-    gl->glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-// void lcf::ShaderToy::release()
-// {
-//     auto gl = QOpenGLContext::currentContext()->functions();
-//     gl->glActiveTexture(GL_TEXTURE0);
-//     gl->glBindTexture(GL_TEXTURE_2D, 0);
-// }

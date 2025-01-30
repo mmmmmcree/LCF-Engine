@@ -22,6 +22,7 @@ namespace lcf {
         void render(Scene *scene);
         void enableHDR(bool enable);
         bool isHDREnabled() const;
+        void setHDRExposure(float exposure);
         void enableMSAA(bool enable);
         bool isMSAAEnabled() const;
         void enableBloom(bool enable);
@@ -50,5 +51,6 @@ namespace lcf {
         bool m_hdr_enabled = true;
         bool m_bloom_enabled = true;
         bool m_msaa_enabled = true;
+        float m_hdr_exposure = 1.0f;
     };
 }

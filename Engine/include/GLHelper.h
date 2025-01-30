@@ -12,6 +12,7 @@
 #include "Define.h"
 #include "GLTexture.h"
 #include "Image.h"
+#include "LImage.h"
 
 
 namespace lcf {
@@ -27,12 +28,18 @@ namespace lcf {
         static NativeTextureWrapper generateColorTexture(int width, int height, GLTextureFormat internal_format);
         static NativeTextureWrapper generateDepthStencilTexture(int width, int height);
         static NativeTextureWrapper generateDepthMap(int width, int height);
-        static NativeTextureWrapper generateCubeDepthMap(int width, int height);
         static NativeTextureWrapper generateMSAATexture(int width, int height, int samples, GLTextureFormat format);
         static NativeTextureWrapper generateFloatingPointTexture(int width, int height);
 
+        static NativeTextureWrapper generateCubeMap(int width, int internal_format, int pixel_format, int pixel_type);
+        static NativeTextureWrapper generateDepthCubeMap(int width);
+        static NativeTextureWrapper generateHDRCubeMap(int width);
+        static NativeTextureWrapper generateCubeMap(int width);
+
         static SharedGLTexturePtr generateTextureByTextureType(TextureType type, const Image &image);
         static SharedGLTexturePtr generateTextureByTextureType(TextureType type, int width, int height, const unsigned char *data);
+
+        static SharedGLTexturePtr fromImageToTexture(const LImage &image, GLTexture::TextureFormat texture_format);
 
         static int maximumTextureUnits();
     };

@@ -2,6 +2,10 @@
 #include <QFileInfo>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
+#include "FrameBufferObject.h"
+#include "ShaderManager.h"
+#include "Geometry.h"
+#include "GLHelper.h"
 
 lcf::TextureManager *lcf::TextureManager::instance()
 {
@@ -28,7 +32,7 @@ std::unique_ptr<lcf::GLTexture> lcf::TextureManager::load(const QString &image_p
         texture->setSize(image.width(), image.height());
         texture->setFormat(internal_format);
         texture->allocateStorage();
-        texture->setData(GLTexture::RGBA, QOpenGLTexture::UInt8, image.constBits());
+        texture->setData(GLTexture::RGBA, GLTexture::UInt8, image.constBits());
 
         texture->setWrapMode(GLTexture::DirectionR, wrap_mode_r);
         texture->setWrapMode(GLTexture::DirectionS, wrap_mode_s);
@@ -49,6 +53,84 @@ std::unique_ptr<lcf::GLTexture> lcf::TextureManager::loadSingleThread(unsigned c
 std::unique_ptr<lcf::GLTexture> lcf::TextureManager::loadSingleThread(const QString & image_path, bool mirrored)
 {
     return std::make_unique<GLTexture>(mirrored ? QImage(image_path).mirrored() : QImage(image_path));
+}
+
+lcf::TextureWrapper lcf::TextureManager::fromSphereToCubeRGB(TextureWrapper source)
+{
+    const int width = 1024;
+    bool current_context = QOpenGLContext::currentContext();
+    if (not current_context) { m_context->makeCurrent(m_surface); }
+    FrameBufferObject fbo(width, width);
+    fbo.addColorAttachment(GLHelper::generateCubeMap(width));
+    auto shader = ShaderManager::instance()->get(ShaderManager::SphereToCube);
+    fbo.bind();
+    shader->bind();
+    source.bind(0);
+    Geometry::cube()->draw();
+    source.release(0);
+    shader->release();
+    fbo.release();
+    if (not current_context) { m_context->doneCurrent(); }
+    return TextureWrapper(fbo.colorAttachment());
+}
+
+lcf::TextureWrapper lcf::TextureManager::fromSphereToCubeRGBF(TextureWrapper source)
+{
+    const int width = 1024;
+    bool current_context = QOpenGLContext::currentContext();
+    if (not current_context) { m_context->makeCurrent(m_surface); }
+    FrameBufferObject fbo(width, width);
+    auto hdr_cube_map = GLHelper::generateHDRCubeMap(width);
+    fbo.addColorAttachment(hdr_cube_map);
+    auto shader = ShaderManager::instance()->get(ShaderManager::SphereToCube);
+    fbo.bind();
+    shader->bind();
+    source.bind(0);
+    Geometry::cube()->draw();
+    source.release(0);
+    shader->release();
+    fbo.release();
+    if (not current_context) { m_context->doneCurrent(); }
+    return TextureWrapper(fbo.colorAttachment());    
+}
+
+lcf::TextureWrapper lcf::TextureManager::IBLConvolution(TextureWrapper environment_cubemap)
+{
+    const int width = 32;
+    bool current_context = QOpenGLContext::currentContext();
+    if (not current_context) { m_context->makeCurrent(m_surface); }
+    FrameBufferObject fbo(width, width);
+    fbo.addColorAttachment(GLHelper::generateHDRCubeMap(width));
+    auto shader = ShaderManager::instance()->get(ShaderManager::IBLConvolution);
+    fbo.bind();
+    shader->bind();
+    environment_cubemap.bind(0);
+    Geometry::cube()->draw();
+    auto gl = QOpenGLContext::currentContext()->functions();
+    environment_cubemap.release(0);
+    shader->release();
+    fbo.release();
+    if (not current_context) { m_context->doneCurrent(); }
+    return TextureWrapper(fbo.colorAttachment());    
+}
+
+lcf::TextureWrapper lcf::TextureManager::loadCubeMap(const QString &right, const QString &left, const QString &top, const QString &bottom, const QString &front, const QString &back)
+{
+    QStringList paths = { right, left, top, bottom, front, back };
+    auto gl = QOpenGLContext::currentContext()->functions();
+    unsigned int texture;
+    gl->glGenTextures(1, &texture);
+    NativeTextureWrapper texture_wrapper(GLTexture::TargetCubeMap, texture);
+    texture_wrapper.bind(0);
+    for (int i = 0; i < 6; ++i) {
+        LImage image(paths[i], false);
+        gl->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+            0, GL_RGB, image.width(), image.height(), 0, static_cast<int>(image.format()), static_cast<int>(image.dataType()), image.data());
+    }
+    texture_wrapper.release(0);
+    texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
+    texture_wrapper.setMinMagFilter(GLTexture::Linear, GLTexture::Linear);
+    return texture_wrapper;
 }
 
 void lcf::TextureManager::initialize(QOpenGLContext * context)

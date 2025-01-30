@@ -10,7 +10,7 @@
 lcf::Scene::Scene() : Object3D()
 {
     m_skybox = std::make_unique<Mesh>(Mesh::GeometryPtr(Geometry::cube()));
-    m_skybox->setShader(ShaderManager::instance()->get(ShaderManager::Skybox));
+    m_skybox->setShader(ShaderManager::instance()->get(ShaderManager::CubicSkybox));
     m_skybox->setMaterialType(MaterialType::UserCustom);
     m_timer.setInterval(1000 / 60);
 }

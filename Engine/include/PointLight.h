@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Light.h"
-#include "CubeDepthMapFBO.h"
+#include "DepthCubeMapFBO.h"
 #include <array>
 
 namespace lcf {
@@ -21,7 +21,7 @@ namespace lcf {
     private:
         void updateLightMatrices();
     private:
-        CubeDepthMapFBO::UniquePtr m_fbo;
+        DepthCubeMapFBO::UniquePtr m_fbo;
         std::array<Matrix4x4, 6> m_light_matrices;
         float m_constant = 1.0f, m_linear = 0.09f, m_quadratic = 0.032f;
         int m_light_index = 0;
