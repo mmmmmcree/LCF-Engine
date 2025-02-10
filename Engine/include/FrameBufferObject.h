@@ -3,6 +3,8 @@
 #include "NativeTextureWrapper.h"
 #include <memory>
 #include <vector>
+#include <stack>
+#include <array>
 
 namespace lcf {
     class FrameBufferObject
@@ -35,12 +37,20 @@ namespace lcf {
         const NativeTextureWrapper &colorAttachment(int index = 0) const;
         const NativeTextureWrapper &depthAttachment() const;
         const NativeTextureWrapper &depthStencilAttachment() const;
+        void setMipMapLevel(int level);
+    protected:
+        void _bind();
+        void _release();
     private:
-        int m_original_viewport[4];
-        int m_last_bound_fbo;
+        using Viewport = std::array<int, 4>;
+        using ViewportStack = std::stack<Viewport>;
+        using FBOStack = std::stack<unsigned int>;
+        inline static ViewportStack s_viewport_stack;
+        inline static FBOStack s_fbo_stack;
     protected:
         unsigned int m_fbo;
         int m_width, m_height;
+        int m_mip_map_level = 0;
         AttachmentList m_color_attachments;
         NativeTextureWrapper m_depth_attachment;
         NativeTextureWrapper m_depth_stencil_attachment;

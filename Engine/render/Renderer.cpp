@@ -20,8 +20,8 @@ void lcf::Renderer::initialize(QOpenGLContext *context)
     m_surface->create();
     this->updateRenderPassProcedure();
     this->updatePostProcessProcedure();
-    m_msaa_fbo = MSAAFBO::createUnique(0, 0, 8, GLTextureFormat::RGBA);
-    m_post_process_fbo = ScreenFBO::createUnique(0, 0, GLTextureFormat::RGBA);
+    m_msaa_fbo = MSAAFBO::createUnique(0, 0, 8, GLTextureFormat::RGBA8U);
+    m_post_process_fbo = ScreenFBO::createUnique(0, 0, GLTextureFormat::RGBA8U);
     SharedGLShaderProgramPtr post_process_shader = ShaderManager::instance()->load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "simple2D.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "post_process.frag"}, 
@@ -59,7 +59,7 @@ void lcf::Renderer::enableHDR(bool enable)
 {
     m_context->makeCurrent(m_surface);
     m_hdr_enabled = enable;
-    GLTextureFormat color_format = enable ? GLTextureFormat::RGBA16F : GLTextureFormat::RGBA;
+    GLTextureFormat color_format = enable ? GLTextureFormat::RGBA16F : GLTextureFormat::RGBA8_UNorm;
     m_msaa_fbo->setColorFormat(color_format);
     m_post_process_fbo->setColorFormat(color_format);
     if (not enable) {

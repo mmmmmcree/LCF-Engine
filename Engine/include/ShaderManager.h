@@ -35,6 +35,7 @@ namespace lcf {
             ShadowedPBR,
             AnimatedShadowedPBR,
             IBLConvolution,
+            IBLPrefilter,
             SIZE
         };
         using ShaderInfo = std::pair<GLShader::ShaderTypeBit, QString>;

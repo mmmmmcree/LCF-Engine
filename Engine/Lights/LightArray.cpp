@@ -65,15 +65,6 @@ lcf::UniformList lcf::LightArray::asUniformList()
     return uniforms;
 }
 
-void lcf::LightArray::allocateShadowMapUnits()
-{
-    int maximum_units = GLHelper::maximumTextureUnits();
-    for (Light *light : m_lights) {
-        if (not light->castShadow()) { continue; }
-        light->setShadowMapUnit(--maximum_units);
-    }
-}
-
 typename lcf::LightArray::LightList::iterator lcf::LightArray::begin()
 {
     return m_lights.begin();

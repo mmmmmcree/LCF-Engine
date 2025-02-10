@@ -7,6 +7,7 @@
 #include <vector>
 #include "Matrix.h"
 #include "NativeTextureWrapper.h"
+#include "TextureWrapper.h"
 
 namespace lcf {
     class ShaderToy

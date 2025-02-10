@@ -21,62 +21,11 @@ void lcf::GLHelper::setShaderUniforms(QOpenGLShaderProgram *shader, const Unifor
     shader->bind();
     for (const auto &[name, uniform] : uniform_infos) {
         std::visit([&](auto &&value) {
-            shader->setUniformValue(name.toStdString().c_str(), value);
+            shader->setUniformValue(name.toLocal8Bit(), value);
         }, uniform);
     }
     shader->release();
 }
-
-lcf::NativeTextureWrapper lcf::GLHelper::generateColorTexture(int width, int height, GLTextureFormat internal_format)
-{
-    auto gl = QOpenGLContext::currentContext()->functions();
-    unsigned int texture;
-    gl->glGenTextures(1, &texture);
-    gl->glBindTexture(GL_TEXTURE_2D, texture);
-    gl->glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    gl->glBindTexture(GL_TEXTURE_2D, 0);
-    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
-    return texture_wrapper;
-}
-
-lcf::NativeTextureWrapper lcf::GLHelper::generateDepthStencilTexture(int width, int height)
-{
-    auto gl = QOpenGLContext::currentContext()->functions();
-    unsigned int texture;
-    gl->glGenTextures(1, &texture);
-    gl->glBindTexture(GL_TEXTURE_2D, texture);
-    gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    gl->glBindTexture(GL_TEXTURE_2D, 0);
-    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
-    return texture_wrapper;
-}
-
-lcf::NativeTextureWrapper lcf::GLHelper::generateDepthMap(int width, int height)
-{
-    auto gl = QOpenGLContext::currentContext()->functions();
-    unsigned int texture;
-    gl->glGenTextures(1, &texture);
-    gl->glBindTexture(GL_TEXTURE_2D, texture);
-    gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 
-        width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    float border_color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-    gl->glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    gl->glBindTexture(GL_TEXTURE_2D, 0);
-    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
-    return texture_wrapper;
-}
-
-
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateMSAATexture(int width, int height, int samples, GLTextureFormat format)
 {
@@ -90,22 +39,14 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateMSAATexture(int width, int heig
     return texture_wrapper;
 }
 
-lcf::NativeTextureWrapper lcf::GLHelper::generateFloatingPointTexture(int width, int height)
+lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMapAttachment(int width, GLTexture::TextureFormat internal_format)
 {
-    auto gl = QOpenGLContext::currentContext()->functions();
-    unsigned int texture;
-    gl->glGenTextures(1, &texture);
-    gl->glBindTexture(GL_TEXTURE_2D, texture);
-    gl->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGB, GL_FLOAT, nullptr);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    gl->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    gl->glBindTexture(GL_TEXTURE_2D, 0);
-    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
-    return texture_wrapper;
+    int pixel_format = 0, pixel_data_type = 0;
+    deducePixelFormatByTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format), pixel_format, pixel_data_type);
+    return generateCubeMap(width, internal_format, pixel_format, pixel_data_type);
 }
 
-lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMap(int width, int internal_format, int pixel_format, int pixel_data_type)
+lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMap(int width, int internal_format, int pixel_format, int pixel_data_type, const void *data)
 {
     auto gl = QOpenGLContext::currentContext()->functions();
     unsigned int texture;
@@ -113,33 +54,45 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMap(int width, int internal
     gl->glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
     for (unsigned int i = 0; i < 6; i++) {
         gl->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
-            internal_format, width, width, 0, pixel_format, pixel_data_type, nullptr);
+            internal_format, width, width, 0, pixel_format, pixel_data_type, data);
     }
+    gl->glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
     NativeTextureWrapper texture_wrapper(GLTexture::TargetCubeMap, texture);
+    if (isDepthTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format))) {
+        texture_wrapper.setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
+        texture_wrapper.setBorderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        texture_wrapper.setWrapMode(GLTexture::ClampToBorder);
+    } else {
+        texture_wrapper.setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
+        texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
+    }
     return texture_wrapper;
 }
 
-lcf::NativeTextureWrapper lcf::GLHelper::generateDepthCubeMap(int width)
+lcf::NativeTextureWrapper lcf::GLHelper::generateTexture2DAttachment(int width, int height, GLTexture::TextureFormat internal_format)
 {
-    NativeTextureWrapper texture_wrapper = generateCubeMap(width, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
-    texture_wrapper.setMinMagFilter(GLTexture::Nearest, GLTexture::Nearest);
-    texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
-    return texture_wrapper;
+    int pixel_format = 0, pixel_data_type = 0;
+    deducePixelFormatByTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format), pixel_format, pixel_data_type);
+    return generateTexture2D(width, height, internal_format, pixel_format, pixel_data_type);
 }
 
-lcf::NativeTextureWrapper lcf::GLHelper::generateHDRCubeMap(int width)
+lcf::NativeTextureWrapper lcf::GLHelper::generateTexture2D(int width, int height, int internal_format, int pixel_format, int pixel_type, const void *data)
 {
-    NativeTextureWrapper texture_wrapper = generateCubeMap(width, GL_RGB32F, GL_RGB, GL_FLOAT);
-    texture_wrapper.setMinMagFilter(GLTexture::Linear, GLTexture::Linear);
-    texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
-    return texture_wrapper;
-}
-
-lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMap(int width)
-{
-    NativeTextureWrapper texture_wrapper = generateCubeMap(width, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE);
-    texture_wrapper.setMinMagFilter(GLTexture::Linear, GLTexture::Linear);
-    texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
+    auto gl = QOpenGLContext::currentContext()->functions();
+    unsigned int texture;
+    gl->glGenTextures(1, &texture);
+    gl->glBindTexture(GL_TEXTURE_2D, texture);
+    gl->glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, pixel_format, pixel_type, data);
+    gl->glBindTexture(GL_TEXTURE_2D, 0);
+    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
+    if (isDepthTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format))) {
+        texture_wrapper.setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
+        texture_wrapper.setBorderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        texture_wrapper.setWrapMode(GLTexture::ClampToBorder);
+    } else {
+        texture_wrapper.setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
+        texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
+    }
     return texture_wrapper;
 }
 
@@ -182,4 +135,378 @@ int lcf::GLHelper::maximumTextureUnits()
     int max_texture_units;
     gl->glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
     return max_texture_units;
+}
+
+void lcf::GLHelper::deducePixelFormatByTextureFormat(GLTexture::TextureFormat texture_format, int &pixel_format, int &pixel_data_type)
+{
+    switch (texture_format) {
+        case GLTexture::TextureFormat::D16 : {
+            pixel_format = GL_DEPTH_COMPONENT;
+            pixel_data_type = GL_UNSIGNED_SHORT;
+        } break;
+        case GLTexture::TextureFormat::D24 : {
+            pixel_format = GL_DEPTH_COMPONENT;
+            pixel_data_type = GL_UNSIGNED_INT;
+        } break;
+        case GLTexture::TextureFormat::D32 : {
+            pixel_format = GL_DEPTH_COMPONENT;
+            pixel_data_type = GL_UNSIGNED_INT;
+        } break;
+        case GLTexture::TextureFormat::D24S8 : {
+            pixel_format = GL_DEPTH_STENCIL;
+            pixel_data_type = GL_UNSIGNED_INT_24_8;
+        } break;
+        case GLTexture::TextureFormat::D32F : {
+            pixel_format = GL_DEPTH_COMPONENT;
+            pixel_data_type = GL_FLOAT;
+        } break;
+        case GLTexture::TextureFormat::S8 : {
+            pixel_format = GL_STENCIL_INDEX;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+        case GLTexture::TextureFormat::R16F : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_FLOAT;
+        } break;
+        case GLTexture::TextureFormat::RG16F : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_FLOAT;
+        } break;
+        case GLTexture::TextureFormat::RGB16F : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_FLOAT;
+        } break;
+        case GLTexture::TextureFormat::RGBA16F : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_FLOAT;
+        } break;
+        case GLTexture::TextureFormat::R32F : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_FLOAT;
+        } break;
+        case GLTexture::TextureFormat::RG32F : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_FLOAT;
+        } break;
+        case GLTexture::TextureFormat::RGB32F : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_FLOAT;
+        } break;
+        case GLTexture::TextureFormat::RGBA32F : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_FLOAT;
+        } break;
+        case GLTexture::TextureFormat::R8_UNorm : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RG8_UNorm : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RGB8_UNorm : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RGBA8_UNorm : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+        case GLTexture::TextureFormat::R16_UNorm : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_UNSIGNED_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RG16_UNorm : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_UNSIGNED_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RGB16_UNorm : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_UNSIGNED_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RGBA16_UNorm : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_UNSIGNED_SHORT;
+        } break;
+        case GLTexture::TextureFormat::R8_SNorm : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RG8_SNorm : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RGB8_SNorm : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RGBA8_SNorm : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_BYTE;
+        } break;
+        case GLTexture::TextureFormat::R16_SNorm : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RG16_SNorm : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RGB16_SNorm : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RGBA16_SNorm : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_SHORT;
+        } break;
+        case GLTexture::TextureFormat::R8U : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RG8U : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RGB8U : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RGBA8U : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+        case GLTexture::TextureFormat::R16U : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_UNSIGNED_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RG16U : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_UNSIGNED_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RGB16U : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_UNSIGNED_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RGBA16U : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_UNSIGNED_SHORT;
+        } break;
+        case GLTexture::TextureFormat::R32U : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_UNSIGNED_INT;
+        } break;
+        case GLTexture::TextureFormat::RG32U : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_UNSIGNED_INT;
+        } break;
+        case GLTexture::TextureFormat::RGB32U : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_UNSIGNED_INT;
+        } break;
+        case GLTexture::TextureFormat::RGBA32U : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_UNSIGNED_INT;
+        } break;
+        case GLTexture::TextureFormat::R8I : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RG8I : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RGB8I : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_BYTE;
+        } break;
+        case GLTexture::TextureFormat::RGBA8I : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_BYTE;
+        } break;
+        case GLTexture::TextureFormat::R16I : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RG16I : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RGB16I : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_SHORT;
+        } break;
+        case GLTexture::TextureFormat::RGBA16I : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_SHORT;
+        } break;
+        case GLTexture::TextureFormat::R32I : {
+            pixel_format = GL_RED;
+            pixel_data_type = GL_INT;
+        } break;
+        case GLTexture::TextureFormat::RG32I : {
+            pixel_format = GL_RG;
+            pixel_data_type = GL_INT;
+        } break;
+        case GLTexture::TextureFormat::RGB32I : {
+            pixel_format = GL_RGB;
+            pixel_data_type = GL_INT;
+        } break;
+        case GLTexture::TextureFormat::RGBA32I : {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_INT;
+        } break;
+        default: {
+            pixel_format = GL_RGBA;
+            pixel_data_type = GL_UNSIGNED_BYTE;
+        } break;
+    }
+}
+
+lcf::GLTexture::TextureFormat lcf::GLHelper::deduceTextureFormatByPixelFormat(int pixel_format, int pixel_data_type, bool SRGB)
+{
+    GLTextureFormat texture_format = GLTextureFormat::NoFormat;
+    if (pixel_format == GL_DEPTH_COMPONENT and pixel_data_type == GL_UNSIGNED_SHORT) {
+        texture_format = GLTextureFormat::D16;
+    } else if (pixel_format == GL_DEPTH_COMPONENT and pixel_data_type == GL_UNSIGNED_INT) {
+        texture_format = GLTextureFormat::D24;
+    } else if (pixel_format == GL_DEPTH_COMPONENT and pixel_data_type == GL_FLOAT) {
+        texture_format = GLTextureFormat::D32F;
+    } else if (pixel_format == GL_STENCIL_INDEX and pixel_data_type == GL_UNSIGNED_BYTE) {
+        texture_format = GLTextureFormat::S8;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_FLOAT) {
+        texture_format = GLTextureFormat::R16F;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_FLOAT) {
+        texture_format = GLTextureFormat::RG16F;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_FLOAT) {
+        texture_format = GLTextureFormat::RGB16F;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_FLOAT) {
+        texture_format = GLTextureFormat::RGBA16F;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_FLOAT) {
+        texture_format = GLTextureFormat::R32F;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_FLOAT) {
+        texture_format = GLTextureFormat::RG32F;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_FLOAT) {
+        texture_format = GLTextureFormat::RGB32F;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_FLOAT) {
+        texture_format = GLTextureFormat::RGBA32F;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_UNSIGNED_BYTE) {
+        texture_format = GLTextureFormat::R8_UNorm;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_UNSIGNED_BYTE) {
+        texture_format = GLTextureFormat::RG8_UNorm;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_UNSIGNED_BYTE) {
+        if (SRGB) { texture_format = GLTextureFormat::SRGB8; }
+        else { texture_format = GLTextureFormat::RGB8_UNorm; }
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_UNSIGNED_BYTE) {
+        if (SRGB) { texture_format = GLTextureFormat::SRGB8_Alpha8; }
+        else { texture_format = GLTextureFormat::RGBA8_UNorm; }
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_UNSIGNED_SHORT) {
+        texture_format = GLTextureFormat::R16_UNorm;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_UNSIGNED_SHORT) {
+        texture_format = GLTextureFormat::RG16_UNorm;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_UNSIGNED_SHORT) {
+        texture_format = GLTextureFormat::RGB16_UNorm;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_UNSIGNED_SHORT) {
+        texture_format = GLTextureFormat::RGBA16_UNorm;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_BYTE) {
+        texture_format = GLTextureFormat::R8_SNorm;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_BYTE) {
+        texture_format = GLTextureFormat::RG8_SNorm;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_BYTE) {
+        texture_format = GLTextureFormat::RGB8_SNorm;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_BYTE) {
+        texture_format = GLTextureFormat::RGBA8_SNorm;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_SHORT) {
+        texture_format = GLTextureFormat::R16_SNorm;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_SHORT) {
+        texture_format = GLTextureFormat::RG16_SNorm;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_SHORT) {
+        texture_format = GLTextureFormat::RGB16_SNorm;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_SHORT) {
+        texture_format = GLTextureFormat::RGBA16_SNorm;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_UNSIGNED_BYTE) {
+        texture_format = GLTextureFormat::R8U;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_UNSIGNED_BYTE) {
+        texture_format = GLTextureFormat::RG8U;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_UNSIGNED_BYTE) {
+        texture_format = GLTextureFormat::RGB8U;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_UNSIGNED_BYTE) {
+        texture_format = GLTextureFormat::RGBA8U;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_UNSIGNED_SHORT) {
+        texture_format = GLTextureFormat::R16U;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_UNSIGNED_SHORT) {
+        texture_format = GLTextureFormat::RG16U;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_UNSIGNED_SHORT) {
+        texture_format = GLTextureFormat::RGB16U;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_UNSIGNED_SHORT) {
+        texture_format = GLTextureFormat::RGBA16U;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_UNSIGNED_INT) {
+        texture_format = GLTextureFormat::R32U;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_UNSIGNED_INT) {
+        texture_format = GLTextureFormat::RG32U;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_UNSIGNED_INT) {
+        texture_format = GLTextureFormat::RGB32U;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_UNSIGNED_INT) {
+        texture_format = GLTextureFormat::RGBA32U;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_BYTE) {
+        texture_format = GLTextureFormat::R8I;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_BYTE) {
+        texture_format = GLTextureFormat::RG8I;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_BYTE) {
+        texture_format = GLTextureFormat::RGB8I;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_BYTE) {
+        texture_format = GLTextureFormat::RGBA8I;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_SHORT) {
+        texture_format = GLTextureFormat::R16I;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_SHORT) {
+        texture_format = GLTextureFormat::RG16I;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_SHORT) {
+        texture_format = GLTextureFormat::RGB16I;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_SHORT) {
+        texture_format = GLTextureFormat::RGBA16I;
+    } else if (pixel_format == GL_RED and pixel_data_type == GL_INT) {
+        texture_format = GLTextureFormat::R32I;
+    } else if (pixel_format == GL_RG and pixel_data_type == GL_INT) {
+        texture_format = GLTextureFormat::RG32I;
+    } else if (pixel_format == GL_RGB and pixel_data_type == GL_INT) {
+        texture_format = GLTextureFormat::RGB32I;
+    } else if (pixel_format == GL_RGBA and pixel_data_type == GL_INT) {
+        texture_format = GLTextureFormat::RGBA32I;
+    } else {
+        texture_format = GLTextureFormat::RGBA8_UNorm;
+    }
+    return texture_format;
+}
+
+bool lcf::GLHelper::isFloatingPointTextureFormat(GLTexture::TextureFormat texture_format)
+{
+    return texture_format == GLTexture::TextureFormat::R16F or
+        texture_format == GLTexture::TextureFormat::RG16F or
+        texture_format == GLTexture::TextureFormat::RGB16F or
+        texture_format == GLTexture::TextureFormat::RGBA16F or
+        texture_format == GLTexture::TextureFormat::R32F or
+        texture_format == GLTexture::TextureFormat::RG32F or
+        texture_format == GLTexture::TextureFormat::RGB32F or
+        texture_format == GLTexture::TextureFormat::RGBA32F;
+}
+
+bool lcf::GLHelper::isDepthTextureFormat(GLTextureFormat texture_format)
+{
+    return texture_format == GLTextureFormat::D16 or
+        texture_format == GLTextureFormat::D24 or
+        texture_format == GLTextureFormat::D24S8 or
+        texture_format == GLTextureFormat::D32 or
+        texture_format == GLTextureFormat::D32F or
+        texture_format == GLTextureFormat::D32FS8X24 or
+        texture_format == GLTextureFormat::S8;
+}
+
+bool lcf::GLHelper::isSampler(int uniform_type)
+{
+    return uniform_type == GL_SAMPLER_2D or
+        uniform_type == GL_SAMPLER_CUBE or
+        uniform_type == GL_SAMPLER_3D or
+        uniform_type == GL_SAMPLER_2D_SHADOW or
+        uniform_type == GL_SAMPLER_2D_ARRAY or
+        uniform_type == GL_SAMPLER_CUBE_MAP_ARRAY;
 }

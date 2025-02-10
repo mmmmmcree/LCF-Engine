@@ -19,10 +19,11 @@ MaterialControlWidget::MaterialControlWidget(QWidget *parent) :
     hlayout->addStretch();
     vlayout->addLayout(hlayout);
 
-    QStringList material_types(lcf::MaterialType::SIZE);
-    material_types[lcf::MaterialType::PBR] = "PBR";
-    material_types[lcf::MaterialType::Phong] = "Phong";
-    material_types[lcf::MaterialType::UserCustom] = "User Custom";
+    QStringList material_types(static_cast<int>(lcf::MaterialType::SIZE) - 1);
+    material_types[static_cast<int>(lcf::MaterialType::None)] = "None";
+    material_types[static_cast<int>(lcf::MaterialType::PBR)] = "PBR";
+    material_types[static_cast<int>(lcf::MaterialType::Phong)] = "Phong";
+    material_types[static_cast<int>(lcf::MaterialType::UserCustom)] = "User Custom";
     select_material_combo->addItems(material_types);
 }
  
@@ -31,7 +32,7 @@ void MaterialControlWidget::setControlledObject(lcf::Object3D *object)
     disconnect(select_material_combo, &QComboBox::currentIndexChanged, nullptr, nullptr);
     m_controlled_object = object;
     if (not m_controlled_object) { return; }
-    select_material_combo->setCurrentIndex(m_controlled_object->materialType());
+    select_material_combo->setCurrentIndex(static_cast<int>(m_controlled_object->materialType()));
     connect(select_material_combo, &QComboBox::currentIndexChanged, [this] (int index) {
         m_controlled_object->setMaterialType(static_cast<lcf::MaterialType>(index));
     });

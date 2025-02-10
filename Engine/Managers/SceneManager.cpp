@@ -22,9 +22,7 @@ lcf::SceneManager *lcf::SceneManager::instance()
 void lcf::SceneManager::initialize(QOpenGLContext *context)
 {
     m_context = context;
-    m_surface = new QOffscreenSurface(nullptr, this);
-    m_surface->setFormat(context->format());
-    m_surface->create();
+    m_surface = context->surface();
 }
 
 lcf::Scene *lcf::SceneManager::get(const QString &name)
@@ -172,48 +170,40 @@ void lcf::SceneManager::makeTestScene()
     // texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
     // scene->setSkyboxTexture(texture);
 
-    auto img = LImage(path::res_prefix + "kloppenheim_06_puresky_4k.hdr", true);
-    SharedGLTexturePtr tex = GLHelper::fromImageToTexture(img, GLTexture::RGB32F);
-    tex->setWrapMode(GLTexture::ClampToEdge);
-    tex->setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
-    auto processed_tex = TextureManager::instance()->fromSphereToCubeRGBF(tex);
-    auto ibl_convolution = TextureManager::instance()->IBLConvolution(processed_tex);
-    scene->setSkyboxTexture(processed_tex);
-    scene->setSkyboxTexture(ibl_convolution);
+    auto tex = TextureManager::instance()->loadTexture2D(path::res_prefix + "newport_loft.hdr", true);
+    scene->environment()->setSkyboxTexture(tex);
 
-    
-    
+    PointLight::SharedPtr point_light0 = PointLight::createShared();
+    point_light0->setColor({100.0f, 100.0f, 100.0f});
+    point_light0->setTranslation({1.8f, 0.8f, 0.0f});
+    point_light0->scale(0.3f);
+    point_light0->setCastShadow(true);
+    scene->addObject3D(point_light0);
 
-    // PointLight::SharedPtr point_light0 = PointLight::createShared();
-    // scene->addObject3D(point_light0);
-    // point_light0->setColor({100.0f, 100.0f, 100.0f});
-    // point_light0->setTranslation({1.8f, 0.8f, 0.0f});
-    // point_light0->scale(0.3f);
-    // point_light0->setCastShadow(true);
+    DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
+    directional_light->setTranslation({0.0f, 3.0f, 0.0f});
+    directional_light->rotateX(-90.0f);
+    directional_light->setColor({10.0f, 10.0f, 10.0f});
+    directional_light->setCastShadow(true);
+    scene->addObject3D(directional_light);
 
-    // DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
-    // directional_light->setTranslation({0.0f, 3.0f, 0.0f});
-    // directional_light->rotateX(-90.0f);
-    // directional_light->setColor({10.0f, 10.0f, 10.0f});
-    // directional_light->setCastShadow(true);
-    // scene->addObject3D(directional_light);
-
-    // Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
-    // room->scale(2.0f);
-    // room->translateY(-0.12f);
-    // scene->addObject3D(room);
+    Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
+    room->scale(2.0f);
+    room->translateY(-0.12f);
+    room->setMaterialType(MaterialType::Phong);
+    scene->addObject3D(room);
 
     // Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
     // robot->setMaterialType(MaterialType::PBR);
     // robot->setCastShadow(true);
     // scene->addObject3D(robot);
 
-    // Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
-    // helmet->scale(0.3f);
-    // helmet->translateY(5.0f);
-    // helmet->setMaterialType(MaterialType::PBR);
-    // helmet->setCastShadow(true);
-    // scene->addObject3D(helmet);
+    Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
+    helmet->scale(0.3f);
+    helmet->translateY(5.0f);
+    helmet->setMaterialType(MaterialType::PBR);
+    helmet->setCastShadow(true);
+    scene->addObject3D(helmet);
 
     // Model::SharedPtr dinosaur = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
     // dinosaur->translate(-3.0f, 0.0f, 0.0f);
@@ -228,12 +218,12 @@ void lcf::SceneManager::makeTestScene()
     // scene->addObject3D(dinosaur2);
     // dinosaur2->playAnimation(0, 1.0f);
 
-    // connect(scene->timer(), &QTimer::timeout, this, [=] {
-    //     static float d = 0;
-    //     helmet->translateX(qSin(d) * 0.1f);
-    //     point_light0->translateY(qSin(d) * 0.1f);
-    //     d += 0.02f;
-    // });
+    connect(scene->timer(), &QTimer::timeout, this, [=] {
+        static float d = 0;
+        helmet->translateX(qSin(d) * 0.1f);
+        point_light0->translateY(qSin(d) * 0.1f);
+        d += 0.02f;
+    });
 }
 
 void lcf::SceneManager::testShaderToy()
@@ -247,7 +237,7 @@ void lcf::SceneManager::testShaderToy()
         path::shaders_prefix + "train.frag",
     });
     ShaderToyManager::instance()->activate("train");
-    SharedGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "train_noise.png");
+    SharedGLTexturePtr texture = TextureManager::instance()->loadTexture2D(path::res_prefix + "train_noise.png", false);
     texture->setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
     texture->setWrapMode(GLTexture::Repeat);
     shader_toy->setBuffer(0, {texture, 0});

@@ -34,19 +34,24 @@ void poissonDiskSamples(vec2 random_seed){
 	}
 }
 
-vec3 poissonSample(sampler2D channel, vec2 uv)
+vec3 poissonSample(sampler2D channel, vec2 uv, float bloom_radius)
 {
     poissonDiskSamples(uv);
     vec3 color = vec3(0.0);
     for(int i = 0; i < samples_num; i++) {
-        color += texture(channel, uv + disk[i] * bloom_radius).rgb;
+		vec3 sample_color = texture(channel, uv + disk[i] * bloom_radius).rgb;
+        color += sample_color;
     }
     return color / float(samples_num);
 }
 
 void main() {
-    vec3 low_res_color = poissonSample(channel0, fs_in.uv);
-    vec3 high_res_color = poissonSample(channel1, fs_in.uv);
-    vec3 bloom_color = mix(low_res_color, high_res_color, bloom_attenuation);
+	float attenuation_factor = texture(channel1, fs_in.uv).a;
+	float radius = bloom_radius;
+	float attenuation = attenuation_factor * bloom_attenuation;
+	attenuation = clamp(attenuation, 0.00, 1.0);
+    vec3 low_res_color = poissonSample(channel0, fs_in.uv, radius);
+    vec3 high_res_color = poissonSample(channel1, fs_in.uv, radius);
+    vec3 bloom_color = mix(low_res_color, high_res_color, attenuation);
     frag_color = vec4(bloom_color, 1.0);
 }

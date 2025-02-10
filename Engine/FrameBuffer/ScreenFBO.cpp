@@ -31,6 +31,7 @@ void lcf::ScreenFBO::setColorFormat(GLTextureFormat color_format)
 
 void lcf::ScreenFBO::update()
 {
-    this->setColorAttachment(0, GLHelper::generateColorTexture(m_width, m_height, m_color_format));
-    this->setDepthStencilAttachment(GLHelper::generateDepthStencilTexture(m_width, m_height));
+    auto color_attachment = GLHelper::generateTexture2DAttachment(m_width, m_height, m_color_format);
+    this->setColorAttachment(0, GLHelper::generateTexture2DAttachment(m_width, m_height, m_color_format));
+    this->setDepthStencilAttachment(GLHelper::generateTexture2DAttachment(m_width, m_height, GLTextureFormat::D24S8));
 }

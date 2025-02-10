@@ -2,24 +2,29 @@
 
 lcf::TextureWrapper::TextureWrapper(GLTexture *texture)
 {
-    if (texture) { m_texture = texture; }
+    if (texture and texture->textureId()) { m_texture = texture; }
 }
 
 lcf::TextureWrapper::TextureWrapper(const std::shared_ptr<GLTexture> &texture)
 {
-    if (texture) { m_texture = texture; }
+    if (texture and texture->textureId()) { m_texture = texture; }
 }
 
 lcf::TextureWrapper::TextureWrapper(std::unique_ptr<GLTexture> &&texture)
 {
-    if (texture) { m_texture = std::move(texture); }
+    if (texture and texture->textureId()) { m_texture = std::move(texture); }
 }
 
 lcf::TextureWrapper::TextureWrapper(const NativeTextureWrapper &texture)
 {
-    if (texture.id()) {
+    if (texture.textureId()) {
         m_texture = texture;
     }
+}
+
+lcf::TextureWrapper *lcf::TextureWrapper::operator->()
+{
+    return this;
 }
 
 void lcf::TextureWrapper::bind(unsigned int unit)
@@ -38,14 +43,19 @@ void lcf::TextureWrapper::release(unsigned int unit)
     }, m_texture.value());
 }
 
-bool lcf::TextureWrapper::isValid() const
+bool lcf::TextureWrapper::isValid()
 {
-    return m_texture.has_value();
+    bool valid = false;
+    if (not m_texture.has_value()) { return valid; }
+    std::visit([&valid](auto&& arg) {
+        valid = arg->textureId();
+    }, m_texture.value());
+    return valid;
 }
 
-int lcf::TextureWrapper::target()
+lcf::GLTexture::Target lcf::TextureWrapper::target()
 {
-    int target = 0;
+    GLTexture::Target target = GLTexture::Target::Target2D;
     if (not this->isValid()) { return target; }
     std::visit([&target](auto&& arg) {
         target = arg->target();
@@ -53,9 +63,9 @@ int lcf::TextureWrapper::target()
     return target;
 }
 
-int lcf::TextureWrapper::format()
+lcf::GLTexture::TextureFormat lcf::TextureWrapper::format()
 {
-    int format = GLTexture::TextureFormat::NoFormat;
+    GLTexture::TextureFormat format = GLTexture::TextureFormat::NoFormat;
     if (not this->isValid()) { return format; }
     std::visit([&format](auto&& arg) {
         format = arg->format();
@@ -65,8 +75,32 @@ int lcf::TextureWrapper::format()
 
 void lcf::TextureWrapper::setWrapMode(GLTexture::WrapMode wrap_mode)
 {
-    if (not m_texture.has_value()) { return; }
+    if (not this->isValid()) { return; }
     std::visit([wrap_mode](auto&& arg) {
         arg->setWrapMode(wrap_mode);
+    }, m_texture.value());
+}
+
+void lcf::TextureWrapper::setMinMagFilters(GLTexture::Filter min_filter, GLTexture::Filter mag_filter)
+{
+    if (not this->isValid()) { return; }
+    std::visit([min_filter, mag_filter](auto&& arg) {
+        arg->setMinMagFilters(min_filter, mag_filter);
+    }, m_texture.value());
+}
+
+void lcf::TextureWrapper::setBorderColor(float r, float g, float b, float a)
+{
+    if (not this->isValid()) { return; }
+    std::visit([r, g, b, a](auto&& arg) {
+        arg->setBorderColor(r, g, b, a);
+    }, m_texture.value());
+}
+
+void lcf::TextureWrapper::generateMipMaps()
+{
+    if (not this->isValid()) { return; }
+    std::visit([](auto&& arg) {
+        arg->generateMipMaps();
     }, m_texture.value());
 }

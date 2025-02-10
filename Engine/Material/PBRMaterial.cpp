@@ -1,5 +1,7 @@
 #include "PBRMaterial.h"
 #include "TextureManager.h"
+#include "ControlManager.h"
+#include "TextureDispatcher.h"
 
 lcf::MaterialType lcf::PBRMaterial::type() const
 {
@@ -8,43 +10,36 @@ lcf::MaterialType lcf::PBRMaterial::type() const
 
 void lcf::PBRMaterial::setAlbedoMap(TextureWrapper texture)
 {
-    m_textures[0] = texture;
+    m_texture_map["material.albedo_map"] = texture;
 }
 
 void lcf::PBRMaterial::setNormalMap(TextureWrapper texture)
 {
-    m_textures[1] = texture;
+    m_texture_map["material.normal_map"] = texture;
 }
 
 void lcf::PBRMaterial::setMetallicMap(TextureWrapper texture)
 {
-    m_textures[2] = texture;
+    m_texture_map["material.metallic_map"] = texture;
 }
 
 void lcf::PBRMaterial::setRoughnessMap(TextureWrapper texture)
 {
-    m_textures[3] = texture;
+    m_texture_map["material.roughness_map"] = texture;
 }
 
 void lcf::PBRMaterial::setAOMap(TextureWrapper texture)
 {
-    m_textures[4] = texture;
+    m_texture_map["material.ao_map"] = texture;
 }
 
 void lcf::PBRMaterial::setEmissiveMap(TextureWrapper texture)
 {
-    m_textures[5] = texture;
+    m_texture_map["material.emissive_map"] = texture;
 }
 
 lcf::PBRMaterial::PBRMaterial() : Material()
 {
-    m_textures.resize(6);
-    m_uniforms.emplace_back(SingleUniform("material.albedo_map", [] { return 0; }));
-    m_uniforms.emplace_back(SingleUniform("material.normal_map", 1));
-    m_uniforms.emplace_back(SingleUniform("material.metallic_map", 2));
-    m_uniforms.emplace_back(SingleUniform("material.roughness_map", 3));
-    m_uniforms.emplace_back(SingleUniform("material.ao_map", 4));
-    m_uniforms.emplace_back(SingleUniform("material.emissive_map", 5));
     auto tex_manager = TextureManager::instance();
     this->setAlbedoMap(tex_manager->get(TextureManager::DefaultAlbedo));
     this->setNormalMap(tex_manager->get(TextureManager::DefaultNormal));
@@ -52,4 +47,14 @@ lcf::PBRMaterial::PBRMaterial() : Material()
     this->setRoughnessMap(tex_manager->get(TextureManager::DefaultRoughness));
     this->setAOMap(tex_manager->get(TextureManager::DefaultAO));
     this->setEmissiveMap(tex_manager->get(TextureManager::DefaultEmissive));
+    // int location = 0;
+    // m_uniforms.emplace_back(SingleUniform("material.albedo_map", location++));
+    // m_uniforms.emplace_back(SingleUniform("material.normal_map", location++));
+    // m_uniforms.emplace_back(SingleUniform("material.metallic_map", location++));
+    // m_uniforms.emplace_back(SingleUniform("material.roughness_map", location++));
+    // m_uniforms.emplace_back(SingleUniform("material.ao_map", location++));
+    // m_uniforms.emplace_back(SingleUniform("material.emissive_map", location++));
+    // m_uniforms.emplace_back(SingleUniform("ibl_material.irradiance_map", location++));
+    // m_uniforms.emplace_back(SingleUniform("ibl_material.prefilter_map", location++));
+    // m_uniforms.emplace_back(SingleUniform("ibl_material.brdf_map", location++));
 }

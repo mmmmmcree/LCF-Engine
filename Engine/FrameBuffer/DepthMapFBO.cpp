@@ -20,5 +20,5 @@ void lcf::DepthMapFBO::resize(int width, int height)
 
 void lcf::DepthMapFBO::update()
 {
-    this->setDepthAttachment(GLHelper::generateDepthMap(m_width, m_height));
+    this->setDepthAttachment(GLHelper::generateTexture2DAttachment(m_width, m_height, GLTextureFormat::D32F));
 }

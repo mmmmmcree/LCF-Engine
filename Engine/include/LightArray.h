@@ -24,7 +24,6 @@ namespace lcf {
         const SpotLight::SharedPtr &takeSpotLight(size_t index) const;
         int spotLightCount() const;
         UniformList asUniformList();
-        void allocateShadowMapUnits();
         typename LightList::iterator begin();
         typename LightList::iterator end();
         typename LightList::const_iterator begin() const;

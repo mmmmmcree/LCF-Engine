@@ -73,6 +73,7 @@ lcf::ShaderManager::ShaderManager() :
     m_configured_shaders(ConfiguredShader::SIZE)
 {
     SharedGLShaderProgramPtr shader = nullptr;
+    lcf::GLHelper::UniformInfos sampler_uniforms;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "simple2D.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
@@ -162,30 +163,49 @@ lcf::ShaderManager::ShaderManager() :
         {GLShader::Fragment, path::shaders_prefix + "phong_shadow.frag"},
     });
     m_configured_shaders[AnimatedShadowedPhong] = shader;
-    shader = load({
+    sampler_uniforms = {
+        {"material.albedo_map", 0},
+        {"material.normal_map", 1},
+        {"material.metallic_map", 2},
+        {"material.roughness_map", 3},
+        {"material.ao_map", 4},
+        {"material.emissive_map", 5},
+        {"ibl_material.irradiance_map", 6},
+        {"ibl_material.prefilter_map", 7},
+        {"ibl_material.brdf_map", 8},
+    };
+    shader = m_configured_shaders[PBR] = load({
         {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "pbr.frag"},
     });
-    m_configured_shaders[PBR] = shader;
-    shader = load({
+    GLHelper::setShaderUniforms(shader.get(), sampler_uniforms);
+    shader = m_configured_shaders[AnimatedPBR] = load({
         {GLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "pbr.frag"},
     });
-    m_configured_shaders[AnimatedPBR] = shader;
-    shader = load({
+    GLHelper::setShaderUniforms(shader.get(), sampler_uniforms);
+
+    shader = m_configured_shaders[ShadowedPBR] = load({
         {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "pbr_shadow.frag"},
     });
-    m_configured_shaders[ShadowedPBR] = shader;
-    shader = load({
+    GLHelper::setShaderUniforms(shader.get(), sampler_uniforms);
+
+    shader = m_configured_shaders[AnimatedShadowedPBR] = load({
         {GLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "pbr_shadow.frag"},
     });
-    m_configured_shaders[AnimatedShadowedPBR] = shader;
+    GLHelper::setShaderUniforms(shader.get(), sampler_uniforms);
     shader = m_configured_shaders[IBLConvolution] = load({
         {GLShader::Vertex, path::shaders_prefix + "cube_map.vert"},
         {GLShader::Geometry, path::shaders_prefix + "cube_map.geom"},
         {GLShader::Fragment, path::shaders_prefix + "IBL/convolution.frag"},
+    });
+    GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
+    shader = m_configured_shaders[IBLPrefilter] = load({
+        {GLShader::Vertex, path::shaders_prefix + "cube_map.vert"},
+        {GLShader::Geometry, path::shaders_prefix + "cube_map.geom"},
+        {GLShader::Fragment, path::shaders_prefix + "IBL/prefilter.frag"},
     });
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
 }

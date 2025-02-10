@@ -12,16 +12,16 @@ lcf::Bloomer::UniquePtr lcf::Bloomer::createUnique(int width, int height)
 
 lcf::Bloomer::Bloomer(int width, int height)
 {
-    m_screen_fbo = ScreenFBO::createUnique(width, height, GLTextureFormat::RGB16F);
+    m_screen_fbo = ScreenFBO::createUnique(width, height, GLTextureFormat::RGBA16F);
     int n = static_cast<int>(m_down_sample_fbo_list.size());
     int scale = pow(2, n - 1);
     int w = std::max(s_min_resolution, width / scale);
     int h = std::max(s_min_resolution, height / scale);
-    m_down_sample_fbo_list.back() = SingleColorAttachmentFBO::createShared(w, h, GLTextureFormat::RGB16F);
+    m_down_sample_fbo_list.back() = SingleColorAttachmentFBO::createShared(w, h, GLTextureFormat::RGBA16F);
     for (int i = n - 2; i >= 0; --i) {
         w *= 2; h *= 2;
-        m_down_sample_fbo_list[i] = SingleColorAttachmentFBO::createShared(w, h, GLTextureFormat::RGB16F);
-        m_up_sample_fbo_list[i] = SingleColorAttachmentFBO::createShared(w, h, GLTextureFormat::RGB16F);
+        m_down_sample_fbo_list[i] = SingleColorAttachmentFBO::createShared(w, h, GLTextureFormat::RGBA16F);
+        m_up_sample_fbo_list[i] = SingleColorAttachmentFBO::createShared(w, h, GLTextureFormat::RGBA16F);
     }
     SharedGLShaderProgramPtr shader = ShaderManager::instance()->load({
         {GLShader::Vertex, path::shaders_prefix + "simple2D.vert"},

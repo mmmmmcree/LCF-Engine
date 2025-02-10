@@ -1,19 +1,16 @@
 #include "UserCustomMaterial.h"
+#include "TextureDispatcher.h"
+
 
 void lcf::UserCustomMaterial::bind()
 {
-    int unit = 0;
+    // int loc = start_location;
     for (auto &[type, texture] : *m_textures) {
-        texture.bind(unit++);
+        // texture.bind(loc++);
+        const auto &name = this->fromTextureTypeToUniformName(static_cast<TextureType>(type));
+        TextureDispatcher::instance()->setTextureByName(name, texture);
     }
-}
 
-void lcf::UserCustomMaterial::release()
-{
-    int unit = 0;
-    for (auto &[type, texture] : *m_textures) {
-        texture.release(unit++);
-    }
 }
 
 lcf::MaterialType lcf::UserCustomMaterial::type() const

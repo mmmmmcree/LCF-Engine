@@ -18,12 +18,16 @@ namespace lcf {
         TextureWrapper(const NativeTextureWrapper &texture);
         TextureWrapper(const TextureWrapper &other) = default;
         TextureWrapper &operator=(const TextureWrapper &other) = default;
+        TextureWrapper *operator->();
         void bind(unsigned int unit = 0);
         void release(unsigned int unit = 0);
-        bool isValid() const;
-        int target();
-        int format();
+        bool isValid();
+        GLTexture::Target target();
+        GLTexture::TextureFormat format();
         void setWrapMode(GLTexture::WrapMode wrap_mode);
+        void setMinMagFilters(GLTexture::Filter min_filter, GLTexture::Filter mag_filter);
+        void setBorderColor(float r, float g, float b, float a);
+        void generateMipMaps();
     private:
         std::optional<_Texture> m_texture;
     };

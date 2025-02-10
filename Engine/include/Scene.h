@@ -2,7 +2,7 @@
 
 #include "Object3D.h"
 #include "Model.h"
-#include "Mesh.h"
+#include "Environment.h"
 #include <memory>
 #include "TextureWrapper.h"
 #include "Light.h"
@@ -24,7 +24,7 @@ namespace lcf {
         LightArray &lights();
         void addObject3D(const Object3D::SharedPtr &object3d);
         void draw() override;
-        void setSkyboxTexture(TextureWrapper texture);
+        Environment *environment();
         QTimer *timer();
         Model *takeModel(int index);
         const ModelList &models() const;
@@ -41,7 +41,7 @@ namespace lcf {
         ModelList m_models;
         MeshList m_meshes;
         GroupList m_groups;
-        Mesh::SharedPtr m_skybox;
+        Environment m_environment;
         QTimer m_timer;
         UniqueGLFrameBufferObjectPtr m_fbo;
     };

@@ -31,7 +31,7 @@ namespace lcf {
         ShaderUniformBinder::SharedPtr m_merge_shader_binder;
         float m_threshold = 10.0f;
         float m_bloom_intensity = 0.5f;
-        float m_bloom_attenuation = 0.1f;
-        float m_bloom_radius = 0.01f;
+        float m_bloom_attenuation = 1.0f;
+        float m_bloom_radius = 0.005f;
     };
 }

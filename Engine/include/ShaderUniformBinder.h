@@ -3,6 +3,7 @@
 #include "Uniform.h"
 #include <memory>
 #include <unordered_map>
+#include "TextureWrapper.h"
 
 namespace lcf {
     class ShaderUniformBinder
@@ -12,6 +13,8 @@ namespace lcf {
         using SingleUniformList = std::vector<SingleUniform>;
         using ArrayUniformList = std::vector<ArrayUniform>;
         using NameToIndexMap = std::unordered_map<std::string, int>;
+        using SamplerNameList = std::vector<std::string>;
+        using TextureList = std::vector<TextureWrapper>;
         ShaderUniformBinder() = default;
         ShaderUniformBinder(const ShaderUniformBinder &other);
         static SharedPtr createShared();
@@ -29,12 +32,14 @@ namespace lcf {
         void release();
         bool hasShader() const;
     private:
-        void setUniformLocation(Uniform &uniform, int location);
+        void getSamplerUniformsFromShader();
     private:
         int m_bound_count = 0;
         SharedGLShaderProgramPtr m_shader = nullptr;
         UniformList m_uniforms;
         UniformList m_unset_uniforms;
         NameToIndexMap m_name_to_index_map;
+        SamplerNameList m_sampler_names;
+        TextureList m_binding_textures;
     };
 }

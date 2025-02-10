@@ -1,4 +1,5 @@
 #pragma once
+#include "GLTexture.h"
 
 namespace lcf {
     enum GLDataType
@@ -57,34 +58,13 @@ namespace lcf {
         POLYGON = 0x0009,   
     };
 
-    enum class ImageFormat
-    {
-        RGB = 0x1907,
-        RGBA = 0x1908,
-    };
 
-    enum class ImageDataType
-    {
-        UNSIGNED_BYTE = 0x1401,
-        FLOAT = 0x1406,
-    };
+    using PixelFormat = GLTexture::PixelFormat;
+    using PixelType = GLTexture::PixelType;
 
-    enum GLTextureTarget
-    {
-        TEXTURE_2D = 0x0DE1,
-        TEXTURE_CUBE_MAP = 0x8513,
-        TEXTURE_2D_MULTISAMPLE = 0x9100,
-    };
+    using GLTextureTarget = GLTexture::Target;
 
-    enum GLTextureFormat
-    {
-        RGBA = 0x1908,
-        DEPTH24_STENCIL8 = 0x88F0,
-        RGB16F = 0x881B,
-        RGBA16F = 0x881A,
-        RGB32F = 0x8815,
-        RGBA32F = 0x8814,
-    };
+    using GLTextureFormat = GLTexture::TextureFormat;
 
     enum TextureType
     {
@@ -110,7 +90,16 @@ namespace lcf {
         Sheen = 19,
         ClearCoat = 20,
         Transmission = 21,
-        UserCustom0 = 1000, 
+        MayaBaseColor = 22,
+        MayaSpecular = 23,
+        MayaSpecularColor = 24,
+        MayaSpecularRoughness = 25,
+        Anisotropy = 26,
+        GltfMetallicRoughness = 27,
+        IBLIrradiance,
+        IBLPrefilter,
+        IBLBRDF,
+        UserCustom0, 
         UserCustom1,
         UserCustom2,
         UserCustom3,
@@ -126,19 +115,20 @@ namespace lcf {
         UserCustom13,
         UserCustom14,
         UserCustom15,
+        SIZE
     };
 
-    enum GLTextureFilter
-    {
-        Nearest = 0x2600,
-        Linear = 0x2601,
-    };
+    using GLTextureFilter = GLTexture::Filter;
 
-    enum MaterialType
+    using GLTextureWrapMode = GLTexture::WrapMode;
+
+    enum class MaterialType
     {
+        None,
         UserCustom,
         Phong,
         PBR, 
+        IBL,
         SIZE
     };
 

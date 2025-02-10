@@ -2,6 +2,7 @@
 #include "Define.h"
 #include "GLHelper.h"
 #include "ControlManager.h"
+#include "TextureDispatcher.h"
 
 lcf::PhongMaterial::UniquePtr lcf::MaterialController::generatePhongMaterial()
 {
@@ -18,7 +19,6 @@ lcf::PhongMaterial::UniquePtr lcf::MaterialController::generatePhongMaterial()
     if (iter != m_textures.end()) {
         material->setNormalMap(iter->second);
     }
-    material->setShininess(m_shininess);
     return material;
 }
 
@@ -37,6 +37,11 @@ lcf::PBRMaterial::UniquePtr lcf::MaterialController::generatePBRMaterial()
     if (iter != m_textures.end()) {
         material->setRoughnessMap(iter->second);
     }
+    iter = m_textures.find(TextureType::GltfMetallicRoughness);
+    if (iter != m_textures.end()) {
+        material->setMetallicMap(iter->second);
+        material->setRoughnessMap(iter->second);
+    }
     iter = m_textures.find(TextureType::Normal);
     if (iter != m_textures.end()) {
         material->setNormalMap(iter->second);
@@ -49,6 +54,10 @@ lcf::PBRMaterial::UniquePtr lcf::MaterialController::generatePBRMaterial()
     if (iter != m_textures.end()) {
         material->setAOMap(iter->second);
     }
+    iter = m_textures.find(TextureType::Lightmap);
+    if (iter != m_textures.end()) {
+        material->setAOMap(iter->second);
+    }
     return material;
 }
 
@@ -56,6 +65,78 @@ lcf::UserCustomMaterial::UniquePtr lcf::MaterialController::generateUserCustomMa
 {
     auto material = UserCustomMaterial::UniquePtr(new lcf::UserCustomMaterial(&m_textures));
     return material;
+}
+
+lcf::IBLMaterial::UniquePtr lcf::MaterialController::generateIBLMaterial()
+{
+    auto material = IBLMaterial::createUnique();
+    auto iter = m_textures.find(TextureType::IBLIrradiance);
+    if (iter != m_textures.end()) {
+        material->setIrradianceMap(iter->second);
+    }
+    iter = m_textures.find(TextureType::IBLPrefilter);
+    if (iter != m_textures.end()) {
+        material->setPrefilterMap(iter->second);
+    }
+    iter = m_textures.find(TextureType::IBLBRDF);
+    if (iter != m_textures.end()) {
+        material->setBRDFMap(iter->second);
+    }
+    return material;
+}
+
+const std::string &lcf::MaterialController::textureTypeToString(TextureType type) const
+{
+    static std::unordered_map<TextureType, std::string> texture_type_to_string = {
+        {TextureType::None, "None"},
+        {TextureType::Diffuse, "material.diffuse_map"},
+        {TextureType::Specular, "material.specular_map"},
+        {TextureType::Ambient, "material.ambient_map"},
+        {TextureType::Emissive, "material.emissive_map"},
+        {TextureType::Height, "material.height_map"},
+        {TextureType::Normal, "material.normal_map"},
+        {TextureType::Shininess, "material.shininess_map"},
+        {TextureType::Opacity, "material.opacity_map"},
+        {TextureType::Displacement, "material.displacement_map"},
+        {TextureType::Lightmap, "material.lightmap_map"},
+        {TextureType::Reflection, "material.reflection_map"},
+        {TextureType::BaseColor, "material.base_color_map"},
+        {TextureType::NormalCamera, "material.normal_camera_map"},
+        {TextureType::EmissionColor, "material.emission_color_map"},
+        {TextureType::Metalness, "material.metallic_map"},
+        {TextureType::Roughness, "material.roughness_map"},
+        {TextureType::AmbientOcclusion, "material.ambient_occlusion_map"},
+        {TextureType::Unknown, "material.unknown_map"},
+        {TextureType::Sheen, "material.sheen_map"},
+        {TextureType::ClearCoat, "material.clear_coat_map"},
+        {TextureType::Transmission, "material.transmission_map"},
+        {TextureType::MayaBaseColor, "material.maya_base_color_map"},
+        {TextureType::MayaSpecular, "material.maya_specular_map"},
+        {TextureType::MayaSpecularColor, "material.maya_specular_color_map"},
+        {TextureType::MayaSpecularRoughness, "material.maya_specular_roughness_map"},
+        {TextureType::Anisotropy, "material.anisotropy_map"},
+        {TextureType::GltfMetallicRoughness, "material.gltf_metallic_roughness_map"},
+        {TextureType::IBLIrradiance, "ibl_material.irradiance_map"},
+        {TextureType::IBLPrefilter, "ibl_material.prefilter_map"},
+        {TextureType::IBLBRDF, "ibl_material.brdf_map"},
+        {TextureType::UserCustom0, "channel0"},
+        {TextureType::UserCustom1, "channel1"},
+        {TextureType::UserCustom2, "channel2"},
+        {TextureType::UserCustom3, "channel3"},
+        {TextureType::UserCustom4, "channel4"},
+        {TextureType::UserCustom5, "channel5"},
+        {TextureType::UserCustom6, "channel6"},
+        {TextureType::UserCustom7, "channel7"},
+        {TextureType::UserCustom8, "channel8"},
+        {TextureType::UserCustom9, "channel9"},
+        {TextureType::UserCustom10, "channel10"},
+        {TextureType::UserCustom11, "channel11"},
+        {TextureType::UserCustom12, "channel12"},
+        {TextureType::UserCustom13, "channel13"},
+        {TextureType::UserCustom14, "channel14"},
+        {TextureType::UserCustom15, "channel15"}
+    };
+    return texture_type_to_string.at(type);
 }
 
 lcf::MaterialController::MaterialController(const MaterialController &other)
@@ -119,6 +200,7 @@ void lcf::MaterialController::create()
         m_textures.emplace(std::make_pair(type, texture));
     }
     m_image_data.clear();
+    this->deduceMaterialType();
     this->updateMaterial();
 }
 
@@ -127,7 +209,7 @@ bool lcf::MaterialController::isCreated() const
     return m_image_data.empty();
 }
 
-void lcf::MaterialController::bind()
+void lcf::MaterialController::bind(int start_location)
 {
     if (not m_material) { this->updateMaterial(); }
     m_material->bind();
@@ -137,7 +219,6 @@ void lcf::MaterialController::bind()
 void lcf::MaterialController::release()
 {
     if (not m_material) { return; }
-    m_material->release();
     m_shader_uniform_binder->release();
 }
 
@@ -156,11 +237,6 @@ void lcf::MaterialController::setMaterialType(MaterialType type)
 lcf::MaterialType lcf::MaterialController::materialType() const
 {
     return m_material_type;
-}
-
-void lcf::MaterialController::setShininess(float shininess)
-{
-    m_shininess = std::max(shininess, std::numeric_limits<float>::min()); //! shinness <= 0.0f在计算镜面反射出现bug
 }
 
 void lcf::MaterialController::setShader(const SharedGLShaderProgramPtr & shader)
@@ -193,9 +269,26 @@ void lcf::MaterialController::setImageData(int type, const SharedImagePtr &image
 void lcf::MaterialController::updateMaterial()
 {
     switch (m_material_type) {
-        case Phong : { m_material = this->generatePhongMaterial(); } break;
-        case UserCustom : { m_material = this->generateUserCustomMaterial(); } break;
-        case PBR : { m_material = this->generatePBRMaterial(); } break;
+        case MaterialType::None : { m_material = Material::UniquePtr(new Material); }
+        case MaterialType::Phong : { m_material = this->generatePhongMaterial(); } break;
+        case MaterialType::UserCustom : { m_material = this->generateUserCustomMaterial(); } break;
+        case MaterialType::PBR : { m_material = this->generatePBRMaterial(); } break;
+        case MaterialType::IBL : { m_material = this->generateIBLMaterial(); } break;
     }
     m_shader_uniform_binder->setUniforms(m_material->asUniformList());
+}
+
+void lcf::MaterialController::deduceMaterialType()
+{
+    if (m_material_type != MaterialType::None) { return; }
+    if (m_textures.find(TextureType::UserCustom0) != m_textures.end()) {
+        m_material_type = MaterialType::UserCustom;
+    }
+    if (m_textures.find(TextureType::Diffuse) != m_textures.end()) {
+        m_material_type = MaterialType::Phong;
+    }
+    if (m_textures.find(TextureType::Metalness) != m_textures.end()
+        or m_textures.find(TextureType::Roughness) != m_textures.end()) {
+        m_material_type = MaterialType::PBR;
+    }
 }

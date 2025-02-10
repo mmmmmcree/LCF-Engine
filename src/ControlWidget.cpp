@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include "ElaMenuBar.h"
 #include "CameraControlPanel.h"
-#include "ModelControlPanel.h"
+#include "SceneControlPanel.h"
 #include "RenderSettingsPanel.h"
 
 ControlWidget::ControlWidget(QWidget *parent) : ElaWindow(parent)
@@ -14,8 +14,8 @@ ControlWidget::ControlWidget(QWidget *parent) : ElaWindow(parent)
     this->setNavigationBarDisplayMode(ElaNavigationType::Compact);
     this->setUserInfoCardVisible(false);
 
-    ModelControlPanel *model_loader_panel = new ModelControlPanel(this);
-    this->addPageNode("Model Control Panel", model_loader_panel, ElaIconType::Dragon);
+    SceneControlPanel *scene_control_panel = new SceneControlPanel(this);
+    this->addPageNode("Model Control Panel", scene_control_panel, ElaIconType::Dragon);
     RenderSettingsPanel *render_settings_panel = new RenderSettingsPanel(this);
     this->addPageNode("Render Settings Panel", render_settings_panel, ElaIconType::PresentationScreen);
     CameraControlPanel *camera_control_panel = new CameraControlPanel(this);

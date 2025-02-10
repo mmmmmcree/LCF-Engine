@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include "Model.h"
 #include <QOpenGLContext>
-#include <QOffscreenSurface>
+#include <QSurface>
 
 
 namespace lcf {
@@ -23,7 +23,7 @@ namespace lcf {
         void processToBeCloned(Model *model);
     private:
         QOpenGLContext *m_context = nullptr;
-        QOffscreenSurface *m_surface = nullptr;
+        QSurface *m_surface = nullptr;
         std::unordered_map<QString, Model::SharedPtr> m_models;
         QHash<Model *, QList<Model *>> m_to_be_cloned;
     };

@@ -31,5 +31,5 @@ void lcf::SingleColorAttachmentFBO::setColorFormat(GLTextureFormat color_format)
 
 void lcf::SingleColorAttachmentFBO::update()
 {
-    this->setColorAttachment(0, GLHelper::generateColorTexture(m_width, m_height, m_color_format));
+    this->setColorAttachment(0, GLHelper::generateTexture2DAttachment(m_width, m_height, m_color_format));
 }

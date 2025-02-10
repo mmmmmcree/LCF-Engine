@@ -22,5 +22,5 @@ void lcf::DepthCubeMapFBO::resize(int width)
 
 void lcf::DepthCubeMapFBO::update()
 {
-    this->setDepthAttachment(GLHelper::generateDepthCubeMap(m_width));
+    this->setDepthAttachment(GLHelper::generateCubeMapAttachment(m_width, GLTextureFormat::D32F));
 }

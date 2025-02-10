@@ -36,6 +36,11 @@ vec3 fresnel(float cos_theta, vec3 F0)
     return F0 + (1.0 - F0) * pow(1.0 - cos_theta, 5.0);
 }
 
+vec3 fresnel_with_roughness(float cos_theta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cos_theta, 5.0);
+}   
+
 vec3 calcFactor(vec3 light_direction, vec3 normal, vec3 view_direction, vec3 albedo, float roughness, float metallic, vec3 F0)
 {
     vec3 halfway = normalize(light_direction + view_direction);
@@ -78,3 +83,35 @@ struct PBRMaterial
     sampler2D ao_map;
     sampler2D emissive_map;
 };
+
+struct IBLMaterial
+{
+    samplerCube irradiance_map;
+    samplerCube prefilter_map;
+    sampler2D brdf_map;
+};
+
+vec3 calc_ibl_diffuse(vec3 irradiance, vec3 albedo, vec3 normal, vec3 view_direction, vec3 F0, float roughness) {
+    vec3 KS = fresnel_with_roughness(max(dot(normal, view_direction), 0.0), F0, roughness);
+    vec3 KD = 1.0 - KS;
+    vec3 diffuse = KD * irradiance * albedo;
+    return diffuse;
+}
+
+vec3 calc_ibl_ambient(IBLMaterial material, vec3 normal, vec3 view_direction, vec3 albedo, vec3 F0, float metallic, float roughness, float ao)
+{
+    float n_dot_v = max(dot(normal, view_direction), 0.0);
+    vec3 F = fresnel_with_roughness(n_dot_v, F0, roughness);
+    vec3 kS = F;
+    vec3 kD = vec3(1.0) - kS;
+    kD *= 1.0 - metallic;
+    vec3 irradiance = texture(material.irradiance_map, normal).rgb;
+    vec3 diffuse = irradiance * albedo;
+    const float max_reflection_lod = 4.0;
+    vec3 reflect_direction = reflect(view_direction, normal);
+    vec3 prefiltered_color = textureLod(material.prefilter_map, reflect_direction, roughness * max_reflection_lod).rgb;
+    vec2 brdf = texture(material.brdf_map, vec2(n_dot_v, roughness)).rg;
+    vec3 specular = prefiltered_color * (F * brdf.x + vec3(brdf.y));
+    vec3 ambient = (kD * diffuse + specular) * ao;
+    return ambient;
+}

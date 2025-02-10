@@ -9,9 +9,6 @@
 
 lcf::Scene::Scene() : Object3D()
 {
-    m_skybox = std::make_unique<Mesh>(Mesh::GeometryPtr(Geometry::cube()));
-    m_skybox->setShader(ShaderManager::instance()->get(ShaderManager::CubicSkybox));
-    m_skybox->setMaterialType(MaterialType::UserCustom);
     m_timer.setInterval(1000 / 60);
 }
 
@@ -38,7 +35,6 @@ void lcf::Scene::addLight(const Light::SharedPtr &light)
             m_lights.addSpotLight(std::static_pointer_cast<SpotLight>(light));
         } break;
     }
-    m_lights.allocateShadowMapUnits();
     const auto &light_as_uniforms = light->asUniformList();
     for (auto &model : m_models) {
         model->setUniforms(light_as_uniforms);
@@ -105,9 +101,11 @@ void lcf::Scene::draw()
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
     gl->glEnable(GL_DEPTH_TEST);
     this->shadowPass();
+    m_environment.bind();
     Object3D::draw();
+    m_environment.release();
     gl->glDepthFunc(GL_LEQUAL); 
-    m_skybox->draw();
+    m_environment.drawSkybox();
     gl->glDepthFunc(GL_LESS);
     gl->glDisable(GL_DEPTH_TEST);
     /*
@@ -118,9 +116,9 @@ void lcf::Scene::draw()
     */
 }
 
-void lcf::Scene::setSkyboxTexture(TextureWrapper texture)
+lcf::Environment *lcf::Scene::environment()
 {
-    m_skybox->setTexture(TextureType::UserCustom0, texture);
+    return &m_environment;
 }
 
 QTimer *lcf::Scene::timer()

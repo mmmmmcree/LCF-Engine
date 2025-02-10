@@ -38,5 +38,5 @@ void lcf::MSAAFBO::setColorFormat(GLTextureFormat format)
 void lcf::MSAAFBO::update()
 {
     this->setColorAttachment(0, GLHelper::generateMSAATexture(m_width, m_height, m_samples, m_color_format));
-    this->setDepthStencilAttachment(GLHelper::generateMSAATexture(m_width, m_height, m_samples, DEPTH24_STENCIL8));
+    this->setDepthStencilAttachment(GLHelper::generateMSAATexture(m_width, m_height, m_samples, GLTextureFormat::D24S8));
 }

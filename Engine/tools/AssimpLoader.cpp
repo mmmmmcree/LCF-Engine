@@ -42,8 +42,9 @@ lcf::MaterialController::SharedPtr lcf::AssimpLoader::processMaterial(aiMaterial
 {
     MaterialController::SharedPtr mat_controller = MaterialController::createShared();
     std::unordered_map<std::string, SharedImagePtr> image_map;
-    for (int type = aiTextureType_DIFFUSE; type <= aiTextureType_TRANSMISSION; ++type) {
+    for (int type = aiTextureType_DIFFUSE; type <= aiTextureType_GLTF_METALLIC_ROUGHNESS; ++type) {
         int count = ai_material->GetTextureCount(static_cast<aiTextureType>(type));
+        if (count) { qDebug() << "Texture name:" << ai_material->GetName().C_Str() << " type:" << type << " count:" << count; }
         for (int i = 0; i < count; ++i) {
             aiString texture_path;
             ai_material->Get(AI_MATKEY_TEXTURE(static_cast<aiTextureType>(type), i), texture_path);
@@ -67,9 +68,6 @@ lcf::MaterialController::SharedPtr lcf::AssimpLoader::processMaterial(aiMaterial
         }
     }
 
-    ai_real shininess;
-    ai_material->Get(AI_MATKEY_SHININESS, shininess);
-    mat_controller->setShininess(shininess);
     return mat_controller;
 }
 

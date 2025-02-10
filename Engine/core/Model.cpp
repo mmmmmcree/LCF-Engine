@@ -29,7 +29,10 @@ void lcf::Model::create()
         mesh->create();
     }
     //- 默认shader
-    auto shader = ShaderManager::instance()->getMaterialShader(m_material_controller->materialType(), this->animated(), true);
+    if (not m_meshes.empty() and this->materialType() == MaterialType::None) {
+        m_material_controller->setMaterialType(m_meshes.front()->materialType());
+    }
+    auto shader = ShaderManager::instance()->getMaterialShader(this->materialType(), this->animated(), true);
     m_material_controller->setShader(shader);
     this->playAnimation();
 }

@@ -21,7 +21,7 @@ namespace lcf {
         using FrameBufferObject::setDepthStencilAttachment;
     private:
         std::function<NativeTextureWrapper(int, int)> m_color_attachment_generator = [](int width, int height) {
-            return GLHelper::generateColorTexture(width, height, GLTextureFormat::RGBA);
+            return GLHelper::generateTexture2DAttachment(width, height, GLTextureFormat::RGBA8U);
         };
     };
 }

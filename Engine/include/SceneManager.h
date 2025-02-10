@@ -2,7 +2,7 @@
 
 #include <QObject>
 #include <QOpenGLContext>
-#include <QOffscreenSurface>
+#include <QSurface>
 #include "Scene.h"
 #include <unordered_map>
 
@@ -21,7 +21,7 @@ namespace lcf {
         SceneManager() = default;
     private:
         QOpenGLContext *m_context = nullptr;
-        QOffscreenSurface *m_surface = nullptr;
+        QSurface *m_surface = nullptr;
         std::unordered_map<QString, Scene::UniquePtr> m_scenes;
     };
 }

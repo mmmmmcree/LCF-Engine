@@ -8,6 +8,7 @@ lcf::NativeTextureWrapper::~NativeTextureWrapper()
 {
     if (not m_info or --m_info->m_ref_count > 0) { return; }
     if (QOpenGLContext::currentContext() and QOpenGLContext::currentContext()->isValid()) {
+        qDebug() << "Delete texture" << m_info->texture;
         auto gl = QOpenGLContext::currentContext()->functions();
         gl->glDeleteTextures(1, &m_info->texture);
     }
@@ -26,11 +27,14 @@ lcf::NativeTextureWrapper::NativeTextureWrapper(GLTexture::Target target, unsign
     if (managed) { m_info->m_ref_count = 1; } 
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
     this->bind(0);
-    gl->glGetTexLevelParameteriv(m_info->target, 0, GL_TEXTURE_WIDTH, &m_info->width);
-    gl->glGetTexLevelParameteriv(m_info->target, 0, GL_TEXTURE_HEIGHT, &m_info->height);
-    gl->glGetTexLevelParameteriv(m_info->target, 0, GL_TEXTURE_INTERNAL_FORMAT, &m_info->format);
+    int target2D = m_info->target;
+    if (target2D == GL_TEXTURE_CUBE_MAP) {
+        target2D = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+    }
+    gl->glGetTexLevelParameteriv(target2D, 0, GL_TEXTURE_WIDTH, &m_info->width);
+    gl->glGetTexLevelParameteriv(target2D, 0, GL_TEXTURE_HEIGHT, &m_info->height);
+    gl->glGetTexLevelParameteriv(target2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &m_info->format);
     this->release(0);
-
 }
 
 lcf::NativeTextureWrapper::NativeTextureWrapper(const NativeTextureWrapper &other) :
@@ -80,7 +84,7 @@ void lcf::NativeTextureWrapper::release(int unit) const
     gl->glBindTexture(m_info->target, 0);
 }
 
-unsigned int lcf::NativeTextureWrapper::id() const
+unsigned int lcf::NativeTextureWrapper::textureId() const
 {
     if (not m_info) { return 0; }
     return m_info->texture;
@@ -126,12 +130,31 @@ void lcf::NativeTextureWrapper::setWrapMode(GLTexture::WrapMode wrap_mode)
     this->release(0);
 }
 
-void lcf::NativeTextureWrapper::setMinMagFilter(GLTexture::Filter min_filter, GLTexture::Filter mag_filter)
+void lcf::NativeTextureWrapper::setMinMagFilters(GLTexture::Filter min_filter, GLTexture::Filter mag_filter)
 {
     if (not this->isValid()) { return; }
     auto gl = QOpenGLContext::currentContext()->functions();
     this->bind(0);
     gl->glTexParameteri(m_info->target, GL_TEXTURE_MIN_FILTER, min_filter);
     gl->glTexParameteri(m_info->target, GL_TEXTURE_MAG_FILTER, mag_filter);
+    this->release(0);
+}
+
+void lcf::NativeTextureWrapper::setBorderColor(float r, float g, float b, float a)
+{
+    if (not this->isValid()) { return; }
+    auto gl = QOpenGLContext::currentContext()->functions();
+    this->bind(0);
+    float border_color[4] = { r, g, b, a };
+    gl->glTexParameterfv(m_info->target, GL_TEXTURE_BORDER_COLOR, border_color);
+    this->release(0);
+}
+
+void lcf::NativeTextureWrapper::generateMipMaps()
+{
+    if (not this->isValid()) { return; }
+    auto gl = QOpenGLContext::currentContext()->functions();
+    this->bind(0);
+    gl->glGenerateMipmap(m_info->target);
     this->release(0);
 }

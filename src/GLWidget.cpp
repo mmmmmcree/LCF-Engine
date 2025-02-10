@@ -11,7 +11,7 @@
 #include "GLFunctions.h"
 #include "Renderer.h"
 #include "ControlManager.h"
-#include "LImage.h"
+#include "Constants.h"
 
 using namespace lcf;
 

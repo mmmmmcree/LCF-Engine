@@ -3,6 +3,7 @@
 #include <QOpenGLExtraFunctions>
 #include "ShaderManager.h"
 #include "GLHelper.h"
+#include "TextureDispatcher.h"
 
 lcf::DirectionalLight::DirectionalLight() : Light()
 {
@@ -20,7 +21,7 @@ lcf::UniformList lcf::DirectionalLight::asUniformList()
     UniformList uniform_list = Light::asUniformList();
     uniform_list.emplace_back(SingleUniform(uniformName("direction"), [this] { return this->direction(); }));
     uniform_list.emplace_back(SingleUniform(uniformName("index"), [this] { return m_light_index; }));
-    uniform_list.emplace_back(SingleUniform(uniformName("shadow_map"), [this] { return m_shadow_map_unit; }));
+    // uniform_list.emplace_back(SingleUniform(uniformName("shadow_map"), [this] { return m_shadow_map_unit; }));
     return uniform_list;
 }
 
@@ -74,5 +75,6 @@ void lcf::DirectionalLight::bind()
 void lcf::DirectionalLight::release()
 {
     m_fbo->release();
-    m_fbo->depthAttachment().bind(m_shadow_map_unit);
+    // m_fbo->depthAttachment().bind(m_shadow_map_unit);
+    TextureDispatcher::instance()->setTextureByName(uniformName("shadow_map"), m_fbo->depthAttachment());
 }

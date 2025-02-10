@@ -6,6 +6,7 @@
 #include "Define.h"
 #include "UserCustomMaterial.h"
 #include "PBRMaterial.h"
+#include "IBLMaterial.h"
 #include "ShaderUniformBinder.h"
 
 namespace lcf {
@@ -27,12 +28,11 @@ namespace lcf {
         void setTextures(const TextureInfoMap& texture_info_map);
         void create();
         bool isCreated() const;
-        void bind();
+        void bind(int start_location = 0);
         void release();
         UniformList asUniformList() const;
         void setMaterialType(MaterialType type);
         MaterialType materialType() const;
-        void setShininess(float shininess);
         void setShader(const SharedGLShaderProgramPtr& shader);
         GLShaderProgram *shader() const;
         void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr& su_binder);
@@ -40,15 +40,17 @@ namespace lcf {
     private:
         void setImageData(int type, const SharedImagePtr &image);
         void updateMaterial();
+        void deduceMaterialType();
         PhongMaterial::UniquePtr generatePhongMaterial();
         PBRMaterial::UniquePtr generatePBRMaterial();
         UserCustomMaterial::UniquePtr generateUserCustomMaterial();
+        IBLMaterial::UniquePtr generateIBLMaterial();
+        const std::string &textureTypeToString(TextureType type) const;
     private:
         ShaderUniformBinder::SharedPtr m_shader_uniform_binder = ShaderUniformBinder::createShared();
-        MaterialType m_material_type = MaterialType::Phong;
+        MaterialType m_material_type = MaterialType::None;
         TextureInfoMap m_textures;
         TextureDataInfoList m_image_data;
-        Material::UniquePtr m_material = nullptr;
-        float m_shininess = 32.0f;
+        Material::UniquePtr m_material;
     };
 }

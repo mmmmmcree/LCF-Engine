@@ -17,6 +17,7 @@ namespace lcf {
     public:
         using Value = std::variant<int, float, Vector2D, Vector3D, Vector4D, Color, Matrix2x2, Matrix3x3, Matrix4x4>;
         using ValueGenerator = std::function<Value()>;
+        SingleUniform() = default;
         SingleUniform(std::string_view name, const Value &value);
         SingleUniform(std::string_view name, const ValueGenerator &generator);
         void bind(GLShaderProgram *shader);
@@ -34,6 +35,7 @@ namespace lcf {
     public:
         using Values = std::variant<std::vector<int>, std::vector<Vector4D>, std::vector<Matrix4x4>>;
         using ValuesGenerator = std::function<Values()>;
+        ArrayUniform() = default;
         ArrayUniform(std::string_view name, const Values &values);
         ArrayUniform(std::string_view name, const ValuesGenerator &generator);
         void bind(GLShaderProgram *shader);

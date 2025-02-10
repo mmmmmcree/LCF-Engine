@@ -11,9 +11,7 @@ lcf::ModelManager *lcf::ModelManager::instance()
 void lcf::ModelManager::initialize(QOpenGLContext *context)
 {
     m_context = context;
-    m_surface = new QOffscreenSurface(nullptr, this);
-    m_surface->setFormat(context->format());
-    m_surface->create();
+    m_surface = context->surface();
 }
 
 lcf::Model::SharedPtr lcf::ModelManager::load(const QString &path, std::string name)
