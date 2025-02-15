@@ -16,12 +16,12 @@ namespace lcf {
         using SharedPtr = std::shared_ptr<Material>;
         using TextureMap = std::unordered_map<std::string, TextureWrapper>;
         virtual ~Material() = default;
-        virtual void bind();
+        virtual void dispatch();
         virtual MaterialType type() const;
-        const UniformList &asUniformList() const;
     protected:
         Material() = default;
         const std::string &fromTextureTypeToUniformName(TextureType type) const;
+        void setTexture(TextureType type, const TextureWrapper &texture);
     protected:
         UniformList m_uniforms;
         TextureMap m_texture_map;

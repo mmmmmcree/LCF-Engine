@@ -4,6 +4,7 @@
 #include "GLShaderProgram.h"
 #include "Define.h"
 #include "SignalSender.h"
+#include "MyUniform.h"
 
 namespace lcf {
     class Object3D
@@ -53,7 +54,7 @@ namespace lcf {
         const Matrix4x4 &worldMatrix();
         const Matrix4x4  &inversedWorldMatrix();
         Matrix3x3 normalMatrix();
-        void setName(std::string_view name);
+        virtual void setName(std::string_view name);
         const std::string &name() const;
         void setCastShadow(bool cast_shadow);
         bool castShadow() const;
@@ -62,7 +63,7 @@ namespace lcf {
         void setSignalSender(SignalSender *signal_sender);
         SignalSender *signalSender() const;
     protected:
-        void updateWorldMatrix();
+        virtual void updateWorldMatrix();
         void addChildToChildren(Object3D* child);
         void removeChild(Object3D* child);
     protected:
@@ -75,7 +76,8 @@ namespace lcf {
         bool m_normal_matrix_need_update = true;
         Object3D *m_parent = nullptr;
         std::string m_name;
-        bool m_cast_shadow = false;
+        // bool m_cast_shadow = false;
+        MySingleUniform m_cast_shadow = MySingleUniform(false);
         SignalSender *m_signal_sender = nullptr;
     private:
         std::vector<Object3D*> m_children;

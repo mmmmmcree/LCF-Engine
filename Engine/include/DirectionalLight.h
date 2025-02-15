@@ -14,12 +14,14 @@ namespace lcf {
         int index() const;
         void bind() override;
         void release() override;
-        UniformList asUniformList() override;
-        const NativeTextureWrapper &shadowMapTexture() const;
+        void setName(std::string_view name) override;
+    protected:
+        void updateWorldMatrix() override;
     private:
         DepthMapFBO::UniquePtr m_fbo;
         Matrix4x4 m_light_matrix;
         int m_light_index = 0;
+        bool m_ssbo_needs_update = true;
         inline static unsigned int s_ssbo = 0;
         inline static int s_ssbo_size = 0;
         inline static int s_light_count = 0;

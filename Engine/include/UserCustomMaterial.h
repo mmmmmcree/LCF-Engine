@@ -14,7 +14,7 @@ namespace lcf {
         using SharedPtr = std::shared_ptr<UserCustomMaterial>;
         using UniquePtr = std::unique_ptr<UserCustomMaterial>;
         using TextureInfoMap = std::map<int, TextureWrapper>;
-        void bind() override;
+        void dispatch() override;
         MaterialType type() const override;
     private:
         UserCustomMaterial(TextureInfoMap *textures);

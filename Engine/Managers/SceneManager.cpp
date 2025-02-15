@@ -200,7 +200,7 @@ void lcf::SceneManager::makeTestScene()
 
     Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
     helmet->scale(0.3f);
-    helmet->translateY(5.0f);
+    helmet->translateY(7.0f);
     helmet->setMaterialType(MaterialType::PBR);
     helmet->setCastShadow(true);
     scene->addObject3D(helmet);
@@ -221,7 +221,7 @@ void lcf::SceneManager::makeTestScene()
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         static float d = 0;
         helmet->translateX(qSin(d) * 0.1f);
-        point_light0->translateY(qSin(d) * 0.1f);
+        // point_light0->translateY(qSin(d) * 0.1f);
         d += 0.02f;
     });
 }

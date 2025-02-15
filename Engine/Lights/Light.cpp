@@ -17,23 +17,14 @@ void lcf::Light::draw()
     shader->release();
 }
 
-lcf::UniformList lcf::Light::asUniformList()
-{
-    UniformList uniform_list;
-    uniform_list.emplace_back(SingleUniform(uniformName("color"), [this] { return m_color; }));
-    uniform_list.emplace_back(SingleUniform(uniformName("intensity"), [this] { return m_intensity; }));
-    uniform_list.emplace_back(SingleUniform(uniformName("cast_shadow"), [this] { return this->castShadow(); }));
-    return uniform_list;
-}
-
 void lcf::Light::setColor(const Vector3D &color)
 {
-    m_color = color;
+    m_color.setValue(color);
 }
 
 void lcf::Light::setIntensity(float intensity)
 {
-    m_intensity = intensity;
+    m_intensity.setValue(intensity);
 }
 
 lcf::Vector3D lcf::Light::direction()
@@ -41,9 +32,21 @@ lcf::Vector3D lcf::Light::direction()
     return -this->worldMatrix().column(2).toVector3D().normalized();
 }
 
-void lcf::Light::setShadowMapUnit(int unit)
+void lcf::Light::setName(std::string_view name)
 {
-    m_shadow_map_unit = unit;
+    Object3D::setName(name);
+    m_color.setName(this->uniformName("color"));
+    m_intensity.setName(this->uniformName("intensity"));
+    m_cast_shadow.setName(this->uniformName("cast_shadow"));
+    m_direction.setName(this->uniformName("direction"));
+    m_position.setName(this->uniformName("position"));
+}
+
+void lcf::Light::updateWorldMatrix()
+{
+    Object3D::updateWorldMatrix();
+    m_direction.setValue(this->direction());
+    m_position.setValue(this->worldPosition());
 }
 
 std::string lcf::Light::uniformName(const std::string &name) const

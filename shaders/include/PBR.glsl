@@ -43,6 +43,7 @@ vec3 fresnel_with_roughness(float cos_theta, vec3 F0, float roughness)
 
 vec3 calcFactor(vec3 light_direction, vec3 normal, vec3 view_direction, vec3 albedo, float roughness, float metallic, vec3 F0)
 {
+    light_direction = -light_direction;
     vec3 halfway = normalize(light_direction + view_direction);
     float n_dot_l = max(dot(normal, light_direction), 0.0);
     float n_dot_v = max(dot(normal, view_direction), 0.0);
@@ -60,8 +61,8 @@ vec3 calcFactor(vec3 light_direction, vec3 normal, vec3 view_direction, vec3 alb
 
 vec3 calcPointLight(const in PointLight light, vec3 normal, vec3 view_direction, vec3 world_position, vec3 albedo, float metallic, float roughness, vec3 F0)
 {
-    vec3 light_direction = normalize(light.position - world_position);
-    float distance_to_light = length(light.position - world_position);
+    vec3 light_direction = normalize(world_position - light.position);
+    float distance_to_light = length(world_position - light.position);
     float attenuation = 1.0 / (distance_to_light * distance_to_light);
     vec3 factor = calcFactor(light_direction, normal, view_direction, albedo, roughness, metallic, F0);
     return factor * light.color * attenuation;

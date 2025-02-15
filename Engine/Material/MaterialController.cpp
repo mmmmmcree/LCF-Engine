@@ -3,6 +3,7 @@
 #include "GLHelper.h"
 #include "ControlManager.h"
 #include "TextureDispatcher.h"
+#include "ShaderManager.h"
 
 lcf::PhongMaterial::UniquePtr lcf::MaterialController::generatePhongMaterial()
 {
@@ -143,7 +144,7 @@ lcf::MaterialController::MaterialController(const MaterialController &other)
 {
     m_textures = other.m_textures;
     m_material_type = other.m_material_type;
-    m_shader_uniform_binder = ShaderUniformBinder::createShared(*other.m_shader_uniform_binder);
+    m_shader = other.m_shader;
     this->updateMaterial();
 }
 
@@ -159,7 +160,7 @@ lcf::MaterialController::SharedPtr lcf::MaterialController::createShared(const M
 
 bool lcf::MaterialController::isValid() const
 {
-    return m_shader_uniform_binder->hasShader();
+    return m_shader.get();
 }
 
 void lcf::MaterialController::setTexture(int texture_type, TextureWrapper texture)
@@ -209,23 +210,17 @@ bool lcf::MaterialController::isCreated() const
     return m_image_data.empty();
 }
 
-void lcf::MaterialController::bind(int start_location)
+void lcf::MaterialController::bind()
 {
     if (not m_material) { this->updateMaterial(); }
-    m_material->bind();
-    m_shader_uniform_binder->bind();
+    m_material->dispatch();
+    if (m_shader) { m_shader->bind(); }
 }
 
 void lcf::MaterialController::release()
 {
     if (not m_material) { return; }
-    m_shader_uniform_binder->release();
-}
-
-lcf::UniformList lcf::MaterialController::asUniformList() const
-{
-    if (not m_material) { return lcf::UniformList{}; }
-    return m_material->asUniformList();
+    if (m_shader) { m_shader->release(); }
 }
 
 void lcf::MaterialController::setMaterialType(MaterialType type)
@@ -239,25 +234,17 @@ lcf::MaterialType lcf::MaterialController::materialType() const
     return m_material_type;
 }
 
-void lcf::MaterialController::setShader(const SharedGLShaderProgramPtr & shader)
+void lcf::MaterialController::setShader(const GLShaderProgram::SharedPtr & shader)
 {
-    m_shader_uniform_binder->setShader(shader);
+    // if (not shader) { return; }
+    m_shader = shader;
+    // m_shader_uniform_binder->setShader(shader);
 }
 
-lcf::GLShaderProgram * lcf::MaterialController::shader() const
+const lcf::GLShaderProgram::SharedPtr & lcf::MaterialController::shader() const
 {
-    return m_shader_uniform_binder->shader().get();
-}
-
-void lcf::MaterialController::setShaderUniformBinder(const ShaderUniformBinder::SharedPtr &su_binder)
-{
-    if (not su_binder) { return; }
-    m_shader_uniform_binder = su_binder;
-}
-
-const lcf::ShaderUniformBinder::SharedPtr &lcf::MaterialController::shaderUniformBinder() const
-{
-    return m_shader_uniform_binder;
+    return m_shader;
+    // return m_shader_uniform_binder->shader();
 }
 
 void lcf::MaterialController::setImageData(int type, const SharedImagePtr &image)
@@ -275,7 +262,6 @@ void lcf::MaterialController::updateMaterial()
         case MaterialType::PBR : { m_material = this->generatePBRMaterial(); } break;
         case MaterialType::IBL : { m_material = this->generateIBLMaterial(); } break;
     }
-    m_shader_uniform_binder->setUniforms(m_material->asUniformList());
 }
 
 void lcf::MaterialController::deduceMaterialType()

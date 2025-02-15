@@ -8,8 +8,9 @@
 #include <functional>
 #include "Bloomer.h"
 #include <QOpenGLContext>
-#include <QOffscreenSurface>
+#include <QSurface>
 #include <QObject>
+#include "MyUniform.h"
 
 namespace lcf {
     class Renderer : public QObject
@@ -40,17 +41,17 @@ namespace lcf {
         void GammaCorrectionEnabledChanged(bool enabled);
     private:
         QOpenGLContext *m_context = nullptr;
-        QOffscreenSurface *m_surface = nullptr;
+        QSurface *m_surface = nullptr;
         MSAAFBO::UniquePtr m_msaa_fbo;  
         ScreenFBO::UniquePtr m_post_process_fbo;
-        ShaderUniformBinder::SharedPtr m_post_process_shader_binder;
+        GLShaderProgram::SharedPtr m_post_process_shader;
         Bloomer::UniquePtr m_bloomer;
         std::function<void(Scene *scene)> m_render_pass_procedure;
         std::function<void()> m_post_process_procedure;
-        bool m_gamma_correction_enabled = true;
-        bool m_hdr_enabled = true;
+        MySingleUniform m_gamma_correction_enabled;
+        MySingleUniform m_hdr_enabled;
         bool m_bloom_enabled = true;
         bool m_msaa_enabled = true;
-        float m_hdr_exposure = 1.0f;
+        MySingleUniform m_hdr_exposure;
     };
 }

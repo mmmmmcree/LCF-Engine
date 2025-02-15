@@ -8,15 +8,15 @@ lcf::Object3DType lcf::Model::type() const
 
 void lcf::Model::draw()
 {
-    m_material_controller->shaderUniformBinder()->bind();
+    m_material_controller->shader()->bind();
     Object3D::draw();
-    m_material_controller->shaderUniformBinder()->release();
+    m_material_controller->shader()->release();
     m_animation_player.update(1.0f / 60.0f);
 }
 
 void lcf::Model::drawShadow(LightType light_type)
 {
-    if (not m_cast_shadow) { return; }
+    if (not this->castShadow()) { return; }
     Object3D::drawShadow(light_type);
 }
 
@@ -73,7 +73,7 @@ void lcf::Model::passSettingsToMeshes()
     for (auto &mesh : m_meshes) {
         mesh->setMaterialType(m_material_controller->materialType());
         mesh->setTextures(m_material_controller->textureInfoMap());
-        mesh->setCastShadow(m_cast_shadow);
+        mesh->setCastShadow(this->castShadow());
     }
 }
 
@@ -105,7 +105,7 @@ int lcf::Model::currentAnimationIndex() const
 
 void lcf::Model::addMesh(MeshPtr && mesh)
 {
-    mesh->materialController()->setShaderUniformBinder(m_material_controller->shaderUniformBinder());
+    mesh->materialController()->setShader(m_material_controller->shader());
     mesh->setInstanceHelper(m_instance_helper);
     m_meshes.emplace_back(std::move(mesh));
 }

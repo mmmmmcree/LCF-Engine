@@ -11,43 +11,26 @@ lcf::ShaderManager *lcf::ShaderManager::instance()
     return &s_instance;
 }
 
-lcf::UniqueGLShaderProgramPtr lcf::ShaderManager::load(const ShaderInfos &shader_infos)
+lcf::GLShaderProgram::UniquePtr lcf::ShaderManager::load(const ShaderInfos &shader_infos)
 {
-    GLShaderProgram *shader = new GLShaderProgram;
+    GLShaderProgram *shader_program = new GLShaderProgram;
     for (const auto &[type, path] : shader_infos) {
-        shader->addShaderFromSourceCode(type, this->readShaderSourceCode(path));
+        auto shader = this->getShader(type, path);
+        if (not shader) { continue; }
+        shader_program->addShader(shader);
     }
-    if (not shader->link()) {
-        qDebug() << shader->log();
-        delete shader;
-        shader = nullptr;
+    if (not shader_program->link()) {
+        delete shader_program; shader_program = nullptr;
     }
-    return std::unique_ptr<GLShaderProgram>(shader);
+    return GLShaderProgram::UniquePtr(shader_program);
 }
 
-lcf::SharedGLShaderProgramPtr lcf::ShaderManager::load(const QString &name, const ShaderInfos &shader_infos)
+const lcf::GLShaderProgram::SharedPtr &lcf::ShaderManager::get(ConfiguredShader type) const
 {
-    if (m_shader_map.find(name) != m_shader_map.end()) {
-        qDebug() << "Shader already loaded: " << name;
-    } else {
-        m_shader_map.emplace(name, load(shader_infos));
-    }
-    return m_shader_map[name];
+    return m_configured_shader_programs[type];
 }
 
-lcf::SharedGLShaderProgramPtr lcf::ShaderManager::get(const QString &name)
-{
-    auto iter = m_shader_map.find(name);
-    if (iter != m_shader_map.end()) { return iter->second; }
-    return nullptr;
-}
-
-const lcf::SharedGLShaderProgramPtr &lcf::ShaderManager::get(ConfiguredShader type) const
-{
-    return m_configured_shaders[type];
-}
-
-const lcf::SharedGLShaderProgramPtr &lcf::ShaderManager::getShadowShader(LightType light_type, bool animated) const
+const lcf::GLShaderProgram::SharedPtr &lcf::ShaderManager::getShadowShader(LightType light_type, bool animated) const
 {
     int index = 0;
     if (light_type == LightType::Directional) {
@@ -55,154 +38,137 @@ const lcf::SharedGLShaderProgramPtr &lcf::ShaderManager::getShadowShader(LightTy
     } else if (light_type == LightType::Point) {
         index = ConfiguredShader::PointShadowMap;
     }
-    return m_configured_shaders[index + animated];
+    return m_configured_shader_programs[index + animated];
 }
 
-const lcf::SharedGLShaderProgramPtr &lcf::ShaderManager::getMaterialShader(MaterialType material_type, bool animated, bool shadowed) const
+const lcf::GLShaderProgram::SharedPtr &lcf::ShaderManager::getMaterialShader(MaterialType material_type, bool animated, bool shadowed) const
 {
     int index = 0;
     switch (material_type) {
         case MaterialType::Phong : { index = ConfiguredShader::Phong; } break;
         case MaterialType::PBR : { index = ConfiguredShader::PBR; } break;
     }
-    return m_configured_shaders[index + animated + shadowed * 2];
+    return m_configured_shader_programs[index + animated + shadowed * 2];
 }
 
 lcf::ShaderManager::ShaderManager() :
     QObject(),
-    m_configured_shaders(ConfiguredShader::SIZE)
+    m_configured_shader_programs(ConfiguredShader::SIZE)
 {
-    SharedGLShaderProgramPtr shader = nullptr;
+    GLShaderProgram::SharedPtr shader = nullptr;
     lcf::GLHelper::UniformInfos sampler_uniforms;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "simple2D.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
     });
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
-    m_configured_shaders[Simple2D] = shader;
+    m_configured_shader_programs[Simple2D] = shader;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "sampler2D_debug.frag"}, 
     });
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
-    m_configured_shaders[Simple3D] = shader;
+    m_configured_shader_programs[Simple3D] = shader;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "geometry_debug.vert"}, 
         {GLShader::Geometry, lcf::path::shaders_prefix + "geometry_debug.geom"},
         {GLShader::Fragment, lcf::path::shaders_prefix + "geometry_debug.frag"}, 
     });
-    m_configured_shaders[GeometryDebug] = shader;
+    m_configured_shader_programs[GeometryDebug] = shader;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "single_color.frag"}, 
     });
-    m_configured_shaders[SingleColor] = shader;
+    m_configured_shader_programs[SingleColor] = shader;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "skybox.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "sampler_spherical.frag"}, 
     });
-    m_configured_shaders[SphericalSkybox] = shader;
+    m_configured_shader_programs[SphericalSkybox] = shader;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "skybox.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "sampler_cube.frag"}, 
     });
-    m_configured_shaders[CubicSkybox] = shader;
+    m_configured_shader_programs[CubicSkybox] = shader;
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
     shader = load({
         {GLShader::Vertex, path::shaders_prefix + "cube_map.vert"},
         {GLShader::Geometry, path::shaders_prefix + "cube_map.geom"},
         {GLShader::Fragment, path::shaders_prefix + "sphere_to_cube.frag"}
     });
-    m_configured_shaders[SphereToCube] = shader;
+    m_configured_shader_programs[SphereToCube] = shader;
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "directional_shadow_map.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "directional_shadow_map.frag"}, 
     });
-    m_configured_shaders[DirectionalShadowMap] = shader;
+    m_configured_shader_programs[DirectionalShadowMap] = shader;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "animated_directional_shadow_map.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "directional_shadow_map.frag"}, 
     });
-    m_configured_shaders[AnimatedDirectionalShadowMap] = shader;
+    m_configured_shader_programs[AnimatedDirectionalShadowMap] = shader;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "point_shadow_map.vert"}, 
         {GLShader::Geometry, lcf::path::shaders_prefix + "point_shadow_map.geom"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "point_shadow_map.frag"}, 
     });
-    m_configured_shaders[PointShadowMap] = shader;
+    m_configured_shader_programs[PointShadowMap] = shader;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "animated_point_shadow_map.vert"}, 
         {GLShader::Geometry, lcf::path::shaders_prefix + "point_shadow_map.geom"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "point_shadow_map.frag"}, 
     });
-    m_configured_shaders[AnimatedPointShadowMap] = shader;
+    m_configured_shader_programs[AnimatedPointShadowMap] = shader;
     shader = load({
         {GLShader::Vertex, lcf::path::shaders_prefix + "simple3D.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "depth_debug.frag"}, 
     });
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
-    m_configured_shaders[DepthDebug] = shader;
+    m_configured_shader_programs[DepthDebug] = shader;
     shader = load({
         {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
-    m_configured_shaders[Phong] = shader;
+    m_configured_shader_programs[Phong] = shader;
     shader = load({
         {GLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "phong.frag"},
     });
-    m_configured_shaders[AnimatedPhong] = shader;
+    m_configured_shader_programs[AnimatedPhong] = shader;
     shader = load({
         {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "phong_shadow.frag"},
     });
-    m_configured_shaders[ShadowedPhong] = shader;
+    m_configured_shader_programs[ShadowedPhong] = shader;
     shader = load({
         {GLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "phong_shadow.frag"},
     });
-    m_configured_shaders[AnimatedShadowedPhong] = shader;
-    sampler_uniforms = {
-        {"material.albedo_map", 0},
-        {"material.normal_map", 1},
-        {"material.metallic_map", 2},
-        {"material.roughness_map", 3},
-        {"material.ao_map", 4},
-        {"material.emissive_map", 5},
-        {"ibl_material.irradiance_map", 6},
-        {"ibl_material.prefilter_map", 7},
-        {"ibl_material.brdf_map", 8},
-    };
-    shader = m_configured_shaders[PBR] = load({
+    m_configured_shader_programs[AnimatedShadowedPhong] = shader;
+    shader = m_configured_shader_programs[PBR] = load({
         {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "pbr.frag"},
     });
-    GLHelper::setShaderUniforms(shader.get(), sampler_uniforms);
-    shader = m_configured_shaders[AnimatedPBR] = load({
+    shader = m_configured_shader_programs[AnimatedPBR] = load({
         {GLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "pbr.frag"},
     });
-    GLHelper::setShaderUniforms(shader.get(), sampler_uniforms);
-
-    shader = m_configured_shaders[ShadowedPBR] = load({
+    shader = m_configured_shader_programs[ShadowedPBR] = load({
         {GLShader::Vertex, path::shaders_prefix + "illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "pbr_shadow.frag"},
     });
-    GLHelper::setShaderUniforms(shader.get(), sampler_uniforms);
-
-    shader = m_configured_shaders[AnimatedShadowedPBR] = load({
+    shader = m_configured_shader_programs[AnimatedShadowedPBR] = load({
         {GLShader::Vertex, path::shaders_prefix + "animated_illumination.vert"},
         {GLShader::Fragment, path::shaders_prefix + "pbr_shadow.frag"},
     });
-    GLHelper::setShaderUniforms(shader.get(), sampler_uniforms);
-    shader = m_configured_shaders[IBLConvolution] = load({
+    shader = m_configured_shader_programs[IBLConvolution] = load({
         {GLShader::Vertex, path::shaders_prefix + "cube_map.vert"},
         {GLShader::Geometry, path::shaders_prefix + "cube_map.geom"},
         {GLShader::Fragment, path::shaders_prefix + "IBL/convolution.frag"},
     });
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
-    shader = m_configured_shaders[IBLPrefilter] = load({
+    shader = m_configured_shader_programs[IBLPrefilter] = load({
         {GLShader::Vertex, path::shaders_prefix + "cube_map.vert"},
         {GLShader::Geometry, path::shaders_prefix + "cube_map.geom"},
         {GLShader::Fragment, path::shaders_prefix + "IBL/prefilter.frag"},
@@ -240,4 +206,19 @@ QString lcf::ShaderManager::_readShaderSourceCode(const QString &file_path, QSet
         result += _readShaderSourceCode(include_file_path, included_files);
     }
     return result;
+}
+
+lcf::GLShader *lcf::ShaderManager::getShader(GLShader::ShaderTypeBit type, const QString &file_path)
+{
+    auto iter = m_shader_map.find(file_path);
+    if (iter != m_shader_map.end()) {
+        return iter->second;
+    }
+    GLShader *shader = new GLShader(type, this);
+    if (not shader->compileSourceCode(this->readShaderSourceCode(file_path))) {
+        qDebug() << shader->log();
+        shader->deleteLater();
+        return nullptr;
+    }
+    return m_shader_map[file_path] = shader;
 }

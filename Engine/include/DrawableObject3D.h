@@ -16,8 +16,7 @@ namespace lcf {
         DrawableObject3D(const DrawableObject3D &other);
         virtual void setMaterialType(MaterialType material_type);
         MaterialType materialType() const;
-        void setShader(const SharedGLShaderProgramPtr &shader);
-        void setUniforms(const UniformList &uniforms);
+        void setShader(const GLShaderProgram::SharedPtr &shader);
         MaterialController *materialController();
         InstanceHelper *instanceHelper();
     protected:

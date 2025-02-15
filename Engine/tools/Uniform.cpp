@@ -1,4 +1,6 @@
 #include "Uniform.h"
+#include "GLShaderProgram.h"
+#include "UniformManager.h"
 
 lcf::SingleUniform::SingleUniform(std::string_view name, const Value &value) :
     m_name(name), m_value(value)
@@ -14,7 +16,7 @@ void lcf::SingleUniform::bind(GLShaderProgram *shader)
 {
     const auto &value = m_generator.has_value() ? m_generator.value()() : m_value;
     std::visit([&](auto &&value) {
-        shader->setUniformValue(m_location, value);
+        shader->setUniformValue(m_name.c_str(), value);
     }, value);
 }
 
@@ -26,6 +28,12 @@ const std::string &lcf::SingleUniform::name() const
 void lcf::SingleUniform::setLocation(int location)
 {
     m_location = location;
+}
+
+void lcf::SingleUniform::setUniformValue(const Value &value)
+{
+    m_value = value;
+    // UniformManager::instance()->emitUniformUpdatedSignal(*this);
 }
 
 lcf::ArrayUniform::ArrayUniform(std::string_view name, const Values &values) :

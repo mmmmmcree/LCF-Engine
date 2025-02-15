@@ -2,11 +2,9 @@
 #include "TextureDispatcher.h"
 
 
-void lcf::UserCustomMaterial::bind()
+void lcf::UserCustomMaterial::dispatch()
 {
-    // int loc = start_location;
     for (auto &[type, texture] : *m_textures) {
-        // texture.bind(loc++);
         const auto &name = this->fromTextureTypeToUniformName(static_cast<TextureType>(type));
         TextureDispatcher::instance()->setTextureByName(name, texture);
     }

@@ -2,6 +2,7 @@
 
 #include "Light.h"
 #include "DepthCubeMapFBO.h"
+#include "MyUniform.h"
 #include <array>
 
 namespace lcf {
@@ -13,18 +14,20 @@ namespace lcf {
         static SharedPtr createShared();
         void draw() override;
         LightType lightType() const override;
-        UniformList asUniformList() override;
         void bind() override;
         void release() override;
         int index() const;
-        const NativeTextureWrapper &shadowMapTexture() const;
+        void setName(std::string_view name) override;
+    protected:
+        void updateWorldMatrix() override;
     private:
         void updateLightMatrices();
     private:
         DepthCubeMapFBO::UniquePtr m_fbo;
         std::array<Matrix4x4, 6> m_light_matrices;
-        float m_constant = 1.0f, m_linear = 0.09f, m_quadratic = 0.032f;
+        MySingleUniform m_constant, m_linear, m_quadratic, m_far_plane;
         int m_light_index = 0;
+        bool m_ssbo_need_update = true;
         inline static unsigned int s_ssbo = 0;
         inline static int s_ssbo_size = 0;
         inline static int s_light_count = 0;

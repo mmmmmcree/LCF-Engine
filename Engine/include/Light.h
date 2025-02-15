@@ -5,6 +5,7 @@
 #include "ProjectionProvider.h"
 #include "GLFrameBufferObject.h"
 #include "Define.h"
+#include "MyUniform.h"
 
 namespace lcf {
     class Light : public Object3D
@@ -17,19 +18,18 @@ namespace lcf {
         virtual LightType lightType() const = 0;
         virtual void bind() { }
         virtual void release() { }
-        virtual void bindAsShadowMap(int texture_unit) { }
-        virtual UniformList asUniformList();
         void setColor(const Vector3D& color);
         void setIntensity(float intensity);
         Vector3D direction();
-        void setShadowMapUnit(int unit);
+        void setName(std::string_view name) override;
     protected:
+        void updateWorldMatrix() override;
         std::string uniformName(const std::string &name) const;
-    public:
+    protected:
         ProjectionProvider m_projection_provider;
-        Vector3D m_direction;
-        Vector3D m_color = {1.0f, 1.0f, 1.0f};
-        float m_intensity = 1.0f;
-        int m_shadow_map_unit = 0;
+        MySingleUniform m_color;
+        MySingleUniform m_intensity = MySingleUniform(1.0f);
+        MySingleUniform m_position = MySingleUniform(Vector3D(0.0f, 0.0f, 0.0f));
+        MySingleUniform m_direction = MySingleUniform(Vector3D(0.0f, 0.0f, 1.0f));
     };
 }

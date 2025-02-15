@@ -8,17 +8,17 @@ lcf::MaterialType lcf::IBLMaterial::type() const
 
 void lcf::IBLMaterial::setIrradianceMap(TextureWrapper texture)
 {
-    m_texture_map["ibl_material.irradiance_map"] = texture;
+    this->setTexture(TextureType::IBLIrradiance, texture);
 }
 
 void lcf::IBLMaterial::setPrefilterMap(TextureWrapper texture)
 {
-    m_texture_map["ibl_material.prefilter_map"] = texture;
+    this->setTexture(TextureType::IBLPrefilter, texture);
 }
 
 void lcf::IBLMaterial::setBRDFMap(TextureWrapper texture)
 {
-    m_texture_map["ibl_material.brdf_map"] = texture;
+    this->setTexture(TextureType::IBLBRDF, texture);
 }
 
 lcf::IBLMaterial::UniquePtr lcf::IBLMaterial::createUnique()

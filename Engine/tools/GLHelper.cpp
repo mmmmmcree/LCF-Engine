@@ -33,7 +33,7 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateMSAATexture(int width, int heig
     unsigned int texture;
     gl->glGenTextures(1, &texture);
     gl->glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
-    gl->glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_TRUE);
+    gl->glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
     gl->glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
     NativeTextureWrapper texture_wrapper(GLTexture::Target2DMultisample, texture);
     return texture_wrapper;

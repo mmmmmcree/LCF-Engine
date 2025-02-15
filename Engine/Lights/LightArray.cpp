@@ -1,11 +1,22 @@
 #include"LightArray.h"
 #include "GLHelper.h"
 
+lcf::LightArray::LightArray()
+{
+    m_point_light_count.setName("point_light_count");
+    m_point_light_count.setValue(0);
+    m_directional_light_count.setName("directional_light_count");
+    m_directional_light_count.setValue(0);
+    m_spot_light_count.setName("spot_light_count");
+    m_spot_light_count.setValue(0);
+}
+
 void lcf::LightArray::addDirectionalLight(const DirectionalLight::SharedPtr &light)
 {
     m_directional_lights.push_back(light);
     light->setName("directional_light[" + std::to_string(m_directional_lights.size() - 1) + "]");
     m_lights.push_back(light.get());
+    m_directional_light_count.setValue(static_cast<int>(m_directional_lights.size()));
 }
 
 const lcf::DirectionalLight::SharedPtr &lcf::LightArray::takeDirectionalLight(size_t index) const
@@ -23,6 +34,7 @@ void lcf::LightArray::addPointLight(const PointLight::SharedPtr &light)
     m_point_lights.push_back(light);
     light->setName("point_light[" + std::to_string(m_point_lights.size() - 1) + "]");
     m_lights.push_back(light.get());
+    m_point_light_count.setValue(static_cast<int>(m_point_lights.size()));
 }
 
 const lcf::PointLight::SharedPtr &lcf::LightArray::takePointLight(size_t index) const
@@ -40,6 +52,7 @@ void lcf::LightArray::addSpotLight(const SpotLight::SharedPtr &light)
     m_spot_lights.push_back(light);
     light->setName("spot_light[" + std::to_string(m_spot_lights.size() - 1) + "]");
     m_lights.push_back(light.get());
+    m_spot_light_count.setValue(static_cast<int>(m_spot_lights.size()));
 }
 
 const lcf::SpotLight::SharedPtr &lcf::LightArray::takeSpotLight(size_t index) const
@@ -50,19 +63,6 @@ const lcf::SpotLight::SharedPtr &lcf::LightArray::takeSpotLight(size_t index) co
 int lcf::LightArray::spotLightCount() const
 {
     return static_cast<int>(m_spot_lights.size());
-}
-
-lcf::UniformList lcf::LightArray::asUniformList()
-{
-    UniformList uniforms;
-    for (Light *light : m_lights) {
-        const auto& light_uniforms = light->asUniformList();
-        uniforms.insert(uniforms.end(), light_uniforms.begin(), light_uniforms.end());
-    }
-    uniforms.push_back(SingleUniform("directional_light_count", [this] { return this->directionalLightCount(); }));
-    uniforms.push_back(SingleUniform("point_light_count", [this] { return this->pointLightCount(); }));
-    uniforms.push_back(SingleUniform("spot_light_count", [this] { return this->spotLightCount(); }));
-    return uniforms;
 }
 
 typename lcf::LightArray::LightList::iterator lcf::LightArray::begin()

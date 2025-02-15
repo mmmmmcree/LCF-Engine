@@ -8,10 +8,10 @@
 #include <string_view>
 #include "Matrix.h"
 #include "Color.h"
-#include "GLShaderProgram.h"
 
 namespace lcf {
-    
+    class GLShaderProgram;
+
     class SingleUniform
     {
     public:
@@ -23,6 +23,7 @@ namespace lcf {
         void bind(GLShaderProgram *shader);
         const std::string &name() const;
         void setLocation(int location);
+        void setUniformValue(const Value &value);
     private:
         std::string m_name;
         int m_location = -1;

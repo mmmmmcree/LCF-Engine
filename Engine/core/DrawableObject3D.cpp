@@ -24,14 +24,9 @@ lcf::MaterialType lcf::DrawableObject3D::materialType() const
     return m_material_controller->materialType();
 }
 
-void lcf::DrawableObject3D::setShader(const SharedGLShaderProgramPtr &shader)
+void lcf::DrawableObject3D::setShader(const GLShaderProgram::SharedPtr &shader)
 {
     m_material_controller->setShader(shader);
-}
-
-void lcf::DrawableObject3D::setUniforms(const UniformList &uniforms)
-{
-    m_material_controller->shaderUniformBinder()->setUniforms(uniforms);
 }
 
 lcf::MaterialController *lcf::DrawableObject3D::materialController()

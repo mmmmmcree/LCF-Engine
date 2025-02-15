@@ -16,18 +16,15 @@ lcf::DirectionalLight::DirectionalLight() : Light()
     m_fbo = DepthMapFBO::createUnique(4096, 4096);
 }
 
-lcf::UniformList lcf::DirectionalLight::asUniformList()
+void lcf::DirectionalLight::setName(std::string_view name)
 {
-    UniformList uniform_list = Light::asUniformList();
-    uniform_list.emplace_back(SingleUniform(uniformName("direction"), [this] { return this->direction(); }));
-    uniform_list.emplace_back(SingleUniform(uniformName("index"), [this] { return m_light_index; }));
-    // uniform_list.emplace_back(SingleUniform(uniformName("shadow_map"), [this] { return m_shadow_map_unit; }));
-    return uniform_list;
+    Light::setName(name);
 }
 
-const lcf::NativeTextureWrapper &lcf::DirectionalLight::shadowMapTexture() const
+void lcf::DirectionalLight::updateWorldMatrix()
 {
-    return m_fbo->depthAttachment();
+    Light::updateWorldMatrix();
+    m_ssbo_needs_update = true;
 }
 
 lcf::DirectionalLight::SharedPtr lcf::DirectionalLight::createShared()
@@ -47,7 +44,6 @@ int lcf::DirectionalLight::index() const
 
 void lcf::DirectionalLight::bind()
 {
-    m_fbo->depthAttachment().release(m_shadow_map_unit);
     const auto &shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), false);
     const auto &animated_shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), true);
     GLHelper::setShaderUniform(shadow_shader.get(), {"light_index", m_light_index});
@@ -61,7 +57,7 @@ void lcf::DirectionalLight::bind()
         s_ssbo_size = s_light_count * offset + 5;
         gl->glBufferData(GL_SHADER_STORAGE_BUFFER, s_ssbo_size, nullptr, GL_DYNAMIC_DRAW);
     }
-    if (m_world_need_update) {
+    if (m_ssbo_needs_update) {
         m_light_matrix = m_projection_provider.projectionMatrix() * this->inversedWorldMatrix();
         gl->glBufferSubData(GL_SHADER_STORAGE_BUFFER, m_light_index * offset, 64, m_light_matrix.constData());
         gl->glBufferSubData(GL_SHADER_STORAGE_BUFFER, m_light_index * offset + 64, 64, this->inversedWorldMatrix().constData());
@@ -75,6 +71,5 @@ void lcf::DirectionalLight::bind()
 void lcf::DirectionalLight::release()
 {
     m_fbo->release();
-    // m_fbo->depthAttachment().bind(m_shadow_map_unit);
     TextureDispatcher::instance()->setTextureByName(uniformName("shadow_map"), m_fbo->depthAttachment());
 }

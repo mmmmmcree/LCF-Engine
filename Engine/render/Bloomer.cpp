@@ -23,25 +23,22 @@ lcf::Bloomer::Bloomer(int width, int height)
         m_down_sample_fbo_list[i] = SingleColorAttachmentFBO::createShared(w, h, GLTextureFormat::RGBA16F);
         m_up_sample_fbo_list[i] = SingleColorAttachmentFBO::createShared(w, h, GLTextureFormat::RGBA16F);
     }
-    SharedGLShaderProgramPtr shader = ShaderManager::instance()->load({
+    GLShaderProgram::SharedPtr shader = ShaderManager::instance()->load({
         {GLShader::Vertex, path::shaders_prefix + "simple2D.vert"},
         {GLShader::Fragment, path::shaders_prefix + "bloom/up_sample.frag"}
     });
     GLHelper::setShaderUniforms(shader.get(), {
         {"channel0", 0}, {"channel1", 1}
     });
-    m_up_sample_shader_binder = ShaderUniformBinder::createShared(shader);
-    m_up_sample_shader_binder->setSingleUniforms({
-        {"bloom_radius", [this] { return m_bloom_radius; }}, 
-        {"bloom_attenuation", [this] { return m_bloom_attenuation; }}, 
-    });
+    // m_up_sample_shader_binder = ShaderUniformBinder::createShared(shader);
+    m_up_sample_shader = shader;
     shader = ShaderManager::instance()->load({
         {GLShader::Vertex, path::shaders_prefix + "simple2D.vert"},
         {GLShader::Fragment, path::shaders_prefix + "bloom/extract.frag"}
     });
     GLHelper::setShaderUniform(shader.get(), {"channel0", 0});
-    m_extract_shader_binder = ShaderUniformBinder::createShared(shader);
-    m_extract_shader_binder->setSingleUniform({"threshold", [this] { return m_threshold; }});
+    // m_extract_shader_binder = ShaderUniformBinder::createShared(shader);
+    m_extract_shader = shader;
     shader = ShaderManager::instance()->load({
         {GLShader::Vertex, path::shaders_prefix + "simple2D.vert"},
         {GLShader::Fragment, path::shaders_prefix + "bloom/merge.frag"}
@@ -49,8 +46,12 @@ lcf::Bloomer::Bloomer(int width, int height)
     GLHelper::setShaderUniforms(shader.get(), {
         {"channel0", 0}, {"channel1", 1}
     });
-    m_merge_shader_binder = ShaderUniformBinder::createShared(shader);
-    m_merge_shader_binder->setSingleUniform({"bloom_intensity", [this] { return m_bloom_intensity; }});
+    // m_merge_shader_binder = ShaderUniformBinder::createShared(shader);
+    m_merge_shader = shader;
+    m_bloom_attenuation.setName("bloom_attenuation");
+    m_bloom_radius.setName("bloom_radius");
+    m_threshold.setName("threshold");
+    m_bloom_intensity.setName("bloom_intensity");
 }
 
 void lcf::Bloomer::bloom(FrameBufferObject *source)
@@ -77,11 +78,11 @@ void lcf::Bloomer::extract(FrameBufferObject *source, FrameBufferObject *dest)
 {
     if (source == dest) { return; }
     dest->bind();
-    m_extract_shader_binder->bind();
+    m_extract_shader->bind();
     source->colorAttachment().bind(0);
     Geometry::quad()->draw();
     source->colorAttachment().release(0);
-    m_extract_shader_binder->release();
+    m_extract_shader->release();
     dest->release();
 }
 
@@ -95,13 +96,13 @@ void lcf::Bloomer::upSample(FrameBufferObject *low, FrameBufferObject *high, Fra
 {
     if (low == dest or high == dest) { return; }
     dest->bind();
-    m_up_sample_shader_binder->bind();
+    m_up_sample_shader->bind();
     low->colorAttachment().bind(0);
     high->colorAttachment().bind(1);
     Geometry::quad()->draw();
     high->colorAttachment().release(1);
     low->colorAttachment().release(0);
-    m_up_sample_shader_binder->release();
+    m_up_sample_shader->release();
     dest->release();
 }
 
@@ -109,12 +110,12 @@ void lcf::Bloomer::merge(FrameBufferObject *source, FrameBufferObject *bloom, Fr
 {
     if (source == dest) { return; }
     dest->bind();
-    m_merge_shader_binder->bind();
+    m_merge_shader->bind();
     source->colorAttachment().bind(0);
     bloom->colorAttachment().bind(1);
     Geometry::quad()->draw();
     bloom->colorAttachment().release(1);
     source->colorAttachment().release(0);
-    m_merge_shader_binder->release();
+    m_merge_shader->release();
     dest->release();
 }

@@ -30,9 +30,9 @@ void lcf::Environment::drawSkybox()
     m_skybox->draw();
 }
 
-void lcf::Environment::bind(int start_location)
+void lcf::Environment::bind()
 {
-    m_material_controller.bind(start_location);
+    m_material_controller.bind();
 }
 
 void lcf::Environment::release()

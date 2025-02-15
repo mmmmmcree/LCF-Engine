@@ -8,6 +8,7 @@
 #include "PBRMaterial.h"
 #include "IBLMaterial.h"
 #include "ShaderUniformBinder.h"
+#include "GLShaderProgram.h"
 
 namespace lcf {
     class MaterialController
@@ -28,15 +29,12 @@ namespace lcf {
         void setTextures(const TextureInfoMap& texture_info_map);
         void create();
         bool isCreated() const;
-        void bind(int start_location = 0);
+        void bind();
         void release();
-        UniformList asUniformList() const;
         void setMaterialType(MaterialType type);
         MaterialType materialType() const;
-        void setShader(const SharedGLShaderProgramPtr& shader);
-        GLShaderProgram *shader() const;
-        void setShaderUniformBinder(const ShaderUniformBinder::SharedPtr& su_binder);
-        const ShaderUniformBinder::SharedPtr& shaderUniformBinder() const;
+        void setShader(const GLShaderProgram::SharedPtr& shader);
+        const GLShaderProgram::SharedPtr & shader() const;
     private:
         void setImageData(int type, const SharedImagePtr &image);
         void updateMaterial();
@@ -47,7 +45,7 @@ namespace lcf {
         IBLMaterial::UniquePtr generateIBLMaterial();
         const std::string &textureTypeToString(TextureType type) const;
     private:
-        ShaderUniformBinder::SharedPtr m_shader_uniform_binder = ShaderUniformBinder::createShared();
+        GLShaderProgram::SharedPtr m_shader;
         MaterialType m_material_type = MaterialType::None;
         TextureInfoMap m_textures;
         TextureDataInfoList m_image_data;

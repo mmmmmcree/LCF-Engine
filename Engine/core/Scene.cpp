@@ -35,13 +35,6 @@ void lcf::Scene::addLight(const Light::SharedPtr &light)
             m_lights.addSpotLight(std::static_pointer_cast<SpotLight>(light));
         } break;
     }
-    const auto &light_as_uniforms = light->asUniformList();
-    for (auto &model : m_models) {
-        model->setUniforms(light_as_uniforms);
-    }
-    for (auto &mesh : m_meshes) {
-        mesh->setUniforms(light_as_uniforms);
-    }
 }
 
 void lcf::Scene::addModel(const Model::SharedPtr &model)
@@ -50,7 +43,6 @@ void lcf::Scene::addModel(const Model::SharedPtr &model)
         if (model == existing_model) { return; }
     }
     m_models.emplace_back(model);
-    model->setUniforms(m_lights.asUniformList());
     if (m_signal_sender) {
         m_signal_sender->sendModelsUpdatedSignal(model.get());
     }
@@ -62,7 +54,6 @@ void lcf::Scene::addMesh(const Mesh::SharedPtr &mesh)
         if (mesh == existing_mesh) { return; }
     }
     m_meshes.emplace_back(mesh);
-    mesh->setUniforms(m_lights.asUniformList());
 }
 
 void lcf::Scene::addGroup(const Object3D::SharedPtr &group)

@@ -4,34 +4,16 @@
 #include "TextureDispatcher.h"
 
 
-void lcf::Material::bind()
+void lcf::Material::dispatch()
 {
-    // int loc = m_start_location = start_location;
-    // for (auto &texture : m_textures) {
-    //     texture.bind(loc++);
-    // }
     for (const auto &[name, texture] : m_texture_map) {
         TextureDispatcher::instance()->setTextureByName(name, texture);
     }
 }
 
-// void lcf::Material::release()
-// {
-//     int loc = m_start_location;
-//     for (auto &texture : m_textures) {
-//         texture.release(loc++);
-//     }
-// }
-
-
 lcf::MaterialType lcf::Material::type() const
 {
     return MaterialType::None;
-}
-
-const lcf::UniformList &lcf::Material::asUniformList() const
-{
-    return m_uniforms;
 }
 
 const std::string &lcf::Material::fromTextureTypeToUniformName(TextureType type) const
@@ -52,7 +34,7 @@ const std::string &lcf::Material::fromTextureTypeToUniformName(TextureType type)
         "material.albedo_map",
         "material.normal_camera_map",
         "material.emission_color_map",
-        "material.metalness_map",
+        "material.metallic_map",
         "material.roughness_map",
         "material.ao_map",
         "unknown",
@@ -86,4 +68,9 @@ const std::string &lcf::Material::fromTextureTypeToUniformName(TextureType type)
         "channel15"
     };
     return uniform_names[static_cast<int>(type)];
+}
+
+void lcf::Material::setTexture(TextureType type, const TextureWrapper &texture)
+{
+    m_texture_map[this->fromTextureTypeToUniformName(type)] = texture;
 }

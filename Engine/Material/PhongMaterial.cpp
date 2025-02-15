@@ -1,9 +1,11 @@
 #include "PhongMaterial.h"
 #include "TextureManager.h"
 
-lcf::PhongMaterial::PhongMaterial() : Material()
+lcf::PhongMaterial::PhongMaterial() :
+    Material(),
+    m_shininess(32.0f)
 {
-    m_uniforms.emplace_back(SingleUniform("material.shininess", [this] { return m_shininess; }));
+    m_shininess.setName("material.shininess");
     auto texture_manager = TextureManager::instance();
     this->setDiffuseMap(texture_manager->get(TextureManager::DefaultDiffuse));
     this->setSpecularMap(texture_manager->get(TextureManager::DefaultSpecular));
@@ -17,20 +19,20 @@ lcf::MaterialType lcf::PhongMaterial::type() const
 
 void lcf::PhongMaterial::setDiffuseMap(TextureWrapper texture)
 {
-    m_texture_map["material.diffuse_map"] = texture;
+    this->setTexture(TextureType::Diffuse, texture);
 }
-
+    
 void lcf::PhongMaterial::setSpecularMap(TextureWrapper texture)
 {
-    m_texture_map["material.specular_map"] = texture;
+    this->setTexture(TextureType::Specular, texture);
 } 
 
 void lcf::PhongMaterial::setNormalMap(TextureWrapper texture)
 {
-    m_texture_map["material.normal_map"] = texture;
+    this->setTexture(TextureType::Normal, texture);
 }
 
 void lcf::PhongMaterial::setShininess(float shininess)
 {
-    m_shininess = shininess;
+    m_shininess.setValue(shininess);
 }

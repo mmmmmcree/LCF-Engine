@@ -56,13 +56,13 @@ void lcf::Mesh::draw()
     if (not m_material_controller->isValid()) { return; }
     if (not m_geometry->isCreated()) { return; }
     m_material_controller->bind();
-    this->_draw(m_material_controller->shader());
+    this->_draw(m_material_controller->shader().get());
     m_material_controller->release();
 }
 
 void lcf::Mesh::drawShadow(LightType light_type)
 {
-    if (not m_cast_shadow) { return; }
+    if (not this->castShadow()) { return; }
     Object3D::drawShadow(light_type);
     if (not m_geometry->isCreated()) { return; }
     const auto &shadow_shader = ShaderManager::instance()->getShadowShader(light_type, this->animated());

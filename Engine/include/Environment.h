@@ -9,7 +9,7 @@ namespace lcf {
         Environment();
         void setSkyboxTexture(TextureWrapper texture);
         void drawSkybox();
-        void bind(int start_location = 0);
+        void bind();
         void release();
     private:
         void translateSkyboxTextureToCubemap();

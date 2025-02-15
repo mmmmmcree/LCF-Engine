@@ -2,6 +2,7 @@
 
 #include "Light.h"
 #include "my_math.h"
+#include "MyUniform.h"
 
 namespace lcf {
     class SpotLight : public Light
@@ -11,11 +12,11 @@ namespace lcf {
         static SharedPtr createShared();
         SpotLight() = default;
         LightType lightType() const override;
-        UniformList asUniformList() override;
+        void setName(std::string_view name) override;
         void setInnerAngle(float angle_deg);
         void setOuterAngle(float angle_deg);
     private:  
-        float m_cos_inner = qCos(qDegreesToRadians(15.0f));
-        float m_cos_outer = qCos(qDegreesToRadians(20.0f));
+        MySingleUniform m_cos_inner = MySingleUniform(qCos(qDegreesToRadians(15.0f)));
+        MySingleUniform m_cos_outer = MySingleUniform(qCos(qDegreesToRadians(20.0f)));
     };
 }

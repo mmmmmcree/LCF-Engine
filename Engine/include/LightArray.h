@@ -4,6 +4,7 @@
 #include "DirectionalLight.h"
 #include "SpotLight.h"
 #include <vector>
+#include "MyUniform.h"
 
 namespace lcf {
     class LightArray
@@ -13,7 +14,7 @@ namespace lcf {
         using PointLightList = std::vector<typename PointLight::SharedPtr>;
         using SpotLightList = std::vector<typename SpotLight::SharedPtr>;
         using LightList = std::vector<Light *>;
-        LightArray() = default;
+        LightArray();
         void addDirectionalLight(const DirectionalLight::SharedPtr &light);
         const DirectionalLight::SharedPtr &takeDirectionalLight(size_t index) const;
         int directionalLightCount() const;
@@ -23,7 +24,6 @@ namespace lcf {
         void addSpotLight(const SpotLight::SharedPtr &light);
         const SpotLight::SharedPtr &takeSpotLight(size_t index) const;
         int spotLightCount() const;
-        UniformList asUniformList();
         typename LightList::iterator begin();
         typename LightList::iterator end();
         typename LightList::const_iterator begin() const;
@@ -33,5 +33,8 @@ namespace lcf {
         PointLightList m_point_lights;
         SpotLightList m_spot_lights;
         LightList m_lights;
+        MySingleUniform m_directional_light_count;
+        MySingleUniform m_point_light_count;
+        MySingleUniform m_spot_light_count;
     };
 }

@@ -10,32 +10,32 @@ lcf::MaterialType lcf::PBRMaterial::type() const
 
 void lcf::PBRMaterial::setAlbedoMap(TextureWrapper texture)
 {
-    m_texture_map["material.albedo_map"] = texture;
+    this->setTexture(TextureType::BaseColor, texture);
 }
 
 void lcf::PBRMaterial::setNormalMap(TextureWrapper texture)
 {
-    m_texture_map["material.normal_map"] = texture;
+    this->setTexture(TextureType::Normal, texture);
 }
 
 void lcf::PBRMaterial::setMetallicMap(TextureWrapper texture)
 {
-    m_texture_map["material.metallic_map"] = texture;
+    this->setTexture(TextureType::Metalness, texture);
 }
 
 void lcf::PBRMaterial::setRoughnessMap(TextureWrapper texture)
 {
-    m_texture_map["material.roughness_map"] = texture;
+    this->setTexture(TextureType::Roughness, texture);
 }
 
 void lcf::PBRMaterial::setAOMap(TextureWrapper texture)
 {
-    m_texture_map["material.ao_map"] = texture;
+    this->setTexture(TextureType::AmbientOcclusion, texture);
 }
 
 void lcf::PBRMaterial::setEmissiveMap(TextureWrapper texture)
 {
-    m_texture_map["material.emissive_map"] = texture;
+    this->setTexture(TextureType::Emissive, texture);
 }
 
 lcf::PBRMaterial::PBRMaterial() : Material()
@@ -47,14 +47,4 @@ lcf::PBRMaterial::PBRMaterial() : Material()
     this->setRoughnessMap(tex_manager->get(TextureManager::DefaultRoughness));
     this->setAOMap(tex_manager->get(TextureManager::DefaultAO));
     this->setEmissiveMap(tex_manager->get(TextureManager::DefaultEmissive));
-    // int location = 0;
-    // m_uniforms.emplace_back(SingleUniform("material.albedo_map", location++));
-    // m_uniforms.emplace_back(SingleUniform("material.normal_map", location++));
-    // m_uniforms.emplace_back(SingleUniform("material.metallic_map", location++));
-    // m_uniforms.emplace_back(SingleUniform("material.roughness_map", location++));
-    // m_uniforms.emplace_back(SingleUniform("material.ao_map", location++));
-    // m_uniforms.emplace_back(SingleUniform("material.emissive_map", location++));
-    // m_uniforms.emplace_back(SingleUniform("ibl_material.irradiance_map", location++));
-    // m_uniforms.emplace_back(SingleUniform("ibl_material.prefilter_map", location++));
-    // m_uniforms.emplace_back(SingleUniform("ibl_material.brdf_map", location++));
 }

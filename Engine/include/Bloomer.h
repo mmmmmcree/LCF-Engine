@@ -4,6 +4,7 @@
 #include "ScreenFBO.h"
 #include "ShaderUniformBinder.h"
 #include <array>
+#include "MyUniform.h"
 
 namespace lcf {
     class Bloomer
@@ -26,12 +27,12 @@ namespace lcf {
         std::array<SingleColorAttachmentFBO::SharedPtr, s_sample_count - 1> m_up_sample_fbo_list;
         ScreenFBO::UniquePtr m_screen_fbo;
         SingleColorAttachmentFBO::SharedPtr m_last_sample_fbo;
-        ShaderUniformBinder::SharedPtr m_extract_shader_binder;
-        ShaderUniformBinder::SharedPtr m_up_sample_shader_binder;
-        ShaderUniformBinder::SharedPtr m_merge_shader_binder;
-        float m_threshold = 10.0f;
-        float m_bloom_intensity = 0.5f;
-        float m_bloom_attenuation = 1.0f;
-        float m_bloom_radius = 0.005f;
+        GLShaderProgram::SharedPtr m_extract_shader;
+        GLShaderProgram::SharedPtr m_up_sample_shader;
+        GLShaderProgram::SharedPtr m_merge_shader;
+        MySingleUniform m_threshold = MySingleUniform(10.0f);
+        MySingleUniform m_bloom_intensity = MySingleUniform(0.5f);
+        MySingleUniform m_bloom_attenuation = MySingleUniform(1.0f);
+        MySingleUniform m_bloom_radius = MySingleUniform(0.005f);
     };
 }

@@ -16,7 +16,7 @@ namespace lcf {
         using BufferTexture = std::variant<int, SharedGLTexturePtr>; // int for binding buffer as a texture, QOpenGLTexture * for using normal texture
         using BufferTextureList = std::vector<BufferTexture>;
         using ShaderToyBufferList = std::vector<ShaderToyBuffer>;
-        using ShaderList = std::vector<UniqueGLShaderProgramPtr>;
+        using ShaderList = std::vector<GLShaderProgram::UniquePtr>;
         using SharedPtr = std::shared_ptr<ShaderToy>;
         ShaderToy(int width, int height, const QStringList &frag_paths);
         void setSize(int width, int height);
