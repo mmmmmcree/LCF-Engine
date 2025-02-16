@@ -8,7 +8,7 @@ lcf::Object3DType lcf::Model::type() const
 
 void lcf::Model::draw()
 {
-    m_material_controller->shader()->bind();
+    m_material_controller->shader()->bindWithTextures();
     Object3D::draw();
     m_material_controller->shader()->release();
     m_animation_player.update(1.0f / 60.0f);

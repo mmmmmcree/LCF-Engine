@@ -10,7 +10,7 @@ lcf::Object3DType lcf::Light::type() const
 void lcf::Light::draw()
 {
     static auto shader = ShaderManager::instance()->get(ShaderManager::GeometryDebug);
-    shader->bind();
+    shader->bindWithTextures();
     shader->setUniformValue("model", this->worldMatrix());
     shader->setUniformValue("normal_matrix", this->normalMatrix());
     Geometry::quad()->draw();

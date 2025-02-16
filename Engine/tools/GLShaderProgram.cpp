@@ -5,6 +5,7 @@
 #include "UniformManager.h"
 #include "GLHelper.h"
 #include "TextureDispatcher.h"
+#include "Uniform.h"
 
 lcf::GLShaderProgram::GLShaderProgram(QObject *parent) : QOpenGLShaderProgram(parent)
 {
@@ -39,11 +40,10 @@ bool lcf::GLShaderProgram::link()
     return success;
 }
 
-bool lcf::GLShaderProgram::bind()
+bool lcf::GLShaderProgram::bindWithTextures()
 {
-    bool success = QOpenGLShaderProgram::bind();
+    bool success = this->bind();
     if (not success) { return false; }
-
     int texture_unit = 0;
     for (const auto &name : m_sampler_names) {
         auto texture = TextureDispatcher::instance()->getTextureByName(name);
@@ -51,9 +51,14 @@ bool lcf::GLShaderProgram::bind()
         this->setUniformValue(name.c_str(), texture_unit);
         texture.bind(texture_unit++);
         m_binding_textures.push_back(texture);
-        qDebug() << texture_unit;
     }
+    return success;
+}
 
+bool lcf::GLShaderProgram::bind()
+{
+    bool success = QOpenGLShaderProgram::bind();
+    if (not success) { return false; }
     if (m_unset_uniforms.empty()) { return success; }
     for (auto uniform : m_unset_uniforms) {
         if (not UniformManager::instance()->existUniform(uniform)) { continue; }
@@ -66,6 +71,7 @@ bool lcf::GLShaderProgram::bind()
 void lcf::GLShaderProgram::release()
 {
     QOpenGLShaderProgram::release();
+    if (m_binding_textures.empty()) { return; }
     int texture_unit = 0;
     for (auto &texture : m_binding_textures) {
         texture.release(texture_unit++);
@@ -87,7 +93,7 @@ void lcf::GLShaderProgram::assignDefaultValueToUniform(const char *uniform_name,
     }
 }
 
-void lcf::GLShaderProgram::onUniformUpdated(const MyUniform *uniform)
+void lcf::GLShaderProgram::onUniformUpdated(const Uniform *uniform)
 {
     if (m_uniform_names.contains(uniform->name())) {
         m_unset_uniforms.push_back(uniform);

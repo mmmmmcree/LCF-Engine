@@ -5,7 +5,6 @@
 #include "AnimationPlayer.h"
 #include "GLShaderProgram.h"
 #include "InstanceHelper.h"
-#include "ShaderUniformBinder.h"
 #include "LightArray.h"
 
 namespace lcf {

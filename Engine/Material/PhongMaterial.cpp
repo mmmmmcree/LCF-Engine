@@ -2,8 +2,7 @@
 #include "TextureManager.h"
 
 lcf::PhongMaterial::PhongMaterial() :
-    Material(),
-    m_shininess(32.0f)
+    Material()
 {
     m_shininess.setName("material.shininess");
     auto texture_manager = TextureManager::instance();

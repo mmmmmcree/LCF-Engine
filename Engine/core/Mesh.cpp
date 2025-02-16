@@ -66,7 +66,7 @@ void lcf::Mesh::drawShadow(LightType light_type)
     Object3D::drawShadow(light_type);
     if (not m_geometry->isCreated()) { return; }
     const auto &shadow_shader = ShaderManager::instance()->getShadowShader(light_type, this->animated());
-    shadow_shader->bind();
+    shadow_shader->bindWithTextures();
     this->_draw(shadow_shader.get());
     shadow_shader->release();
 }

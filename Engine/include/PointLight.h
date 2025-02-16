@@ -2,7 +2,6 @@
 
 #include "Light.h"
 #include "DepthCubeMapFBO.h"
-#include "MyUniform.h"
 #include <array>
 
 namespace lcf {
@@ -25,7 +24,7 @@ namespace lcf {
     private:
         DepthCubeMapFBO::UniquePtr m_fbo;
         std::array<Matrix4x4, 6> m_light_matrices;
-        MySingleUniform m_constant, m_linear, m_quadratic, m_far_plane;
+        SingleUniform<float> m_constant, m_linear, m_quadratic, m_far_plane;
         int m_light_index = 0;
         bool m_ssbo_need_update = true;
         inline static unsigned int s_ssbo = 0;

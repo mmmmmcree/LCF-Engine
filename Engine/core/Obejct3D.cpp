@@ -279,7 +279,7 @@ void lcf::Object3D::setCastShadow(bool cast_shadow)
 
 bool lcf::Object3D::castShadow() const
 {
-    return m_cast_shadow.asBool();
+    return m_cast_shadow.value();
 }
 
 void lcf::Object3D::setSignalSender(SignalSender *signal_sender)

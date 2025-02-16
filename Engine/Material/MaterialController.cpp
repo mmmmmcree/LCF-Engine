@@ -214,7 +214,7 @@ void lcf::MaterialController::bind()
 {
     if (not m_material) { this->updateMaterial(); }
     m_material->dispatch();
-    if (m_shader) { m_shader->bind(); }
+    if (m_shader) { m_shader->bindWithTextures(); }
 }
 
 void lcf::MaterialController::release()

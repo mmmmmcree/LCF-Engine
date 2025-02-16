@@ -28,7 +28,7 @@ void lcf::ShaderToyBuffer::update()
         }, m_textures[i]);
     }
     m_write_fbo->bind();
-    m_shader->bind();
+    m_shader->bindWithTextures();
     lcf::Geometry::quad()->draw();
     m_shader->release();
     m_write_fbo->release();

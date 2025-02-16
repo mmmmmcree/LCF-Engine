@@ -1,8 +1,7 @@
 #pragma once
 
 #include <QObject>
-// #include "Uniform.h"
-#include "MyUniform.h"
+#include "Uniform.h"
 #include <QSet>
 #include <QList>
 
@@ -10,7 +9,7 @@ namespace lcf {
     class UniformManager : public QObject
     {
         Q_OBJECT
-        using Uniform = MyUniform;
+        using Uniform = Uniform;
         using UniformPtrSet = QSet<const Uniform *>;
         using UniformPtrList = QList<const Uniform *>;
     public:

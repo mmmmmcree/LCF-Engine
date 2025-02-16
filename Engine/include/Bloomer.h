@@ -2,9 +2,9 @@
 
 #include "SingleColorAttachmentFBO.h"
 #include "ScreenFBO.h"
-#include "ShaderUniformBinder.h"
+#include "GLShaderProgram.h"
 #include <array>
-#include "MyUniform.h"
+#include "SingleUniform.h"
 
 namespace lcf {
     class Bloomer
@@ -30,9 +30,9 @@ namespace lcf {
         GLShaderProgram::SharedPtr m_extract_shader;
         GLShaderProgram::SharedPtr m_up_sample_shader;
         GLShaderProgram::SharedPtr m_merge_shader;
-        MySingleUniform m_threshold = MySingleUniform(10.0f);
-        MySingleUniform m_bloom_intensity = MySingleUniform(0.5f);
-        MySingleUniform m_bloom_attenuation = MySingleUniform(1.0f);
-        MySingleUniform m_bloom_radius = MySingleUniform(0.005f);
+        SingleUniform<float> m_threshold = 10.0f;
+        SingleUniform<float> m_bloom_intensity = 0.5f;
+        SingleUniform<float> m_bloom_attenuation = 1.0f;
+        SingleUniform<float> m_bloom_radius = 0.005f;
     };
 }

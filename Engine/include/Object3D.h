@@ -4,7 +4,7 @@
 #include "GLShaderProgram.h"
 #include "Define.h"
 #include "SignalSender.h"
-#include "MyUniform.h"
+#include "SingleUniform.h"
 
 namespace lcf {
     class Object3D
@@ -77,7 +77,7 @@ namespace lcf {
         Object3D *m_parent = nullptr;
         std::string m_name;
         // bool m_cast_shadow = false;
-        MySingleUniform m_cast_shadow = MySingleUniform(false);
+        SingleUniform<bool> m_cast_shadow = false;
         SignalSender *m_signal_sender = nullptr;
     private:
         std::vector<Object3D*> m_children;

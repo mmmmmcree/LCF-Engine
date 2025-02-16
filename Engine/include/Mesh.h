@@ -9,7 +9,6 @@
 #include "Skeleton.h"
 #include <QList>
 #include "InstanceHelper.h"
-#include "ShaderUniformBinder.h"
 #include "DrawableObject3D.h"
 
 namespace lcf {

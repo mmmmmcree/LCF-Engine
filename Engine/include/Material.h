@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Uniform.h"
 #include <memory>
 #include "Define.h"
 #include "TextureWrapper.h"
@@ -23,7 +22,6 @@ namespace lcf {
         const std::string &fromTextureTypeToUniformName(TextureType type) const;
         void setTexture(TextureType type, const TextureWrapper &texture);
     protected:
-        UniformList m_uniforms;
         TextureMap m_texture_map;
         int m_start_location = 0;
     };

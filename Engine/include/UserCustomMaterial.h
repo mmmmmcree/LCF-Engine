@@ -3,6 +3,7 @@
 #include "Material.h"
 #include "Define.h"
 #include "TextureWrapper.h"
+#include <map>
 
 namespace lcf {
     class MaterialController;

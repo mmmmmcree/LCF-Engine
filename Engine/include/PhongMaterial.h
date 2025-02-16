@@ -2,7 +2,7 @@
 
 #include "Material.h"
 #include "TextureWrapper.h"
-#include "MyUniform.h"
+#include "SingleUniform.h"
 
 namespace lcf {
     class MaterialController;
@@ -20,6 +20,6 @@ namespace lcf {
     private:
         PhongMaterial();
     private:
-        MySingleUniform m_shininess;
+        SingleUniform<float> m_shininess = 32.0f;
     };
 }

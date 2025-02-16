@@ -4,7 +4,6 @@
 #include "DirectionalLight.h"
 #include "SpotLight.h"
 #include <vector>
-#include "MyUniform.h"
 
 namespace lcf {
     class LightArray
@@ -33,8 +32,8 @@ namespace lcf {
         PointLightList m_point_lights;
         SpotLightList m_spot_lights;
         LightList m_lights;
-        MySingleUniform m_directional_light_count;
-        MySingleUniform m_point_light_count;
-        MySingleUniform m_spot_light_count;
+        SingleUniform<int> m_directional_light_count = 0;
+        SingleUniform<int> m_point_light_count = 0;
+        SingleUniform<int> m_spot_light_count = 0;
     };
 }

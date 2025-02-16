@@ -7,7 +7,6 @@
 #include "UserCustomMaterial.h"
 #include "PBRMaterial.h"
 #include "IBLMaterial.h"
-#include "ShaderUniformBinder.h"
 #include "GLShaderProgram.h"
 
 namespace lcf {

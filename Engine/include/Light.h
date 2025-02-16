@@ -5,7 +5,7 @@
 #include "ProjectionProvider.h"
 #include "GLFrameBufferObject.h"
 #include "Define.h"
-#include "MyUniform.h"
+#include "SingleUniform.h"
 
 namespace lcf {
     class Light : public Object3D
@@ -27,9 +27,9 @@ namespace lcf {
         std::string uniformName(const std::string &name) const;
     protected:
         ProjectionProvider m_projection_provider;
-        MySingleUniform m_color;
-        MySingleUniform m_intensity = MySingleUniform(1.0f);
-        MySingleUniform m_position = MySingleUniform(Vector3D(0.0f, 0.0f, 0.0f));
-        MySingleUniform m_direction = MySingleUniform(Vector3D(0.0f, 0.0f, 1.0f));
+        SingleUniform<Vector3D> m_color;
+        SingleUniform<float> m_intensity = 1.0f;
+        SingleUniform<Vector3D> m_position = Vector3D(0.0f, 0.0f, 0.0f);
+        SingleUniform<Vector3D> m_direction = Vector3D(0.0f, 0.0f, 1.0f);
     };
 }

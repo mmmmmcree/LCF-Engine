@@ -66,7 +66,7 @@ lcf::TextureWrapper lcf::Environment::fromSphereToCube(TextureWrapper source)
     fbo.addColorAttachment(color_attachment);
     auto shader = ShaderManager::instance()->get(ShaderManager::SphereToCube);
     fbo.bind();
-    shader->bind();
+    shader->bindWithTextures();
     source.bind(0);
     Geometry::cube()->draw();
     source.release(0);
@@ -85,7 +85,7 @@ lcf::TextureWrapper lcf::Environment::IBLConvolution(TextureWrapper environment_
     fbo.addColorAttachment(color_attachment);
     auto shader = ShaderManager::instance()->get(ShaderManager::IBLConvolution);
     fbo.bind();
-    shader->bind();
+    shader->bindWithTextures();
     environment_cubemap.bind(0);
     Geometry::cube()->draw();
     auto gl = QOpenGLContext::currentContext()->functions();
@@ -105,7 +105,7 @@ lcf::TextureWrapper lcf::Environment::IBLPrefilter(TextureWrapper environment_cu
     color_attachment.generateMipMaps();
     fbo.addColorAttachment(color_attachment);
     auto shader = ShaderManager::instance()->get(ShaderManager::IBLPrefilter);
-    shader->bind();
+    shader->bindWithTextures();
     environment_cubemap.bind(0);
     int mip_levels = 5;
     auto gl = QOpenGLContext::currentContext()->extraFunctions();

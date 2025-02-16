@@ -4,13 +4,12 @@
 #include "MSAAFBO.h"
 #include "ScreenFBO.h"
 #include "GLFunctions.h"
-#include "ShaderUniformBinder.h" 
 #include <functional>
 #include "Bloomer.h"
 #include <QOpenGLContext>
 #include <QSurface>
 #include <QObject>
-#include "MyUniform.h"
+#include "SingleUniform.h"
 
 namespace lcf {
     class Renderer : public QObject
@@ -41,17 +40,16 @@ namespace lcf {
         void GammaCorrectionEnabledChanged(bool enabled);
     private:
         QOpenGLContext *m_context = nullptr;
-        QSurface *m_surface = nullptr;
         MSAAFBO::UniquePtr m_msaa_fbo;  
         ScreenFBO::UniquePtr m_post_process_fbo;
         GLShaderProgram::SharedPtr m_post_process_shader;
         Bloomer::UniquePtr m_bloomer;
         std::function<void(Scene *scene)> m_render_pass_procedure;
         std::function<void()> m_post_process_procedure;
-        MySingleUniform m_gamma_correction_enabled;
-        MySingleUniform m_hdr_enabled;
+        SingleUniform<bool> m_gamma_correction_enabled = true;
+        SingleUniform<bool> m_hdr_enabled = true;
         bool m_bloom_enabled = true;
         bool m_msaa_enabled = true;
-        MySingleUniform m_hdr_exposure;
+        SingleUniform<float> m_hdr_exposure = 1.0f;
     };
 }

@@ -30,9 +30,9 @@ lcf::PointLight::SharedPtr lcf::PointLight::createShared()
 void lcf::PointLight::draw()
 {
     static auto shader = ShaderManager::instance()->get(ShaderManager::SingleColor);
-    shader->bind();
+    shader->bindWithTextures();
     shader->setUniformValue("model", this->worldMatrix());
-    shader->setUniformValue("color", m_color.asVector3D());
+    shader->setUniformValue("color", m_color.value());
     Geometry::sphere()->draw();
     shader->release();
 }
