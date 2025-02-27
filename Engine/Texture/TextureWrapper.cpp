@@ -53,6 +53,36 @@ bool lcf::TextureWrapper::isValid()
     return valid;
 }
 
+int lcf::TextureWrapper::width()
+{
+    int width = 0;
+    if (not m_texture.has_value()) { return width; }
+    std::visit([&width](auto&& arg) {
+        width = arg->width();
+    }, m_texture.value());
+    return width;
+}
+
+int lcf::TextureWrapper::height()
+{
+    int height = 0;
+    if (not m_texture.has_value()) { return height; }
+    std::visit([&height](auto&& arg) {
+        height = arg->height();
+    }, m_texture.value());
+    return height;
+}
+
+int lcf::TextureWrapper::depth()
+{
+    int depth = 0;
+    if (not m_texture.has_value()) { return depth; }
+    std::visit([&depth](auto&& arg) {    
+        depth = arg->depth();
+    }, m_texture.value());
+    return depth;
+}
+
 lcf::GLTexture::Target lcf::TextureWrapper::target()
 {
     GLTexture::Target target = GLTexture::Target::Target2D;

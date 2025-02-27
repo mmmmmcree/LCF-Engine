@@ -17,6 +17,12 @@ void lcf::Light::draw()
     shader->release();
 }
 
+void lcf::Light::bind()
+{
+    m_direction.setValue(this->orientation());
+    m_position.setValue(this->worldPosition());
+}
+
 void lcf::Light::setColor(const Vector3D &color)
 {
     m_color.setValue(color);
@@ -27,7 +33,7 @@ void lcf::Light::setIntensity(float intensity)
     m_intensity.setValue(intensity);
 }
 
-lcf::Vector3D lcf::Light::direction()
+lcf::Vector3D lcf::Light::orientation()
 {
     return -this->worldMatrix().column(2).toVector3D().normalized();
 }
@@ -42,12 +48,12 @@ void lcf::Light::setName(std::string_view name)
     m_position.setName(this->uniformName("position"));
 }
 
-void lcf::Light::updateWorldMatrix()
-{
-    Object3D::updateWorldMatrix();
-    m_direction.setValue(this->direction());
-    m_position.setValue(this->worldPosition());
-}
+// void lcf::Light::updateWorldMatrix()
+// {
+//     Object3D::updateWorldMatrix();
+//     m_direction.setValue(this->orientation());
+//     m_position.setValue(this->worldPosition());
+// }
 
 std::string lcf::Light::uniformName(const std::string &name) const
 {

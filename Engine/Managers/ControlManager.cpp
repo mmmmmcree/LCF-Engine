@@ -51,7 +51,7 @@ lcf::Model *lcf::ControlManager::currentModel() const
     static Model s_default_model;
     if (not m_current_model) {
         qDebug() << "lcf::ControlManager::currentModel() : no current model set, using default model";
-        return &s_default_model;
+        return nullptr;
     }
     return m_current_model;
 }

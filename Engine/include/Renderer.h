@@ -29,6 +29,8 @@ namespace lcf {
         bool isBloomEnabled() const;
         void enableGammaCorrection(bool enable);
         bool isGammaCorrectionEnabled() const;
+        void enableColorGrading(bool enable);
+        void setColorGradingLUT(TextureWrapper lut);
     private:
         Renderer() = default;
         void updateRenderPassProcedure();
@@ -48,8 +50,11 @@ namespace lcf {
         std::function<void()> m_post_process_procedure;
         SingleUniform<bool> m_gamma_correction_enabled = true;
         SingleUniform<bool> m_hdr_enabled = true;
+        SingleUniform<bool> m_color_grading_enabled = false;
+        SingleUniform<int> m_color_grading_lut_size = 32;
         bool m_bloom_enabled = true;
         bool m_msaa_enabled = true;
         SingleUniform<float> m_hdr_exposure = 1.0f;
+        TextureWrapper m_color_grading_lut;
     };
 }

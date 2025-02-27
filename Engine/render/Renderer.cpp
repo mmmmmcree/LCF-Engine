@@ -4,7 +4,9 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include "Constants.h"
+#include "Define.h"
 #include "GLHelper.h"
+#include "TextureManager.h"
 
 lcf::Renderer *lcf::Renderer::instance()
 {
@@ -23,9 +25,9 @@ void lcf::Renderer::initialize(QOpenGLContext *context)
         {GLShader::Vertex, lcf::path::shaders_prefix + "simple2D.vert"}, 
         {GLShader::Fragment, lcf::path::shaders_prefix + "post_process.frag"}, 
     });
-    GLHelper::setShaderUniform(m_post_process_shader.get(), {"channel0", 0});
+    GLHelper::setShaderUniforms(m_post_process_shader.get(), {{"channel0", 0}, {"channel1", 1}});
     m_gamma_correction_enabled.setName("gamma_correction_enabled");
-    m_gamma_correction_enabled.setValue(true);
+    this->enableGammaCorrection(true);
     m_hdr_enabled.setName("hdr_enabled");
     m_hdr_exposure.setName("exposure");
     m_bloomer = Bloomer::createUnique(2048, 2048);
@@ -33,6 +35,9 @@ void lcf::Renderer::initialize(QOpenGLContext *context)
     this->enableHDR(true);
     this->enableMSAA(m_msaa_enabled);
     this->enableBloom(m_bloom_enabled);
+    m_color_grading_lut_size.setName("color_grading_lut_size");
+    m_color_grading_enabled.setName("color_grading_enabled");
+
 }
 
 void lcf::Renderer::setRenderSize(int width, int height)
@@ -108,6 +113,17 @@ bool lcf::Renderer::isGammaCorrectionEnabled() const
     return m_gamma_correction_enabled.value();
 }
 
+void lcf::Renderer::enableColorGrading(bool enable)
+{
+    m_color_grading_enabled.setValue(enable and m_color_grading_lut.isValid());
+}
+
+void lcf::Renderer::setColorGradingLUT(TextureWrapper lut)
+{
+    m_color_grading_lut_size.setValue(lut.width());
+    m_color_grading_lut = lut;
+}
+
 void lcf::Renderer::updateRenderPassProcedure()
 {
     std::function<void(Scene *)> msaa_render_pass_func = [this](Scene *scene) {
@@ -130,14 +146,18 @@ void lcf::Renderer::updatePostProcessProcedure()
         m_bloomer->bloom(m_post_process_fbo.get());
         m_post_process_shader->bind();
         m_bloomer->texture().bind(0);
+        m_color_grading_lut.bind(1);
         Geometry::quad()->draw();
+        m_color_grading_lut.release(1);
         m_bloomer->texture().release(0);
         m_post_process_shader->release();
     };
     std::function<void()> no_bloom_process_func = [this] {
         m_post_process_shader->bind();
         m_post_process_fbo->colorAttachment().bind(0);
+        m_color_grading_lut.bind(1);
         Geometry::quad()->draw();
+        m_color_grading_lut.release(1);
         m_post_process_fbo->colorAttachment().release(0);
         m_post_process_shader->release();
     };

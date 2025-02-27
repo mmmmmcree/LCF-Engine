@@ -17,9 +17,11 @@ void lcf::GlobalCamera::setControllerType(ControllerType type)
 {
     static GameController s_game_controller;
     static TrackballController s_trackball_controller;
+    static ThirdPersonController s_third_person_controller;
     switch (type) {
         case ControllerType::Game : { m_controller = &s_game_controller; } break;
         case ControllerType::Trackball : { m_controller = &s_trackball_controller; } break;
+        case ControllerType::ThirdPerson : { m_controller = &s_third_person_controller; } break;
     }
 }
 
@@ -40,31 +42,8 @@ void lcf::GlobalCamera::setCameraType(Type type)
 void lcf::GlobalCamera::reset()
 {
     this->setTranslation({0.0f, 0.0f, 5.0f});
-    this->right() = {1.0f, 0.0f, 0.0f};
-    this->up() = {0.0f, 1.0f, 0.0f};
-}
-
-void lcf::GlobalCamera::processMouseMoveEvent(QMouseEvent *event)
-{
-    m_controller->processMouseMoveEvent(event);
-}
-
-void lcf::GlobalCamera::processKeyPressEvent(QKeyEvent *event)
-{
-    switch (event->key()) {
-        case Qt::Key_R : { this->reset(); } break;
-    }
-    m_controller->processKeyPressEvent(event);
-}
-
-void lcf::GlobalCamera::processKeyReleaseEvent(QKeyEvent *event)
-{
-    m_controller->processKeyReleaseEvent(event);
-}
-
-void lcf::GlobalCamera::processWheelEvent(QWheelEvent *event)
-{
-    m_controller->processWheelEvent(event);
+    this->setRight({1.0f, 0.0f, 0.0f});
+    this->setUp({0.0f, 1.0f, 0.0f});
 }
 
 lcf::GlobalCamera::GlobalCamera()

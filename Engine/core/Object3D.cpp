@@ -1,14 +1,8 @@
 #include "Object3D.h"
 
 lcf::Object3D::Object3D(const Object3D &other) :
-    m_local(other.m_local),
-    m_world(other.m_world),
-    m_inversed_world(other.m_inversed_world),
-    m_world_need_update(true),
-    m_normal_matrix_need_update(true),
-    m_local_decomposed(other.m_local_decomposed),
-    m_children(),
-    m_parent(nullptr),
+    Hierarchical(other), 
+    m_transformer(other.m_transformer),
     m_name(other.m_name),
     m_cast_shadow(other.m_cast_shadow),
     m_signal_sender(nullptr)
@@ -50,13 +44,15 @@ lcf::Object3D *lcf::Object3D::parent() const
 
 void lcf::Object3D::setParent(Object3D *parent)
 {
-    if (m_parent == parent) { return; }
-    if (m_parent) {
-        m_parent->removeChild(this);
-    }
-    m_parent = parent;
-    if (not parent) { return; }
-    parent->addChildToChildren(this);
+    // if (m_parent == parent) { return; }
+    // if (m_parent) {
+    //     m_parent->removeChild(this);
+    // }
+    // m_parent = parent;
+    this->_setParent(parent);
+    m_transformer.attachTo(parent ? &parent->m_transformer : nullptr);
+    // if (not parent) { return; }
+    // parent->addChildToChildren(this);
 }
 
 void lcf::Object3D::addChild(Object3D *child)
@@ -67,9 +63,9 @@ void lcf::Object3D::addChild(Object3D *child)
 
 void lcf::Object3D::setLocalMatrix(const Matrix4x4 & matrix)
 {
-    m_local = matrix;
-    m_local_decomposed = decompose(m_local);
-    this->updateWorldMatrix();
+    // this->updateWorldMatrix();
+
+    m_transformer.setMatrix(matrix);
 }
 
 void lcf::Object3D::translate(float x, float y, float z)
@@ -94,9 +90,9 @@ void lcf::Object3D::translateZ(float z)
 
 void lcf::Object3D::translate(const Vector3D &translation)
 {
-    m_local.translate(translation);
-    m_local_decomposed.translation += translation;
-    this->updateWorldMatrix();
+    // this->updateWorldMatrix();
+
+    m_transformer.translate(translation);
 }
 
 void lcf::Object3D::setTranslation(float x, float y, float z)
@@ -106,17 +102,16 @@ void lcf::Object3D::setTranslation(float x, float y, float z)
 
 void lcf::Object3D::setTranslation(const Vector3D &position)
 {
-    m_local_decomposed.translation = position;
-    m_local = m_local_decomposed.toTransform();
-    this->updateWorldMatrix();
+    // this->updateWorldMatrix();
+
+    m_transformer.setPosition(position);
 }
 
 void lcf::Object3D::rotate(const Quaternion &rotation)
 {
-    m_local.rotate(rotation);
-    m_local_decomposed.rotation *= rotation;
-    m_local_decomposed.rotation.normalize();
-    this->updateWorldMatrix();
+    // this->updateWorldMatrix();
+
+    m_transformer.rotate(rotation);
 }
 
 void lcf::Object3D::rotate(float angle_deg, float x, float y, float z)
@@ -131,39 +126,39 @@ void lcf::Object3D::setRotation(float angle_deg, float x, float y, float z)
 
 void lcf::Object3D::setRotation(const Quaternion &rotation)
 {
-    m_local_decomposed.rotation = rotation.normalized();
-    m_local = m_local_decomposed.toTransform();
-    this->updateWorldMatrix();
+    // this->updateWorldMatrix();
+
+    m_transformer.setRotation(rotation);
 }
 
 void lcf::Object3D::rotateX(float angle_deg)
 {
-    this->rotate(Quaternion::fromAxisAndAngle(m_local.column(0).toVector3D(), angle_deg));
+    m_transformer.rotateXAxis(angle_deg);
 }
 
 void lcf::Object3D::setRotationX(float angle_deg)
 {
-    this->setRotation(Quaternion::fromAxisAndAngle(m_local.column(0).toVector3D(), angle_deg));
+    m_transformer.setRotationXAxis(angle_deg);
 }
 
 void lcf::Object3D::rotateY(float angle_deg)
 {
-    this->rotate(Quaternion::fromAxisAndAngle(m_local.column(1).toVector3D(), angle_deg));
+    m_transformer.rotateYAxis(angle_deg);
 }
 
 void lcf::Object3D::setRotationY(float angle_deg)
 {
-    this->setRotation(Quaternion::fromAxisAndAngle(m_local.column(1).toVector3D(), angle_deg));
+    m_transformer.setRotationYAxis(angle_deg);
 }
 
 void lcf::Object3D::rotateZ(float angle_deg)
 {
-    this->rotate(Quaternion::fromAxisAndAngle(m_local.column(2).toVector3D(), angle_deg));
+    m_transformer.rotateZAxis(angle_deg);
 }
 
 void lcf::Object3D::setRotationZ(float angle_deg)
 {
-    this->setRotation(Quaternion::fromAxisAndAngle(m_local.column(2).toVector3D(), angle_deg));
+    m_transformer.setRotationZAxis(angle_deg);
 }
 
 void lcf::Object3D::scale(float x, float y, float z)
@@ -173,16 +168,14 @@ void lcf::Object3D::scale(float x, float y, float z)
 
 void lcf::Object3D::scale(float factor)
 {
-    m_local.scale(factor);
-    m_local_decomposed.scale *= factor;
-    this->updateWorldMatrix();
+    this->scale(Vector3D(factor, factor, factor));
 }
 
 void lcf::Object3D::scale(const Vector3D &scale)
 {
-    m_local.scale(scale);
-    m_local_decomposed.scale *= scale;
-    this->updateWorldMatrix();
+    // this->updateWorldMatrix();
+
+    m_transformer.scale(scale);
 }
 
 void lcf::Object3D::setScale(float x, float y, float z)
@@ -192,9 +185,9 @@ void lcf::Object3D::setScale(float x, float y, float z)
 
 void lcf::Object3D::setScale(const Vector3D & scale)
 {
-    m_local_decomposed.scale = scale;
-    m_local = m_local_decomposed.toTransform();
-    this->updateWorldMatrix();
+    // this->updateWorldMatrix();
+
+    m_transformer.setScale(scale);
 }
 
 void lcf::Object3D::setScale(float factor)
@@ -204,27 +197,27 @@ void lcf::Object3D::setScale(float factor)
 
 const lcf::Vector3D &lcf::Object3D::localPosition() const
 {
-    return m_local_decomposed.translation;
+    return m_transformer.getPosition();
 }
 
 lcf::Vector3D lcf::Object3D::worldPosition()
 {
-    return this->worldMatrix().column(3).toVector3D();
+    return m_transformer.getHierarchialPosition();
 }
 
 const lcf::Vector3D &lcf::Object3D::translation() const
 {
-    return m_local_decomposed.translation;
+    return this->localPosition();
 }
 
 const lcf::Quaternion &lcf::Object3D::rotation() const
 {
-    return m_local_decomposed.rotation;
+    return m_transformer.getRotation();
 }
 
 const lcf::Vector3D &lcf::Object3D::scale() const
 {
-    return m_local_decomposed.scale;
+    return m_transformer.getScale();
 }
 
 const std::vector<lcf::Object3D *> &lcf::Object3D::children() const
@@ -234,24 +227,12 @@ const std::vector<lcf::Object3D *> &lcf::Object3D::children() const
 
 const lcf::Matrix4x4 &lcf::Object3D::worldMatrix()
 {
-    /*
-    - 如果此节点需要更新，则用其父节点的 world_matrix 更新该节点
-    - 向上更新时遇到不需要更新的节点就停止，world_matrix 向下传递
-    - 更新完毕后此节点的更新需求已经被处理，下次调用 worldMatrix() 就不会再更新
-    - 否则代表此节点无需更新，直接返回世界矩阵即可
-    */
-    if (not m_world_need_update) { return m_world; }
-    m_world = m_parent ? m_parent->worldMatrix() * m_local : m_local;
-    m_world_need_update = false;
-    return m_world;
+    return m_transformer.getHierarchialMatrix();
 }
 
 const lcf::Matrix4x4 &lcf::Object3D::inversedWorldMatrix()
 {
-    if (not m_normal_matrix_need_update) { return m_inversed_world; }
-    m_inversed_world = this->worldMatrix().inverted();
-    m_normal_matrix_need_update = false;
-    return m_inversed_world;
+    return m_transformer.getInvertedHierarchialMatrix();
 }
 
 lcf::Matrix3x3 lcf::Object3D::normalMatrix()
@@ -292,30 +273,20 @@ lcf::SignalSender *lcf::Object3D::signalSender() const
     return m_signal_sender;
 }
 
-void lcf::Object3D::updateWorldMatrix()
-{
-    /*
-    - 不处理矩阵更新，只向子结点传递更新需求，并标记自己需要更新
-    - 如果自己已经被标记，说明已经向下传递过更新需求，并且该需求没有被处理，不需要再向下传递
-    */
-    if (m_signal_sender) { m_signal_sender->sendTransformUpdatedSignal(); }
-    if (m_world_need_update) { return; }
-    m_world_need_update = true;
-    m_normal_matrix_need_update = true;
-    for (auto child : m_children) {
-        child->updateWorldMatrix();
-    }
-}
+// void lcf::Object3D::updateWorldMatrix()
+// {
+//     if (m_signal_sender) { m_signal_sender->sendTransformUpdatedSignal(); }
+// }
 
-void lcf::Object3D::addChildToChildren(Object3D *child)
-{
-    m_children.push_back(child);
-}
+// void lcf::Object3D::addChildToChildren(Object3D *child)
+// {
+//     m_children.push_back(child);
+// }
 
-void lcf::Object3D::removeChild(Object3D *child)
-{
-    auto iter = std::find(m_children.begin(), m_children.end(), child);
-    if (iter != m_children.end()) {
-        m_children.erase(iter);
-    }
-}
+// void lcf::Object3D::removeChild(Object3D *child)
+// {
+//     auto iter = std::find(m_children.begin(), m_children.end(), child);
+//     if (iter != m_children.end()) {
+//         m_children.erase(iter);
+//     }
+// }

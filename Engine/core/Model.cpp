@@ -8,9 +8,9 @@ lcf::Object3DType lcf::Model::type() const
 
 void lcf::Model::draw()
 {
-    m_material_controller->shader()->bindWithTextures();
+    m_material_controller->bind();
     Object3D::draw();
-    m_material_controller->shader()->release();
+    m_material_controller->release();
     m_animation_player.update(1.0f / 60.0f);
 }
 
@@ -24,16 +24,13 @@ void lcf::Model::create()
 {
     if (m_created) { return; }
     m_created = true;
-    this->passSettingsToMeshes();
     for (auto &mesh : m_meshes) {
         mesh->create();
     }
-    //- 默认shader
     if (not m_meshes.empty() and this->materialType() == MaterialType::None) {
-        m_material_controller->setMaterialType(m_meshes.front()->materialType());
+        this->setMaterialType(m_meshes.front()->materialType());
     }
-    auto shader = ShaderManager::instance()->getMaterialShader(this->materialType(), this->animated(), true);
-    m_material_controller->setShader(shader);
+    this->passSettingsToMeshes();
     this->playAnimation();
 }
 
@@ -48,6 +45,7 @@ void lcf::Model::setMaterialType(MaterialType material_type)
     m_material_controller->setShader(shader);
     m_material_controller->setMaterialType(material_type);
     for (auto &mesh : m_meshes) {
+        mesh->setShader(shader);
         mesh->setMaterialType(material_type);
     }
 }
@@ -72,6 +70,7 @@ void lcf::Model::passSettingsToMeshes()
 {
     for (auto &mesh : m_meshes) {
         mesh->setMaterialType(m_material_controller->materialType());
+        mesh->setShader(m_material_controller->shader());
         mesh->setTextures(m_material_controller->textureInfoMap());
         mesh->setCastShadow(this->castShadow());
     }
@@ -86,9 +85,9 @@ void lcf::Model::playAnimation(int i, float speed)
 
 void lcf::Model::playAnimation()
 {
-    m_animation_player.play();
     if (not this->animated()) { return; }
     for (auto &mesh : m_meshes) { mesh->activateSkeleton(true); }
+    m_animation_player.play();
 }
 
 void lcf::Model::stopAnimation()

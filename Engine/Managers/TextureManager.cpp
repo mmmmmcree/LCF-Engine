@@ -23,7 +23,7 @@ lcf::SharedGLTexturePtr lcf::TextureManager::loadTexture2D(const QString &image_
     LImage image(image_path, mirrored);
     int format = static_cast<int>(image.format());
     int data_type = static_cast<int>(image.dataType());
-    return GLHelper::fromImageToTexture(image, GLHelper::deduceTextureFormatByPixelFormat(format, data_type, SRGB));
+    return GLHelper::fromImageToTexture2D(image, GLHelper::deduceTextureFormatByPixelFormat(format, data_type, SRGB));
 }
 
 lcf::TextureWrapper lcf::TextureManager::loadCubeMap(const QString &right, const QString &left, const QString &top, const QString &bottom, const QString &front, const QString &back)
@@ -43,6 +43,13 @@ lcf::TextureWrapper lcf::TextureManager::loadCubeMap(const QString &right, const
     texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
     texture_wrapper.setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
     return texture_wrapper;
+}
+
+lcf::TextureWrapper lcf::TextureManager::loadColorGradingLUT(const QString &lut_path)
+{
+    if (not QOpenGLContext::currentContext()) { m_context->makeCurrent(m_surface); }
+    LImage image(lut_path, false);
+    return GLHelper::fromImageToTexture3D(image, GLTextureFormat::RGBA8_UNorm);
 }
 
 void lcf::TextureManager::initialize(QOpenGLContext * context)

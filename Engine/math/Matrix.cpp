@@ -72,9 +72,9 @@ lcf::DecomposedTransform &lcf::DecomposedTransform::operator=(DecomposedTransfor
 
 lcf::Matrix4x4 lcf::DecomposedTransform::toTransform() const
 {
-    Matrix4x4 translation_mat, scale_mat, rotation_mat;
-    translation_mat.translate(translation);
-    scale_mat.scale(scale);
-    rotation_mat.rotate(rotation);
-    return translation_mat * rotation_mat * scale_mat;
+    Matrix4x4 result;
+    result.translate(translation);
+    result.rotate(rotation);
+    result.scale(scale);
+    return result;
 }

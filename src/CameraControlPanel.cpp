@@ -34,7 +34,7 @@ CameraControlPanel::CameraControlPanel(QWidget *parent) : ElaScrollPage(parent)
     text->setWordWrap(false);
     text->setTextPixelSize(13);
     ElaComboBox *control_mode_selector = new ElaComboBox(this);
-    control_mode_selector->addItems({"Trackball", "Game"});
+    control_mode_selector->addItems({"Trackball", "Game", "Third-Person"});
     hlayout = new QHBoxLayout(control_mode_area);
     hlayout->addWidget(text);
     hlayout->addStretch();

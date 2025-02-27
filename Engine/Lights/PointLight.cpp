@@ -44,6 +44,8 @@ lcf::LightType lcf::PointLight::lightType() const
 
 void lcf::PointLight::bind()
 {
+    bool transformer_updated = m_transformer.isUpdated();
+    Light::bind();
     const auto &shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), false);
     const auto &animated_shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), true);
     GLHelper::setShaderUniform(shadow_shader.get(), {"light_index", m_light_index});
@@ -57,7 +59,7 @@ void lcf::PointLight::bind()
         s_ssbo_size = s_light_count * offset + 5;
         gl->glBufferData(GL_SHADER_STORAGE_BUFFER, s_ssbo_size, nullptr, GL_DYNAMIC_DRAW);
     }
-    if (m_ssbo_need_update) {
+    if (not transformer_updated) {
         this->updateLightMatrices();
         for (int i = 0; i < m_light_matrices.size(); ++i) {
             gl->glBufferSubData(GL_SHADER_STORAGE_BUFFER, this->index() * offset + i * 64, 64, m_light_matrices[i].constData());
@@ -92,11 +94,11 @@ void lcf::PointLight::setName(std::string_view name)
     m_color.setName(this->uniformName("color"));
 }
 
-void lcf::PointLight::updateWorldMatrix()
-{
-    Light::updateWorldMatrix();
-    m_ssbo_need_update = true;
-}
+// void lcf::PointLight::updateWorldMatrix()
+// {
+//     Light::updateWorldMatrix();
+//     m_ssbo_need_update = true;
+// }
 
 void lcf::PointLight::updateLightMatrices()
 {

@@ -21,11 +21,11 @@ void lcf::DirectionalLight::setName(std::string_view name)
     Light::setName(name);
 }
 
-void lcf::DirectionalLight::updateWorldMatrix()
-{
-    Light::updateWorldMatrix();
-    m_ssbo_needs_update = true;
-}
+// void lcf::DirectionalLight::updateWorldMatrix()
+// {
+//     Light::updateWorldMatrix();
+//     m_ssbo_needs_update = true;
+// }
 
 lcf::DirectionalLight::SharedPtr lcf::DirectionalLight::createShared()
 {
@@ -44,6 +44,8 @@ int lcf::DirectionalLight::index() const
 
 void lcf::DirectionalLight::bind()
 {
+    bool transformer_updated = m_transformer.isUpdated();
+    Light::bind();
     const auto &shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), false);
     const auto &animated_shadow_shader = ShaderManager::instance()->getShadowShader(this->lightType(), true);
     GLHelper::setShaderUniform(shadow_shader.get(), {"light_index", m_light_index});
@@ -57,11 +59,11 @@ void lcf::DirectionalLight::bind()
         s_ssbo_size = s_light_count * offset + 5;
         gl->glBufferData(GL_SHADER_STORAGE_BUFFER, s_ssbo_size, nullptr, GL_DYNAMIC_DRAW);
     }
-    if (m_ssbo_needs_update) {
+    if (not transformer_updated) {
         m_light_matrix = m_projection_provider.projectionMatrix() * this->inversedWorldMatrix();
         gl->glBufferSubData(GL_SHADER_STORAGE_BUFFER, m_light_index * offset, 64, m_light_matrix.constData());
         gl->glBufferSubData(GL_SHADER_STORAGE_BUFFER, m_light_index * offset + 64, 64, this->inversedWorldMatrix().constData());
-        Vector3D direction = this->direction();
+        Vector3D direction = this->orientation();
         gl->glBufferSubData(GL_SHADER_STORAGE_BUFFER, m_light_index * offset + 128, 12, &direction);
     }
     gl->glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);

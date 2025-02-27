@@ -27,13 +27,14 @@ lcf::NativeTextureWrapper::NativeTextureWrapper(GLTexture::Target target, unsign
     if (managed) { m_info->m_ref_count = 1; } 
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
     this->bind(0);
-    int target2D = m_info->target;
-    if (target2D == GL_TEXTURE_CUBE_MAP) {
-        target2D = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+    int target_int = m_info->target;
+    if (target_int == GL_TEXTURE_CUBE_MAP) {
+        target_int = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
     }
-    gl->glGetTexLevelParameteriv(target2D, 0, GL_TEXTURE_WIDTH, &m_info->width);
-    gl->glGetTexLevelParameteriv(target2D, 0, GL_TEXTURE_HEIGHT, &m_info->height);
-    gl->glGetTexLevelParameteriv(target2D, 0, GL_TEXTURE_INTERNAL_FORMAT, &m_info->format);
+    gl->glGetTexLevelParameteriv(target_int, 0, GL_TEXTURE_WIDTH, &m_info->width);
+    gl->glGetTexLevelParameteriv(target_int, 0, GL_TEXTURE_HEIGHT, &m_info->height);
+    gl->glGetTexLevelParameteriv(target_int, 0, GL_TEXTURE_DEPTH, &m_info->depth);
+    gl->glGetTexLevelParameteriv(target_int, 0, GL_TEXTURE_INTERNAL_FORMAT, &m_info->format);
     this->release(0);
 }
 
@@ -111,6 +112,12 @@ int lcf::NativeTextureWrapper::height() const
 {
     if (not m_info) { return 0; }
     return m_info->height;
+}
+
+int lcf::NativeTextureWrapper::depth() const
+{
+    if (not m_info) { return 0; }
+    return m_info->depth;
 }
 
 lcf::GLTexture::TextureFormat lcf::NativeTextureWrapper::format() const

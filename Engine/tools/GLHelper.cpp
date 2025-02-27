@@ -1,9 +1,6 @@
 #include "GLHelper.h"
 #include <QFileInfo>
 #include <memory>
-#include <QOpenGLContext>
-#include <QOpenGLFunctions>
-#include <QOpenGLExtraFunctions>
 #include "GLFunctions.h"
 
 
@@ -29,7 +26,7 @@ void lcf::GLHelper::setShaderUniforms(QOpenGLShaderProgram *shader, const Unifor
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateMSAATexture(int width, int height, int samples, GLTextureFormat format)
 {
-    auto gl = GLFunctions::global();
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
     unsigned int texture;
     gl->glGenTextures(1, &texture);
     gl->glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, texture);
@@ -48,7 +45,7 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMapAttachment(int width, GL
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMap(int width, int internal_format, int pixel_format, int pixel_data_type, const void *data)
 {
-    auto gl = QOpenGLContext::currentContext()->functions();
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
     unsigned int texture;
     gl->glGenTextures(1, &texture);
     gl->glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
@@ -78,13 +75,33 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateTexture2DAttachment(int width, 
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateTexture2D(int width, int height, int internal_format, int pixel_format, int pixel_type, const void *data)
 {
-    auto gl = QOpenGLContext::currentContext()->functions();
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
     unsigned int texture;
     gl->glGenTextures(1, &texture);
     gl->glBindTexture(GL_TEXTURE_2D, texture);
     gl->glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, pixel_format, pixel_type, data);
     gl->glBindTexture(GL_TEXTURE_2D, 0);
     NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
+    if (isDepthTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format))) {
+        texture_wrapper.setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
+        texture_wrapper.setBorderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        texture_wrapper.setWrapMode(GLTexture::ClampToBorder);
+    } else {
+        texture_wrapper.setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
+        texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
+    }
+    return texture_wrapper;
+}
+
+lcf::NativeTextureWrapper lcf::GLHelper::generateTexture3D(int width, int height, int depth, int internal_format, int pixel_format, int pixel_type, const void *data)
+{
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    unsigned int texture;
+    gl->glGenTextures(1, &texture);
+    gl->glBindTexture(GL_TEXTURE_3D, texture);
+    gl->glTexImage3D(GL_TEXTURE_3D, 0, internal_format, width, height, depth, 0, pixel_format, pixel_type, data);
+    gl->glBindTexture(GL_TEXTURE_3D, 0);
+    NativeTextureWrapper texture_wrapper(GLTexture::Target3D, texture);
     if (isDepthTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format))) {
         texture_wrapper.setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
         texture_wrapper.setBorderColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -119,7 +136,7 @@ lcf::SharedGLTexturePtr lcf::GLHelper::generateTextureByTextureType(TextureType 
     return texture;
 }
 
-lcf::SharedGLTexturePtr lcf::GLHelper::fromImageToTexture(const LImage & image, GLTexture::TextureFormat texture_format)
+lcf::SharedGLTexturePtr lcf::GLHelper::fromImageToTexture2D(const LImage & image, GLTexture::TextureFormat texture_format)
 {
     auto tex = std::make_shared<GLTexture>(GLTexture::Target2D);
     tex->setSize(image.width(), image.height());
@@ -129,9 +146,15 @@ lcf::SharedGLTexturePtr lcf::GLHelper::fromImageToTexture(const LImage & image, 
     return tex;
 }
 
+lcf::NativeTextureWrapper lcf::GLHelper::fromImageToTexture3D(const LImage &image, GLTexture::TextureFormat texture_format)
+{
+    int dim = image.height();
+    return GLHelper::generateTexture3D(dim, dim, dim, texture_format, image.format(), image.dataType(), image.data());
+}
+
 int lcf::GLHelper::maximumTextureUnits()
 {
-    auto gl = QOpenGLContext::currentContext()->functions();
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
     int max_texture_units;
     gl->glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
     return max_texture_units;

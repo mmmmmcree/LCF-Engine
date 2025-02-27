@@ -8,11 +8,10 @@ namespace lcf {
     public:
         TrackballController();
         void update(Camera *camera) override;
-        void processMouseMoveEvent(QMouseEvent *event) override;
-        void processWheelEvent(QWheelEvent *event) override;
     private:
-        void updateCameraPitch(Camera *camera, double angle_deg);
-        void updateCameraYaw(Camera *camera, double angle_deg);
+        void processInput();
+        void updateCameraPitch(Camera *camera, float angle_deg);
+        void updateCameraYaw(Camera *camera, float angle_deg);
     private:
         float m_delta_right = 0.0f;
         float m_delta_up = 0.0f;

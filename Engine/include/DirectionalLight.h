@@ -16,7 +16,7 @@ namespace lcf {
         void release() override;
         void setName(std::string_view name) override;
     protected:
-        void updateWorldMatrix() override;
+        // void updateWorldMatrix() override;
     private:
         DepthMapFBO::UniquePtr m_fbo;
         Matrix4x4 m_light_matrix;

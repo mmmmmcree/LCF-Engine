@@ -140,6 +140,10 @@ const std::string &lcf::MaterialController::textureTypeToString(TextureType type
     return texture_type_to_string.at(type);
 }
 
+lcf::MaterialController::MaterialController()
+{
+}
+
 lcf::MaterialController::MaterialController(const MaterialController &other)
 {
     m_textures = other.m_textures;
@@ -236,15 +240,12 @@ lcf::MaterialType lcf::MaterialController::materialType() const
 
 void lcf::MaterialController::setShader(const GLShaderProgram::SharedPtr & shader)
 {
-    // if (not shader) { return; }
     m_shader = shader;
-    // m_shader_uniform_binder->setShader(shader);
 }
 
 const lcf::GLShaderProgram::SharedPtr & lcf::MaterialController::shader() const
 {
     return m_shader;
-    // return m_shader_uniform_binder->shader();
 }
 
 void lcf::MaterialController::setImageData(int type, const SharedImagePtr &image)

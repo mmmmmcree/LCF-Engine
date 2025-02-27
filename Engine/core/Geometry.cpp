@@ -1,6 +1,5 @@
 #include "Geometry.h"
-#include <QOpenGLFunctions>
-#include <QOpenGLExtraFunctions>
+#include "GLFunctions.h"
 #include "Constants.h"
 
 lcf::Geometry::Geometry() :
@@ -45,7 +44,7 @@ void lcf::Geometry::create()
     m_ebo.setUsagePattern(GLBuffer::StaticDraw);
     m_ebo.allocate(m_indices.data(), static_cast<int>(m_indices.size() * sizeof(unsigned int)));
     m_ebo.release();
-    auto gl = QOpenGLContext::currentContext()->functions();
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
     m_vao = std::make_unique<GLVAO>();
     m_vao->create();
     m_vao->bind();
@@ -83,7 +82,7 @@ void lcf::Geometry::draw()
 {
     if (not m_created) { return; }
     m_vao->bind();
-    auto gl = QOpenGLContext::currentContext()->functions();
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
     gl->glDrawElements(m_mode, m_indices_size, GL_UNSIGNED_INT, nullptr);
     m_vao->release();
 }
@@ -92,7 +91,7 @@ void lcf::Geometry::drawInstanced(int instance_count)
 {
     if (not m_created) { return; }
     m_vao->bind();
-    auto gl = QOpenGLContext::currentContext()->extraFunctions();
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
     gl->glDrawElementsInstanced(m_mode, m_indices_size, GL_UNSIGNED_INT, nullptr, instance_count);
     m_vao->release();
 }
@@ -118,17 +117,6 @@ const lcf::Geometry::Ptr &lcf::Geometry::cube()
     }
     return s_cube;
 }
-
-// lcf::Geometry *lcf::Geometry::cube()
-// {
-//     static Geometry s_cube;
-//     if (not s_cube.isCreated()) {
-//         s_cube.addInterleavedAttributes(data::cube, std::size(data::cube), {3, 3, 2});
-//         s_cube.create();
-//     }
-//     qDebug() << &s_cube << s_cube.isCreated();
-//     return &s_cube;
-// }
 
 const lcf::Geometry::Ptr &lcf::Geometry::sphere()
 {

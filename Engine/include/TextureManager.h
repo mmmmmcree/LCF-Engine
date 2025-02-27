@@ -29,6 +29,7 @@ namespace lcf {
         SharedGLTexturePtr loadTexture2D(const QString &image_path, bool SRGB, bool mirrored = true);
 
         TextureWrapper loadCubeMap(const QString &right, const QString &left, const QString &top, const QString &bottom, const QString &front, const QString &back);
+        TextureWrapper loadColorGradingLUT(const QString &lut_path);
         void initialize(QOpenGLContext *context);
         SharedGLTexturePtr get(Type type);
     private:

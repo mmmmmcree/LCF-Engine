@@ -1,16 +1,5 @@
 #include "CameraController.h"
 
-
-void lcf::CameraController::processKeyPressEvent(QKeyEvent *event)
-{
-    if (event->isAutoRepeat()) { return; }
-}
-
-void lcf::CameraController::processKeyReleaseEvent(QKeyEvent *event)
-{
-    if (event->isAutoRepeat()) { return; }
-}
-
 void lcf::CameraController::setSensitivity(float sensitivity)
 {
     m_sensitivity = sensitivity;

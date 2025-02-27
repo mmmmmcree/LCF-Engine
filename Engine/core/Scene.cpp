@@ -99,12 +99,6 @@ void lcf::Scene::draw()
     m_environment.drawSkybox();
     gl->glDepthFunc(GL_LESS);
     gl->glDisable(GL_DEPTH_TEST);
-    /*
-    todo: 模板测试可以在深度测试关闭后进行；
-    todo: 将所有需要绘制边界的物体存储在一个list中，在这里进行绘制； 
-    todo: 给Object3D添加一个virtual drawBorder(),在原draw()中修改shader和传入shader的model_matrix即可
-    todo: 也可以在这里统一给一个shader，在drawBorder中修改model_matrix即可
-    */
 }
 
 lcf::Environment *lcf::Scene::environment()

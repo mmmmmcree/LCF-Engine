@@ -8,7 +8,7 @@
 void lcf::Camera::bind()
 {
     m_view.setToIdentity();
-    m_view.lookAt(this->localPosition(), this->localPosition() + this->front(), m_up);
+    m_view.lookAt(this->worldPosition(), this->worldPosition() + this->front(), m_up);
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
     if (not m_ubo) {
         m_ubo.setBindingPoint(0);
@@ -18,7 +18,8 @@ void lcf::Camera::bind()
     m_ubo.bind();
     m_ubo.updateData(0, m_view.constData());
     m_ubo.updateData(1, m_projection_provider.projectionMatrix().constData());
-    m_ubo.updateData(2, &this->localPosition());
+    Vector3D position = this->worldPosition();
+    m_ubo.updateData(2, &position);
     m_ubo.release();
 }
 
@@ -27,22 +28,22 @@ lcf::Vector3D lcf::Camera::front()
     return Vector3D::crossProduct(m_up, m_right);
 }
 
+void lcf::Camera::setUp(const Vector3D &up)
+{
+    m_up = up;
+}
+
 const lcf::Vector3D &lcf::Camera::up() const
 {
     return m_up;
 }
 
-lcf::Vector3D &lcf::Camera::up()
+void lcf::Camera::setRight(const Vector3D &right)
 {
-    return m_up;
+    m_right = right;
 }
 
 const lcf::Vector3D &lcf::Camera::right() const
-{
-    return m_right;
-}
-
-lcf::Vector3D &lcf::Camera::right()
 {
     return m_right;
 }

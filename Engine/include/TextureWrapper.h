@@ -22,6 +22,9 @@ namespace lcf {
         void bind(unsigned int unit = 0);
         void release(unsigned int unit = 0);
         bool isValid();
+        int width();
+        int height();
+        int depth();
         GLTexture::Target target();
         GLTexture::TextureFormat format();
         void setWrapMode(GLTexture::WrapMode wrap_mode);

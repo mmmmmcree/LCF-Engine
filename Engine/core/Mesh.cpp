@@ -108,8 +108,8 @@ void lcf::Mesh::setTextures(const MaterialController::TextureInfoMap & texture_i
 
 void lcf::Mesh::_draw(GLShaderProgram * shader)
 {
-    shader->setUniformValue("model", this->worldMatrix());
-    shader->setUniformValue("normal_matrix", this->normalMatrix());
+    shader->setUniformValue("model", m_transformer.getHierarchialMatrix());
+    shader->setUniformValue("normal_matrix", m_transformer.getNormalMatrix());
     if (this->animated()) {
         const auto &bone_matrices = m_skeleton->boneMatrices();
         shader->setUniformValueArray("bone_matrices", bone_matrices.data(), static_cast<int>(bone_matrices.size()));

@@ -5,6 +5,6 @@
 namespace lcf {
     struct GLFunctions
     {
-        static QOpenGLFunctions_4_5_Core* global();
+        static QOpenGLFunctions_4_5_Core* getGLFunctionsFromCurrentContext();
     };
 }

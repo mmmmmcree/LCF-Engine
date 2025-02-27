@@ -5,9 +5,11 @@
 #include "Define.h"
 #include "SignalSender.h"
 #include "SingleUniform.h"
+#include "Hierarchical.h"
+#include "HierarchicalTransformer.h"
 
 namespace lcf {
-    class Object3D
+    class Object3D : public Hierarchical<Object3D *>
     {
     public:
         using SharedPtr = std::shared_ptr<Object3D>;
@@ -63,24 +65,10 @@ namespace lcf {
         void setSignalSender(SignalSender *signal_sender);
         SignalSender *signalSender() const;
     protected:
-        virtual void updateWorldMatrix();
-        void addChildToChildren(Object3D* child);
-        void removeChild(Object3D* child);
-    protected:
-        //! 初始化默认需要更新，否则在没有设置父节点的情况下，即将成为父节点的节点的更新需求不会传递到该节点
-        Matrix4x4 m_local;
-        Matrix4x4 m_world;
-        Matrix4x4 m_inversed_world;
-        DecomposedTransform m_local_decomposed;
-        bool m_world_need_update = true;
-        bool m_normal_matrix_need_update = true;
-        Object3D *m_parent = nullptr;
         std::string m_name;
-        // bool m_cast_shadow = false;
         SingleUniform<bool> m_cast_shadow = false;
         SignalSender *m_signal_sender = nullptr;
-    private:
-        std::vector<Object3D*> m_children;
+        HierarchicalTransformer m_transformer;
     };
 
     using Bone = Object3D;

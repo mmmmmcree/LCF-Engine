@@ -1,8 +1,5 @@
 #pragma once
 
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <QWheelEvent>
 #include "Matrix.h"
 #include "Camera.h"
 
@@ -13,15 +10,12 @@ namespace lcf {
         enum Type
         {
             Trackball,
-            Game
+            Game,
+            ThirdPerson,
         };
         CameraController() = default;
         virtual ~CameraController() = default;
         virtual void update(Camera *camera) = 0;
-        virtual void processMouseMoveEvent(QMouseEvent* event) = 0;
-        virtual void processKeyPressEvent(QKeyEvent* event);
-        virtual void processKeyReleaseEvent(QKeyEvent* event);
-        virtual void processWheelEvent(QWheelEvent* event) { }
         void setSensitivity(float sensitivity);
         void setMoveSpeed(float speed);
         void setScaleSpeed(float speed);

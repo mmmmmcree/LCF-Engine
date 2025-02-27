@@ -12,11 +12,14 @@
 #include "Renderer.h"
 #include "ControlManager.h"
 #include "Constants.h"
+#include "GLFunctions.h"
+#include "InputProcessor.h"
 
 using namespace lcf;
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
+    this->winId();
     this->setFocusPolicy(Qt::StrongFocus);
     this->setMouseTracking(true);
     QTimer *update_timer = new QTimer(this);
@@ -26,7 +29,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 
 void GLWidget::initializeGL()
 {
-    auto gl = GLFunctions::global();
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
     gl->initializeOpenGLFunctions();
     gl->glClearColor(0.2f, 0.2f, 0.0f, 1.0f);
     TextureManager::instance()->initialize(this->context());
@@ -35,6 +38,10 @@ void GLWidget::initializeGL()
     Renderer::instance()->initialize(this->context());
     // SceneManager::instance()->testShaderToy();
     SceneManager::instance()->makeTestScene();
+    auto renderer = Renderer::instance();
+    // auto lut = TextureManager::instance()->loadColorGradingLUT(lcf::path::res_prefix + "Color Grading LUT/color_grading_lut_02.png");
+    // renderer->setColorGradingLUT(lut);
+    // renderer->enableColorGrading(true);
 }
 
 void GLWidget::paintGL()
@@ -54,20 +61,20 @@ void GLWidget::resizeGL(int w, int h)
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    GlobalCamera::instance()->processMouseMoveEvent(event);
+    InputProcessor::instance()->processMouseMoveEvent(event);
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-    GlobalCamera::instance()->processWheelEvent(event);
+    InputProcessor::instance()->processWheelEvent(event);
 }
 
 void GLWidget::keyPressEvent(QKeyEvent *event)
 {
-    GlobalCamera::instance()->processKeyPressEvent(event);
+    InputProcessor::instance()->processKeyEvent(event);
 }
 
 void GLWidget::keyReleaseEvent(QKeyEvent *event)
 {
-    GlobalCamera::instance()->processKeyReleaseEvent(event);
+    InputProcessor::instance()->processKeyEvent(event);
 }

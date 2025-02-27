@@ -3,6 +3,7 @@
 #include "Camera.h"
 #include "GameController.h"
 #include "TrackballController.h"
+#include "ThirdPersonController.h"
 
 namespace lcf {
     class GlobalCamera : public Camera
@@ -19,10 +20,6 @@ namespace lcf {
         void setControllerType(ControllerType type);
         void setCameraType(Type type);
         void reset();
-        void processMouseMoveEvent(QMouseEvent *event);
-        void processKeyPressEvent(QKeyEvent *event);
-        void processKeyReleaseEvent(QKeyEvent *event);
-        void processWheelEvent(QWheelEvent *event);
     private:
         GlobalCamera();
     private:

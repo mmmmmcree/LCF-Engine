@@ -16,14 +16,14 @@ namespace lcf {
         Object3DType type() const override;
         void draw() override;
         virtual LightType lightType() const = 0;
-        virtual void bind() { }
+        virtual void bind();
         virtual void release() { }
         void setColor(const Vector3D& color);
         void setIntensity(float intensity);
-        Vector3D direction();
+        Vector3D orientation();
         void setName(std::string_view name) override;
     protected:
-        void updateWorldMatrix() override;
+        // void updateWorldMatrix() override;
         std::string uniformName(const std::string &name) const;
     protected:
         ProjectionProvider m_projection_provider;

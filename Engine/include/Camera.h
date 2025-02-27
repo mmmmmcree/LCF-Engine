@@ -13,10 +13,10 @@ namespace lcf {
         ~Camera() = default;
         void bind();
         Vector3D front();
+        void setUp(const Vector3D &up);
         const Vector3D &up() const;
-        Vector3D &up();
+        void setRight(const Vector3D &right);
         const Vector3D &right() const;
-        Vector3D &right();
         void setProjectionType(ProjectionType type);
         void setViewport(int width, int height);
     protected:

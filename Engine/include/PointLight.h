@@ -18,7 +18,7 @@ namespace lcf {
         int index() const;
         void setName(std::string_view name) override;
     protected:
-        void updateWorldMatrix() override;
+        // void updateWorldMatrix() override;
     private:
         void updateLightMatrices();
     private:
