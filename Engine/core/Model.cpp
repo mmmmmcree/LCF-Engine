@@ -1,23 +1,41 @@
 #include "Model.h"
 #include "ShaderManager.h"
+#include "ControlManager.h"
+#include "ShapeFactory.h"
+
+lcf::Model::Model() : 
+    RenderableObject3D()
+{
+    m_components.emplace_back(ComponentFactory::createUnique<AnimationPlayer>());
+}
 
 lcf::Object3DType lcf::Model::type() const
 {
     return Object3DType::Model;
 }
 
+void lcf::Model::update(float dt)
+{
+    for (auto &component : m_components) {
+        component->update(dt);
+    }
+}
+
 void lcf::Model::draw()
 {
     m_material_controller->bind();
-    Object3D::draw();
+    for (auto &mesh : m_meshes) {
+        mesh->draw();
+    }
     m_material_controller->release();
-    m_animation_player.update(1.0f / 60.0f);
 }
 
 void lcf::Model::drawShadow(LightType light_type)
 {
-    if (not this->castShadow()) { return; }
-    Object3D::drawShadow(light_type);
+    if (not this->isCastShadow()) { return; }
+    for (auto &mesh : m_meshes) {
+        mesh->drawShadow(light_type);
+    }
 }
 
 void lcf::Model::create()
@@ -32,6 +50,18 @@ void lcf::Model::create()
     }
     this->passSettingsToMeshes();
     this->playAnimation();
+// //todo
+    Box box;
+    for (const auto &mesh : m_meshes) {
+        auto mesh_box = mesh->geometry()->getBoundingShape<Box>();
+        if (not mesh_box) { continue; }
+        box += *mesh_box;
+    }
+    auto rigid_body = ComponentFactory::createUnique<RigidBody>();
+    rigid_body->setControlledTransformer(&m_transformer);
+    rigid_body->setBoxHalfExtents(box.getDimensions() / 2.0f);
+    m_components.emplace_back(std::move(rigid_body));
+// //todo
 }
 
 bool lcf::Model::isCreated() const
@@ -52,18 +82,23 @@ void lcf::Model::setMaterialType(MaterialType material_type)
 
 bool lcf::Model::animated() const
 {
-    return m_animation_player.hasAnimation();
+    return this->getComponent<AnimationPlayer>()->hasAnimation();
 }
 
-void lcf::Model::setBones(Bone *root_bone, BoneMap &&bone_map)
+void lcf::Model::setBones(BoneMap &&bone_map)
 {
-    m_root_bone = root_bone;
     m_bones = std::move(bone_map);
 }
 
 void lcf::Model::addAnimation(AnimationPlayer::AnimationPtr &&animation)
 {
-    m_animation_player.playList().emplace_back(std::move(animation)); 
+    this->getComponent<AnimationPlayer>()->playList().emplace_back(std::move(animation));
+}
+
+lcf::Bone *lcf::Model::getRootBone() const
+{
+    if (m_bones.empty()) { return nullptr; }
+    return m_bones.begin()->second->getRoot();
 }
 
 void lcf::Model::passSettingsToMeshes()
@@ -72,38 +107,39 @@ void lcf::Model::passSettingsToMeshes()
         mesh->setMaterialType(m_material_controller->materialType());
         mesh->setShader(m_material_controller->shader());
         mesh->setTextures(m_material_controller->textureInfoMap());
-        mesh->setCastShadow(this->castShadow());
+        mesh->setCastShadow(this->isCastShadow());
     }
 }
 
 void lcf::Model::playAnimation(int i, float speed)
 {
-    m_animation_player.play(i, speed);
+    this->getComponent<AnimationPlayer>()->play(i, speed); //- 在模型未create之前调用，则通过AnimationPlayer类记录
     if (not this->animated()) { return; }
     for (auto &mesh : m_meshes) { mesh->activateSkeleton(true); }
 }
 
 void lcf::Model::playAnimation()
 {
+    this->getComponent<AnimationPlayer>()->play();
     if (not this->animated()) { return; }
     for (auto &mesh : m_meshes) { mesh->activateSkeleton(true); }
-    m_animation_player.play();
 }
 
 void lcf::Model::stopAnimation()
 {
-    m_animation_player.stop();
+    this->getComponent<AnimationPlayer>()->stop();
     if (not this->animated()) { return; }
     for (auto &mesh : m_meshes) { mesh->activateSkeleton(false); }
 }
 
 int lcf::Model::currentAnimationIndex() const
 {
-    return m_animation_player.playingIndex();
+    return this->getComponent<AnimationPlayer>()->playingIndex();
 }
 
 void lcf::Model::addMesh(MeshPtr && mesh)
 {
+    mesh->attachTo(this);
     mesh->materialController()->setShader(m_material_controller->shader());
     mesh->setInstanceHelper(m_instance_helper);
     m_meshes.emplace_back(std::move(mesh));
@@ -116,16 +152,15 @@ lcf::Model::MeshList & lcf::Model::meshes()
 
 const lcf::AnimationPlayer::AnimationList &lcf::Model::animations()
 {
-    return m_animation_player.playList();
+    return this->getComponent<AnimationPlayer>()->playList();
 }
 
-lcf::Bone *lcf::Model::processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const
+void lcf::Model::processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const
 {
     Bone *bone = new Bone(*others_parent);
-    bone_map.insert(std::make_pair(bone->name(), bone));
-    bone->setParent(parent);
-    for (auto child : others_parent->children()) {
+    bone_map.insert(std::make_pair(bone->getName(), bone));
+    bone->attachTo(parent);
+    for (auto child : others_parent->getChildren()) {
         this->processSkeleton(bone_map, bone, child);
     }
-    return bone;
 }

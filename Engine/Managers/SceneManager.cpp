@@ -166,6 +166,7 @@ void lcf::SceneManager::makeTestScene()
     if (m_scenes.find(scene_name) != m_scenes.end()) { return; }
     auto &scene = m_scenes.emplace(std::make_pair(scene_name, new Scene)).first->second;
     ControlManager::instance()->setCurrentScene(scene.get());
+    scene->activatePhysicalWorld(true);
 
     // SharedGLTexturePtr texture = TextureManager::instance()->load(path::res_prefix + "bk.jpg");
     // texture->setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
@@ -174,9 +175,13 @@ void lcf::SceneManager::makeTestScene()
     auto tex = TextureManager::instance()->loadTexture2D(path::res_prefix + "newport_loft.hdr", true);
     scene->environment()->setSkyboxTexture(tex);
 
+    auto ground = new RigidBody;
+    ground->setBoxHalfExtents({30.0f, std::numeric_limits<float>::epsilon(), 30.0f});
+    ground->setMass(0.0f);
+
     PointLight::SharedPtr point_light0 = PointLight::createShared();
     point_light0->setColor({100.0f, 100.0f, 100.0f});
-    point_light0->setTranslation({1.8f, 0.8f, 0.0f});
+    point_light0->setTranslation({1.8f, 0.0f, 0.0f});
     point_light0->scale(0.3f);
     point_light0->setCastShadow(true);
     scene->addObject3D(point_light0);
@@ -189,26 +194,26 @@ void lcf::SceneManager::makeTestScene()
     // scene->addObject3D(directional_light);
 
     // Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
-    // room->scale(2.0f);
-    // room->translateY(-0.12f);
+    // // room->scale(3.0f);
+    // room->translateY(1.92f);
     // room->setMaterialType(MaterialType::Phong);
     // scene->addObject3D(room);
 
-    // Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
-    // robot->setMaterialType(MaterialType::PBR);
-    // robot->setCastShadow(true);
-    // scene->addObject3D(robot);
+    Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
+    robot->translate(3.0f, 3.0f, 0.0f);
+    robot->setMaterialType(MaterialType::PBR);
+    robot->setCastShadow(true);
+    scene->addObject3D(robot);
 
-    // Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
-    // helmet->scale(0.3f);
-    // helmet->translateY(7.0f);
-    // helmet->setMaterialType(MaterialType::PBR);
-    // helmet->setCastShadow(true);
-    // scene->addObject3D(helmet);
+    Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
+    helmet->scale(0.3f);
+    helmet->translate(3.0f, 10.0f, 0.0f);
+    helmet->setMaterialType(MaterialType::PBR);
+    helmet->setCastShadow(true);
+    scene->addObject3D(helmet);
 
     Model::SharedPtr dinosaur = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
-    // dinosaur->setMaterialType(MaterialType::Phong);
-    dinosaur->translate(-3.0f, 0.0f, 0.0f);
+    dinosaur->translate(0.0f, 3.0f, 0.0f);
     dinosaur->scale(0.3f);
     dinosaur->setCastShadow(true);
     scene->addObject3D(dinosaur);
@@ -218,15 +223,14 @@ void lcf::SceneManager::makeTestScene()
     // dinosaur2->translate(3.0f, 0.0f, 0.0f);
     // dinosaur2->setCastShadow(true);
     // scene->addObject3D(dinosaur2);
-    // dinosaur2->playAnimation(0, 1.0f);
+    // dinosaur2->playAnimation(1, 1.0f);
 
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         static float d = 0;
         // helmet->translateX(qSin(d) * 0.1f);
-        point_light0->translateY(qSin(d) * 0.1f);
-
-        dinosaur->translate(0.0f, 0.0f, 0.15f);
-        dinosaur->rotateY(1.0f);
+        // point_light0->translateY(qSin(d) * 0.1f);
+        dinosaur->translate(0.01f, 0.0f, 0.0f);
+        // dinosaur->rotateY(1.0f);
         d += 0.02f;
     });
 }

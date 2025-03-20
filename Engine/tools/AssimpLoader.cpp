@@ -32,9 +32,11 @@ void lcf::AssimpLoader::run()
     }
     BoneMap bone_map;
     Bone *root_bone = this->processSkeleton(scene->mRootNode, scene, nullptr, bone_map);
+    m_model->scale(root_bone->getScale());
+    root_bone->setScale(1.0f); //- 把根骨骼的缩放转移到模型上，方便后续处理
     this->processNode(scene->mRootNode, scene, materials, bone_map);
     this->processAnimations(scene, bone_map);
-    m_model->setBones(root_bone, std::move(bone_map));
+    m_model->setBones(std::move(bone_map));
     emit loaded(m_model);
 }
 
@@ -44,7 +46,7 @@ lcf::MaterialController::SharedPtr lcf::AssimpLoader::processMaterial(aiMaterial
     std::unordered_map<std::string, SharedImagePtr> image_map;
     for (int type = aiTextureType_DIFFUSE; type <= aiTextureType_GLTF_METALLIC_ROUGHNESS; ++type) {
         int count = ai_material->GetTextureCount(static_cast<aiTextureType>(type));
-        if (count) { qDebug() << "Texture name:" << ai_material->GetName().C_Str() << " type:" << type << " count:" << count; }
+        // if (count) { qDebug() << "Texture name:" << ai_material->GetName().C_Str() << " type:" << type << " count:" << count; }
         for (int i = 0; i < count; ++i) {
             aiString texture_path;
             ai_material->Get(AI_MATKEY_TEXTURE(static_cast<aiTextureType>(type), i), texture_path);
@@ -117,10 +119,9 @@ void lcf::AssimpLoader::processNode(aiNode *node, const aiScene *scene, const Ma
         unsigned int mesh_id = node->mMeshes[i];
         aiMesh *ai_mesh = scene->mMeshes[mesh_id];
         Mesh *mesh = this->processMesh(ai_mesh, scene, materials, bone_map);
-        mesh->setParent(m_model);
         m_model->addMesh(Model::MeshPtr(mesh));
         if (scene->mNumAnimations > 0) { continue; }
-        mesh->setLocalMatrix(bone->worldMatrix());
+        mesh->setLocalMatrix(bone->getWorldMatrix());
     }
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
         this->processNode(node->mChildren[i], scene, materials, bone_map);
@@ -134,11 +135,7 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     std::vector<float> normals(num_vertices * 3);
     std::vector<float> uvs(num_vertices * 2);
     std::vector<float> colors;
-    if (ai_mesh->HasVertexColors(0)) { colors.resize(num_vertices * 4); }
     std::vector<float> tangents;
-    if (ai_mesh->HasTangentsAndBitangents()) {
-        tangents.resize(num_vertices * 3);
-    }
     std::vector<unsigned int> indices;
     memcpy(positions.data(), ai_mesh->mVertices, sizeof(float) * positions.size());
     memcpy(normals.data(), ai_mesh->mNormals, sizeof(float) * normals.size());
@@ -148,9 +145,11 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
         }
     }
     if (ai_mesh->HasVertexColors(0)) {
+        colors.resize(num_vertices * 4);
         memcpy(colors.data(), ai_mesh->mColors[0], sizeof(float) * colors.size());
     }
     if (ai_mesh->HasTangentsAndBitangents()) {
+        tangents.resize(num_vertices * 3);
         memcpy(tangents.data(), ai_mesh->mTangents, sizeof(float) * tangents.size());
     }
     for (unsigned int i = 0; i < ai_mesh->mNumFaces; ++i) {
@@ -186,8 +185,8 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
     geometry->addAttribute(positions.data(), positions.size(), 0, 3);
     geometry->addAttribute(normals.data(), normals.size(), 1, 3);
     geometry->addAttribute(uvs.data(), uvs.size(), 2, 2);
-    if (not colors.empty()) { geometry->addAttribute(colors.data(), colors.size(), 3, 4); }
-    if (not tangents.empty()) { geometry->addAttribute(tangents.data(), tangents.size(), 4, 3); }
+    geometry->addAttribute(colors.data(), colors.size(), 3, 4);
+    geometry->addAttribute(tangents.data(), tangents.size(), 4, 3);
     geometry->setIndices(indices.data(), indices.size());
     Mesh *mesh = new Mesh(Mesh::GeometryPtr(geometry));
     mesh->m_material_controller = mat_controller;
@@ -202,10 +201,13 @@ lcf::Mesh *lcf::AssimpLoader::processMesh(aiMesh *ai_mesh, const aiScene *scene,
 lcf::Bone *lcf::AssimpLoader::processSkeleton(aiNode *node, const aiScene *scene, Bone *parent, BoneMap &bone_map)
 {
     Bone *bone = new Bone;
-    bone->setParent(parent);
+    // bone->setParent(parent);
+    bone->attachTo(parent);
     bone->setName(node->mName.C_Str());
-    bone->setLocalMatrix(toMatrix4x4(node->mTransformation));
-    bone_map.insert(std::make_pair(bone->name(), bone));
+    // bone->setLocalMatrix(toMatrix4x4(node->mTransformation));
+    bone->setMatrix(toMatrix4x4(node->mTransformation));
+    // bone_map.insert(std::make_pair(bone->name(), bone));
+    bone_map.insert(std::make_pair(bone->getName(), bone));
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
         this->processSkeleton(node->mChildren[i], scene, bone, bone_map);
     }

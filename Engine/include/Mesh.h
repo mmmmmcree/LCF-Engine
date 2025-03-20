@@ -9,12 +9,12 @@
 #include "Skeleton.h"
 #include <QList>
 #include "InstanceHelper.h"
-#include "DrawableObject3D.h"
+#include "RenderableObject3D.h"
 
 namespace lcf {
     class AssimpLoader;
     class Model;
-    class Mesh : public DrawableObject3D
+    class Mesh : public RenderableObject3D
     {
         friend class AssimpLoader;
         friend class Model;
@@ -31,7 +31,7 @@ namespace lcf {
         static UniquePtr createUnique(const GeometryPtr &geometry);
         static SharedPtr createShared(const Mesh& other);
         void create();
-        bool isCreated() const;
+        bool isCreated() const; 
         void draw() override;
         void drawShadow(LightType light_type) override;
         void setSkeleton(SkeletonPtr &&skeleton);
@@ -41,6 +41,8 @@ namespace lcf {
         void activateSkeleton(bool active);
         void setTexture(int texture_type, TextureWrapper texture);
         void setTextures(const MaterialController::TextureInfoMap& texture_info_map);
+        template <ShapeConcept Shape>
+        Shape getBoundingShape();
     private:
         void _draw(GLShaderProgram *shader);
     protected:
@@ -48,4 +50,16 @@ namespace lcf {
         SkeletonPtr m_skeleton;
         bool m_skeleton_activated = false;
     };
+}
+
+template<lcf::ShapeConcept Shape>
+inline Shape lcf::Mesh::getBoundingShape()
+{
+    auto shape_ptr = m_geometry->getBoundingShape<Shape>();
+    if (not shape_ptr) {
+        return Shape();
+    }
+    auto shape = *shape_ptr;
+    shape.transform(m_transformer.getHierarchialPosition(), m_transformer.getHierarchialScale());
+    return shape;
 }

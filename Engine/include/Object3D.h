@@ -3,13 +3,14 @@
 #include "Matrix.h"
 #include "GLShaderProgram.h"
 #include "Define.h"
-#include "SignalSender.h"
 #include "SingleUniform.h"
 #include "Hierarchical.h"
 #include "HierarchicalTransformer.h"
+#include <QObject>
+#include "Bone.h"
 
 namespace lcf {
-    class Object3D : public Hierarchical<Object3D *>
+    class Object3D
     {
     public:
         using SharedPtr = std::shared_ptr<Object3D>;
@@ -19,10 +20,7 @@ namespace lcf {
         virtual void draw();
         virtual void drawShadow(LightType light_type);
         virtual Object3DType type() const;
-        Object3D *root() const;
-        Object3D *parent() const;
-        void setParent(Object3D* parent);
-        void addChild(Object3D* child);
+        void attachTo(Object3D* parent);
         void setLocalMatrix(const Matrix4x4 &matrix);
         void translate(float x, float y, float z);
         void translateX(float x);
@@ -52,27 +50,13 @@ namespace lcf {
         const Vector3D &translation() const;
         const Quaternion &rotation() const;
         const Vector3D &scale() const;
-        const std::vector<Object3D*> &children() const;
         const Matrix4x4 &worldMatrix();
         const Matrix4x4  &inversedWorldMatrix();
         Matrix3x3 normalMatrix();
         virtual void setName(std::string_view name);
         const std::string &name() const;
-        void setCastShadow(bool cast_shadow);
-        bool castShadow() const;
-        virtual void setMaterialType(MaterialType material_type) { };
-        virtual MaterialType materialType() const { return MaterialType::Phong; };
-        void setSignalSender(SignalSender *signal_sender);
-        SignalSender *signalSender() const;
     protected:
         std::string m_name;
-        SingleUniform<bool> m_cast_shadow = false;
-        SignalSender *m_signal_sender = nullptr;
         HierarchicalTransformer m_transformer;
     };
-
-    using Bone = Object3D;
-
-    using Group = Object3D;
-
 }

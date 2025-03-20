@@ -63,25 +63,26 @@ void lcf::ModelManager::clone(Model *model, Model *cloned)
     for (auto &mesh : model->m_meshes) {
         if (not mesh) { continue; }
         auto cloned_mesh = std::make_unique<Mesh>(*mesh);
-        cloned_mesh->setParent(cloned);
+        cloned_mesh->attachTo(cloned);
         cloned_mesh->setMaterialController(MaterialController::createShared(*mesh->m_material_controller));
         cloned->addMesh(std::move(cloned_mesh));
     };
-
-    cloned->m_root_bone = model->processSkeleton(cloned->m_bones, nullptr, model->m_root_bone);
+    cloned->m_transformer = model->m_transformer;
+    model->processSkeleton(cloned->m_bones, nullptr, model->getRootBone());
     for (int i = 0; i < cloned->m_meshes.size(); ++i) {
         auto &mesh = model->m_meshes[i];
         if (not mesh->skeleton()) { continue; }
         auto &cloned_mesh = cloned->m_meshes[i];
         Skeleton::BonePtrs bones;
         for (auto &bone : mesh->skeleton()->bones()) {
-            auto it = cloned->m_bones.find(bone->name());
+            auto it = cloned->m_bones.find(bone->getName());
             if (it == cloned->m_bones.end()) { continue; }
             bones.emplace_back(it->second);
         }
         cloned_mesh->setSkeleton(std::make_unique<Skeleton>(std::move(bones), mesh->skeleton()->offsetMatrices()));
     }
-    for (auto &animation : model->m_animation_player.playList()) {
+    // for (auto &animation : model->m_animation_player.playList()) {
+    for (auto &animation : model->getComponent<AnimationPlayer>()->playList()) {
         if (not animation) { continue; }
         auto cloned_animation = std::make_unique<Animation>(*animation);
         cloned_animation->updateControlledBones(cloned->m_bones);

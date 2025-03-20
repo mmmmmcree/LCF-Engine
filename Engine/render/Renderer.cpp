@@ -128,13 +128,13 @@ void lcf::Renderer::updateRenderPassProcedure()
 {
     std::function<void(Scene *)> msaa_render_pass_func = [this](Scene *scene) {
         m_msaa_fbo->bind();
-        scene->draw();
+        scene->render();
         m_msaa_fbo->release();
         m_msaa_fbo->blitTo(m_post_process_fbo.get(), FrameBufferObject::ColorAttachment);
     };
     std::function<void(Scene *)> normal_render_pass_func = [this](Scene *scene) {
         m_post_process_fbo->bind();
-        scene->draw();
+        scene->render();
         m_post_process_fbo->release();
     };
     m_render_pass_procedure = m_msaa_enabled ? msaa_render_pass_func : normal_render_pass_func;

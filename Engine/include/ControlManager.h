@@ -14,7 +14,6 @@ namespace lcf {
         static ControlManager *instance();
         void setCurrentScene(Scene *scene);
         Scene *currentScene() const;
-        const SignalSender *sceneSignalSender() const;
         void setCurrentModel(Model *model);
         Model *currentModel() const;
         void setCurrentMesh(Mesh *mesh);
@@ -33,7 +32,5 @@ namespace lcf {
         Model *m_current_model = nullptr;
         Mesh *m_current_mesh = nullptr;
         Object3D *m_current_object = nullptr;
-        SignalSender m_scene_signal_sender;
-        SignalSender m_model_signal_sender;
     };
 }

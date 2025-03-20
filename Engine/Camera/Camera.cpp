@@ -7,19 +7,22 @@
 
 void lcf::Camera::bind()
 {
-    m_view.setToIdentity();
-    m_view.lookAt(this->worldPosition(), this->worldPosition() + this->front(), m_up);
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
     if (not m_ubo) {
         m_ubo.setBindingPoint(0);
-        m_ubo.setDataSizes({64, 64, 16});
+        m_ubo.setDataSizes({64, 64, 16, 64});
         m_ubo.create();
     }
+    if (m_transformer.isUpdated()) { return; }
+    m_view.setToIdentity();
+    Vector3D position = this->worldPosition();
+    m_view.lookAt(position, position + this->front(), m_up);
+    m_projection_view = m_projection_provider.projectionMatrix() * m_view;
     m_ubo.bind();
     m_ubo.updateData(0, m_view.constData());
     m_ubo.updateData(1, m_projection_provider.projectionMatrix().constData());
-    Vector3D position = this->worldPosition();
     m_ubo.updateData(2, &position);
+    m_ubo.updateData(3, m_projection_view.constData());
     m_ubo.release();
 }
 
@@ -30,7 +33,7 @@ lcf::Vector3D lcf::Camera::front()
 
 void lcf::Camera::setUp(const Vector3D &up)
 {
-    m_up = up;
+    m_up = up.normalized();
 }
 
 const lcf::Vector3D &lcf::Camera::up() const
@@ -40,7 +43,7 @@ const lcf::Vector3D &lcf::Camera::up() const
 
 void lcf::Camera::setRight(const Vector3D &right)
 {
-    m_right = right;
+    m_right = right.normalized();
 }
 
 const lcf::Vector3D &lcf::Camera::right() const
@@ -56,4 +59,19 @@ void lcf::Camera::setProjectionType(ProjectionType type)
 void lcf::Camera::setViewport(int width, int height)
 {
     m_projection_provider.setAspect(width, height);
+}
+
+const lcf::Matrix4x4 &lcf::Camera::getViewMatrix() const
+{
+    return m_view;
+}
+
+const lcf::Matrix4x4 &lcf::Camera::getProjectionMatrix() const
+{
+    return m_projection_provider.projectionMatrix();
+}
+
+const lcf::Matrix4x4 &lcf::Camera::getProjectionViewMatrix() const
+{
+    return m_projection_view;
 }

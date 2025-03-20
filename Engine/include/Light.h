@@ -22,8 +22,9 @@ namespace lcf {
         void setIntensity(float intensity);
         Vector3D orientation();
         void setName(std::string_view name) override;
+        void setCastShadow(bool cast_shadow);
+        bool isCastShadow() const;
     protected:
-        // void updateWorldMatrix() override;
         std::string uniformName(const std::string &name) const;
     protected:
         ProjectionProvider m_projection_provider;
@@ -31,5 +32,6 @@ namespace lcf {
         SingleUniform<float> m_intensity = 1.0f;
         SingleUniform<Vector3D> m_position = Vector3D(0.0f, 0.0f, 0.0f);
         SingleUniform<Vector3D> m_direction = Vector3D(0.0f, 0.0f, 1.0f);
+        SingleUniform<bool> m_cast_shadow = false;
     };
 }

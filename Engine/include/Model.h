@@ -6,11 +6,13 @@
 #include "GLShaderProgram.h"
 #include "InstanceHelper.h"
 #include "LightArray.h"
+#include "RigidBody.h"
+#include "PointerWrapper.h"
 
 namespace lcf {
     class ModelManager;
     class AssimpLoader;
-    class Model : public DrawableObject3D
+    class Model : public RenderableObject3D
     {
         friend class ModelManager;
         friend class AssimpLoader;
@@ -21,8 +23,10 @@ namespace lcf {
         using MeshList = std::vector<MeshPtr>;
         using BoneMap = std::unordered_map<std::string, Bone *>;
         using InstanceHelperPtr = std::shared_ptr<InstanceHelper>;
-        Model() = default;
+        using ComponentList = std::vector<PointerWrapper<Component>>;
+        Model();
         Object3DType type() const override;
+        void update(float dt);
         void draw() override;
         void drawShadow(LightType light_type) override;
         void create();
@@ -35,18 +39,38 @@ namespace lcf {
         int currentAnimationIndex() const;
         MeshList &meshes();
         const AnimationPlayer::AnimationList &animations();
+        template <ComponentConcept C>
+        C *getComponent() const;
+        template <>
+        AnimationPlayer *getComponent() const;
     private:
-        Bone *processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const;
+        void processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const;
         void addMesh(MeshPtr &&mesh);
-        void setBones(Bone *root_bone, BoneMap &&bone_map);
+        void setBones(BoneMap &&bone_map);
         void addAnimation(AnimationPlayer::AnimationPtr &&animation);
+        Bone * getRootBone() const;
     private:
-        AnimationPlayer m_animation_player;
         MeshList m_meshes;
         BoneMap m_bones;
-        Bone *m_root_bone = nullptr;
         bool m_created = false;
+        ComponentList m_components;
     private: // 为多线程加载模型准备的，在加载之前设置的状态在加载完毕后可能需要重新设置一遍，故需要保存
         void passSettingsToMeshes();
     };
+}
+
+template <lcf::ComponentConcept C>
+inline C *lcf::Model::getComponent() const
+{
+    auto it = std::find_if(m_components.begin() + 1, m_components.end(), [](const PointerWrapper<Component> &p) {
+        return p->isTypeConsistent();
+    });
+    if (it == m_components.end()) { return nullptr; }
+    return static_cast<C *>(it->get());
+}
+
+template <>
+inline lcf::AnimationPlayer *lcf::Model::getComponent() const
+{
+    return static_cast<AnimationPlayer *>(m_components.front().get());
 }

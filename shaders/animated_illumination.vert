@@ -25,13 +25,14 @@ layout(std140, binding = 0) uniform Matrices {
     mat4 view;
     mat4 projection;
     vec3 camera_position;
+    mat4 projection_view;
 };
 
 void main()
 {
     vec3 final_position = boneTransformedPosition(position);
     vec4 world_position = model * vec4(final_position, 1.0f);
-    gl_Position = projection * view * world_position;
+    gl_Position = projection_view * world_position;
     vs_out.uv = uv;
     vs_out.color = color;
     vs_out.view_direction = normalize(world_position.xyz - camera_position);

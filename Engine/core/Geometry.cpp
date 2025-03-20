@@ -1,6 +1,7 @@
 #include "Geometry.h"
 #include "GLFunctions.h"
 #include "Constants.h"
+#include "ShapeFactory.h"
 
 lcf::Geometry::Geometry() :
     m_created(false), m_items_cnt(0),
@@ -13,7 +14,6 @@ void lcf::Geometry::setIndices(unsigned int *indices, size_t indices_size)
 {
     m_indices.resize(indices_size);
     memcpy(m_indices.data(), indices, indices_size * sizeof(unsigned int));
-    m_indices_size = static_cast<int>(indices_size);
 }
 
 void lcf::Geometry::setBeginMode(GLBeginMode mode)
@@ -28,11 +28,10 @@ void lcf::Geometry::create()
     if (m_indices.empty()) {
         m_indices.resize(m_items_cnt);
         std::iota(m_indices.begin(), m_indices.end(), 0);
-        m_indices_size = static_cast<int>(m_items_cnt);
     }
-    for (int i = 0; i < m_buffers.size(); ++i) {
-        auto &vbo = m_buffers[i];
-        auto &data = m_buffer_data[i];
+    for (int i = 0; i < m_vbo_list.size(); ++i) {
+        auto &vbo = m_vbo_list[i];
+        auto &data = m_buffer_data_list[i];
         vbo.create();
         vbo.bind();
         vbo.setUsagePattern(GLBuffer::StaticDraw);
@@ -48,18 +47,32 @@ void lcf::Geometry::create()
     m_vao = std::make_unique<GLVAO>();
     m_vao->create();
     m_vao->bind();
-    for (int i = 0; i < m_buffers.size(); ++i) {
-        m_buffers[i].bind();
-        const auto &attr_infos = m_attribute_infos_list[i];
+    for (int i = 0; i < m_vbo_list.size(); ++i) {
+        m_vbo_list[i].bind();
+        const auto &attr_infos = m_interleaved_attribute_info_list[i];
         size_t attr_idx = 0;
         for (auto &attr_info : attr_infos.get()) {
-            gl->glEnableVertexAttribArray(attr_info.location());
-            gl->glVertexAttribPointer(attr_info.location(), attr_info.itemSize(), attr_info.GLType(), GL_FALSE, attr_infos.strideBytes(), (void *)(attr_infos.offset(attr_idx)));
+            int location = attr_info.location();
+            int item_size = attr_info.itemSize();
+            int gl_type = attr_info.GLType();
+            int stride_bytes = attr_infos.strideBytes();
+            int offset_bytes = attr_infos.offset(attr_idx);
+            gl->glEnableVertexAttribArray(location);
+            gl->glVertexAttribPointer(location, item_size, gl_type, GL_FALSE, stride_bytes, (void *)(static_cast<size_t>(offset_bytes)));
+            if (location == static_cast<int>(AttributeLocation::Position)) {
+                auto &buffer_data = m_buffer_data_list[i];
+                this->readPositions(buffer_data.data(), buffer_data.size(), stride_bytes, offset_bytes);
+            }
             ++attr_idx;
         }
     }
     m_ebo.bind();
     m_vao->release();
+    for (auto &buffer_data : m_buffer_data_list) {
+        buffer_data.clear();
+    }
+    m_bounding_shape_map.emplace(ShapeType::Box, ShapeFactory::createUnique<Box>(m_positions));
+    m_bounding_shape_map.emplace(ShapeType::Sphere, ShapeFactory::createUnique<Sphere>(m_positions));
 }
 
 bool lcf::Geometry::isCreated() const
@@ -73,9 +86,9 @@ unsigned int lcf::Geometry::id() const
     return m_vao->objectId();
 }
 
-int lcf::Geometry::indicesSize() const
+int lcf::Geometry::getIndicesSize() const
 {
-    return m_indices_size;
+    return static_cast<int>(m_indices.size());
 }
 
 void lcf::Geometry::draw()
@@ -83,7 +96,7 @@ void lcf::Geometry::draw()
     if (not m_created) { return; }
     m_vao->bind();
     auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
-    gl->glDrawElements(m_mode, m_indices_size, GL_UNSIGNED_INT, nullptr);
+    gl->glDrawElements(m_mode, this->getIndicesSize(), GL_UNSIGNED_INT, nullptr);
     m_vao->release();
 }
 
@@ -92,13 +105,13 @@ void lcf::Geometry::drawInstanced(int instance_count)
     if (not m_created) { return; }
     m_vao->bind();
     auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
-    gl->glDrawElementsInstanced(m_mode, m_indices_size, GL_UNSIGNED_INT, nullptr, instance_count);
+    gl->glDrawElementsInstanced(m_mode, this->getIndicesSize(), GL_UNSIGNED_INT, nullptr, instance_count);
     m_vao->release();
 }
 
-const lcf::Geometry::Ptr &lcf::Geometry::quad()
+const lcf::Geometry::SharedPtr &lcf::Geometry::quad()
 {
-    static Ptr s_quad = nullptr;
+    static SharedPtr s_quad = nullptr;
     if (not s_quad) {
         s_quad = std::make_shared<Geometry>();
         s_quad->addInterleavedAttributes(data::quad, std::size(data::quad), {{0, 3}, {1, 3}, {2, 2}});
@@ -107,9 +120,9 @@ const lcf::Geometry::Ptr &lcf::Geometry::quad()
     return s_quad;
 }
 
-const lcf::Geometry::Ptr &lcf::Geometry::cube()
+const lcf::Geometry::SharedPtr &lcf::Geometry::cube()
 {
-    static Ptr s_cube = nullptr;
+    static SharedPtr s_cube = nullptr;
     if (not s_cube) {
         s_cube = std::make_shared<Geometry>();
         s_cube->addInterleavedAttributes(data::cube, std::size(data::cube), {{0, 3}, {1, 3}, {2, 2}});
@@ -118,13 +131,18 @@ const lcf::Geometry::Ptr &lcf::Geometry::cube()
     return s_cube;
 }
 
-const lcf::Geometry::Ptr &lcf::Geometry::sphere()
+const lcf::Geometry::SharedPtr &lcf::Geometry::sphere()
 {
-    static Ptr s_sphere = nullptr;
+    static SharedPtr s_sphere = nullptr;
     if (not s_sphere) {
         s_sphere = std::make_unique<Geometry>(generateSphere());
     }
     return s_sphere;
+}
+
+const lcf::Geometry::PositionList &lcf::Geometry::getPositions() const
+{
+    return m_positions;
 }
 
 lcf::Geometry lcf::Geometry::generateSphere(int x_segments, int y_segments)
@@ -162,4 +180,14 @@ lcf::Geometry lcf::Geometry::generateSphere(int x_segments, int y_segments)
     sphere.setBeginMode(TRIANGLE_STRIP);
     sphere.create();
     return sphere;
+}
+
+void lcf::Geometry::readPositions(void *data, size_t total_bytes, int stride_bytes, int offset_bytes)
+{
+    m_positions.reserve(total_bytes / stride_bytes);
+    Vector3D position;
+    for (int i = 0; i < total_bytes; i += stride_bytes) {
+        memcpy(&position, static_cast<unsigned char *>(data) + i + offset_bytes, sizeof(position));
+        m_positions.emplace_back(position);
+    }
 }

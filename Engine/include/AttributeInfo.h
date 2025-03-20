@@ -6,11 +6,28 @@
 #include "Define.h"
 
 namespace lcf {
+    
+    using LocItemsizePair = std::pair<unsigned int, int>;
+    using LocItemsizePairList = std::initializer_list<LocItemsizePair>;
+
+    enum class AttributeLocation
+    {
+        Position = 0,
+        Normal = 1,
+        UV = 2,
+        Color = 3,
+        Tangent = 4,
+        BoneIndex = 5,
+        BoneWeight = 6
+    };
+
     class AttributeInfo
     {
     public:
         template <typename T>
         AttributeInfo(unsigned int location, int item_size, T type_check);
+        template <typename T>
+        AttributeInfo(const LocItemsizePair &loc_itemsize, T type_check);
         int itemSize() const;
         int strideBytes() const;
         size_t typeSize() const;
@@ -23,19 +40,19 @@ namespace lcf {
         int m_gl_type;
     };
 
-    class AttributeInfos
+    class InterleavedAttributeInfo
     {
     public:
-        using LocItemsizePair = std::pair<unsigned int, int>;
-        using LocItemsizePairList = std::initializer_list<LocItemsizePair>;
         using AttributeInfoList = std::vector<AttributeInfo>;
-        using OffsetList = std::vector<size_t>;
+        using OffsetList = std::vector<int>;
         template <typename T>
-        AttributeInfos(const LocItemsizePairList &loc_itemsize_list, T type_check);
+        InterleavedAttributeInfo(const LocItemsizePairList &loc_itemsize_list, T type_check);
+        template <typename T>
+        InterleavedAttributeInfo(const LocItemsizePair &loc_itemsize, T type_check);
         const AttributeInfoList &get() const;
         int itemSize(size_t index) const;
         int strideBytes() const;
-        size_t offset(size_t index) const;
+        int offset(size_t index) const;
         int GLType() const;
         size_t typeSize() const;
     private:
@@ -54,8 +71,14 @@ inline lcf::AttributeInfo::AttributeInfo(unsigned int location, int item_size, T
     m_gl_type = GLTypeMapper<T>::type;
 }
 
+template<typename T>
+inline lcf::AttributeInfo::AttributeInfo(const LocItemsizePair & loc_itemsize, T type_check) :
+    AttributeInfo(loc_itemsize.first, loc_itemsize.second, type_check)
+{
+}
+
 template <typename T>
-inline lcf::AttributeInfos::AttributeInfos(const LocItemsizePairList &loc_itemsize_list, T type_check)
+inline lcf::InterleavedAttributeInfo::InterleavedAttributeInfo(const LocItemsizePairList &loc_itemsize_list, T type_check)
 {
     m_stride_bytes = 0;
     for (const auto &[location, item_size] : loc_itemsize_list) {
@@ -63,4 +86,10 @@ inline lcf::AttributeInfos::AttributeInfos(const LocItemsizePairList &loc_itemsi
         m_offsets.emplace_back(m_stride_bytes);
         m_stride_bytes += info.strideBytes();
     }
+}
+
+template <typename T>
+inline lcf::InterleavedAttributeInfo::InterleavedAttributeInfo(const LocItemsizePair &loc_itemsize, T type_check) :
+    InterleavedAttributeInfo({loc_itemsize}, type_check)
+{
 }

@@ -48,12 +48,15 @@ void lcf::Light::setName(std::string_view name)
     m_position.setName(this->uniformName("position"));
 }
 
-// void lcf::Light::updateWorldMatrix()
-// {
-//     Object3D::updateWorldMatrix();
-//     m_direction.setValue(this->orientation());
-//     m_position.setValue(this->worldPosition());
-// }
+void lcf::Light::setCastShadow(bool cast_shadow)
+{
+    m_cast_shadow.setValue(cast_shadow);
+}
+
+bool lcf::Light::isCastShadow() const
+{
+    return m_cast_shadow.value();
+}
 
 std::string lcf::Light::uniformName(const std::string &name) const
 {

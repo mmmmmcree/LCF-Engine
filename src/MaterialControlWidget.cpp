@@ -26,8 +26,8 @@ MaterialControlWidget::MaterialControlWidget(QWidget *parent) :
     material_types[static_cast<int>(lcf::MaterialType::UserCustom)] = "User Custom";
     select_material_combo->addItems(material_types);
 }
- 
-void MaterialControlWidget::setControlledObject(lcf::Object3D *object)
+
+void MaterialControlWidget::setControlledObject(lcf::RenderableObject3D *object)
 {
     disconnect(select_material_combo, &QComboBox::currentIndexChanged, nullptr, nullptr);
     m_controlled_object = object;

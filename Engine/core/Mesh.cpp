@@ -4,7 +4,7 @@
 
 
 lcf::Mesh::Mesh(const GeometryPtr &geometry) :
-    DrawableObject3D(),
+    RenderableObject3D(),
     m_geometry(geometry),
     m_skeleton(nullptr),
     m_skeleton_activated(false)
@@ -12,7 +12,7 @@ lcf::Mesh::Mesh(const GeometryPtr &geometry) :
 }
 
 lcf::Mesh::Mesh(const Mesh &other) :
-    DrawableObject3D(other),
+    RenderableObject3D(other),
     m_geometry(other.m_geometry),
     m_skeleton(nullptr),
     m_skeleton_activated(other.m_skeleton_activated)
@@ -50,9 +50,11 @@ bool lcf::Mesh::isCreated() const
     return m_geometry->isCreated() and m_material_controller->isCreated();
 }
 
+#include "Culler.h"
+#include "GlobalCamera.h"
+
 void lcf::Mesh::draw()
 {
-    Object3D::draw();
     if (not m_material_controller->isValid()) { return; }
     if (not m_geometry->isCreated()) { return; }
     m_material_controller->bind();
@@ -62,8 +64,7 @@ void lcf::Mesh::draw()
 
 void lcf::Mesh::drawShadow(LightType light_type)
 {
-    if (not this->castShadow()) { return; }
-    Object3D::drawShadow(light_type);
+    if (not this->isCastShadow()) { return; }
     if (not m_geometry->isCreated()) { return; }
     const auto &shadow_shader = ShaderManager::instance()->getShadowShader(light_type, this->animated());
     shadow_shader->bindWithTextures();

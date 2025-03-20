@@ -38,23 +38,33 @@ lcf::Vector3D lcf::HierarchicalTransformer::getHierarchialPosition()
     return this->getHierarchialMatrix().column(3).toVector3D();
 }
 
+lcf::Vector3D lcf::HierarchicalTransformer::getHierarchialScale()
+{
+    
+    float x = this->getHierarchialMatrix().column(0).length();
+    float y = this->getHierarchialMatrix().column(1).length();
+    float z = this->getHierarchialMatrix().column(2).length();
+    return { x, y, z };
+}
+
 void lcf::HierarchicalTransformer::attachTo(HierarchicalTransformer *parent)
 {
-    m_need_update = true;
+    if (parent == this) { return; }
+    m_need_update = UpdateType::All;
     m_inverted_need_update = true;
     this->_setParent(parent);
 }
 
-void lcf::HierarchicalTransformer::requireUpdate()
+void lcf::HierarchicalTransformer::requireUpdate(UpdateType type)
 {
     /*
     - 不处理矩阵更新，只向子结点传递更新需求，并标记自己需要更新
     - 如果自己已经被标记，说明已经向下传递过更新需求，并且该需求没有被处理，不需要再向下传递
     */
-    if (m_need_update) { return; }
-    m_need_update = true;
+    if (m_need_update & type) { return; }
+    m_need_update |= type;
     m_inverted_need_update = true;
     for (auto child : m_children) {
-        child->requireUpdate();
+        child->requireUpdate(type);
     }
 }

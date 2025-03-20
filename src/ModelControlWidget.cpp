@@ -123,13 +123,13 @@ ModelControlWidget::ModelControlWidget(QWidget *parent) :
         model_select_box->setCurrentIndex(0);
     });
 
-    connect(lcf::ControlManager::instance()->sceneSignalSender(), &lcf::SignalSender::modelAdded, [model_select_box] (lcf::Model *model) {
+    connect(lcf::SignalSender::instance(), &lcf::SignalSender::modelAdded, [model_select_box] (lcf::Model *model) {
         model_select_box->addItem(model->name().c_str());
     });
 
     connect(lcf::ControlManager::instance(), &lcf::ControlManager::currentModelChanged, [=](lcf::Model *model) {
         object3d_control_widget->setControlledObject(model);
-        cast_shadow_checkbox->setCheckState(model->castShadow() ? Qt::Checked : Qt::Unchecked);
+        cast_shadow_checkbox->setCheckState(model->isCastShadow() ? Qt::Checked : Qt::Unchecked);
         material_control_widget->setControlledObject(model);
         animation_select_box->blockSignals(true);
         animation_select_box->clear();

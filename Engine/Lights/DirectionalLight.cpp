@@ -21,12 +21,6 @@ void lcf::DirectionalLight::setName(std::string_view name)
     Light::setName(name);
 }
 
-// void lcf::DirectionalLight::updateWorldMatrix()
-// {
-//     Light::updateWorldMatrix();
-//     m_ssbo_needs_update = true;
-// }
-
 lcf::DirectionalLight::SharedPtr lcf::DirectionalLight::createShared()
 {
     return std::make_shared<DirectionalLight>();

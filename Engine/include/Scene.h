@@ -9,9 +9,11 @@
 #include <QTimer>
 #include "GLFrameBufferObject.h"
 #include "LightArray.h"
+#include "PhysicalWorld.h"
+#include "Culler.h"
 
 namespace lcf {
-    class Scene : public Object3D
+    class Scene
     {
     public:    
         using SharedPtr = std::shared_ptr<Scene>;
@@ -19,16 +21,18 @@ namespace lcf {
         using ModelList = std::vector<Model::SharedPtr>;
         using MeshList = std::vector<Mesh::SharedPtr>;
         using GroupList = std::vector<Object3D::SharedPtr>;
+        using RenderableList = std::vector<Mesh *>;
         Scene();
-        Object3DType type() const override;
         LightArray &lights();
         void addObject3D(const Object3D::SharedPtr &object3d);
-        void draw() override;
+        void render();
+        void activatePhysicalWorld(bool active);
         Environment *environment();
         QTimer *timer();
         Model *takeModel(int index);
         const ModelList &models() const;
     private:
+        void update();
         void shadowPass();
         void addLight(const Light::SharedPtr &light);
         void addModel(const Model::SharedPtr &model);
@@ -40,9 +44,13 @@ namespace lcf {
         LightArray m_lights;
         ModelList m_models;
         MeshList m_meshes;
+        RenderableList m_renderables;
         GroupList m_groups;
         Environment m_environment;
         QTimer m_timer;
         UniqueGLFrameBufferObjectPtr m_fbo;
+        PhysicalWorld::UniquePtr m_physical_world;
+        RenderableList m_renderable_list;
+        Culler m_culler;
     };
 }

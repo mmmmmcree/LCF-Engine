@@ -11,21 +11,21 @@ lcf::ThirdPersonController::ThirdPersonController() : CameraController()
 
 void lcf::ThirdPersonController::update(Camera *camera)
 {
-    auto model = ControlManager::instance()->currentModel();
-    if (model != camera->parent()) {
-        camera->setTranslation(0.0f, 0.0f, 0.0f);
-        camera->setParent(model);
-    }
-    this->processInput();
-    this->updateCameraYaw(camera, m_delta_yaw);
-    this->updateCameraPitch(camera, m_delta_pitch);
-    // camera->translate(camera->right() * m_delta_right + camera->up() * m_delta_up + camera->front() * m_delta_front);
-    camera->translate(camera->front() * m_delta_front);
-    // if (camera->parent()){
-    //     Vector3D front = -model->worldMatrix().column(2).toVector3D().normalized();
-    //     camera->setRight(Vector3D::crossProduct(front, camera->up()).normalized());
+    // auto model = ControlManager::instance()->currentModel();
+    // if (model != camera->parent()) {
+    //     camera->setTranslation(0.0f, 0.0f, 0.0f);
+    //     camera->setParent(model);
     // }
-    m_delta_yaw = m_delta_pitch = m_delta_up = m_delta_right = m_delta_front = 0.0f;
+    // this->processInput();
+    // this->updateCameraYaw(camera, m_delta_yaw);
+    // this->updateCameraPitch(camera, m_delta_pitch);
+    // // camera->translate(camera->right() * m_delta_right + camera->up() * m_delta_up + camera->front() * m_delta_front);
+    // camera->translate(camera->front() * m_delta_front);
+    // // if (camera->parent()){
+    // //     Vector3D front = -model->worldMatrix().column(2).toVector3D().normalized();
+    // //     camera->setRight(Vector3D::crossProduct(front, camera->up()).normalized());
+    // // }
+    // m_delta_yaw = m_delta_pitch = m_delta_up = m_delta_right = m_delta_front = 0.0f;
 }
 
 void lcf::ThirdPersonController::processInput()

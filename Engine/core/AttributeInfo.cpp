@@ -25,32 +25,32 @@ unsigned int lcf::AttributeInfo::location() const
     return m_location;
 }
 
-const std::vector<lcf::AttributeInfo> &lcf::AttributeInfos::get() const
+const std::vector<lcf::AttributeInfo> &lcf::InterleavedAttributeInfo::get() const
 {
     return m_infos;
 }
 
-int lcf::AttributeInfos::itemSize(size_t index) const
+int lcf::InterleavedAttributeInfo::itemSize(size_t index) const
 {
     return m_infos[index].itemSize();
 }
 
-int lcf::AttributeInfos::strideBytes() const
+int lcf::InterleavedAttributeInfo::strideBytes() const
 {
     return m_stride_bytes;
 }
 
-size_t lcf::AttributeInfos::offset(size_t index) const
+int lcf::InterleavedAttributeInfo::offset(size_t index) const
 {
     return m_offsets.at(index);
 }
 
-int lcf::AttributeInfos::GLType() const
+int lcf::InterleavedAttributeInfo::GLType() const
 {
     return m_infos.front().GLType();
 }
 
-size_t lcf::AttributeInfos::typeSize() const
+size_t lcf::InterleavedAttributeInfo::typeSize() const
 {
     return m_infos.front().typeSize();
 }

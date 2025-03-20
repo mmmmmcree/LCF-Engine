@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Animation.h"
+#include "Component.h"
 
 namespace lcf {
-    class AnimationPlayer
+    class AnimationPlayer : public ComponentMixin<ComponentType::AnimationPlayer> 
     {
     public:
         using AnimationPtr = std::unique_ptr<Animation>;

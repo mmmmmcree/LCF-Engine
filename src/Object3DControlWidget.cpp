@@ -135,13 +135,13 @@ Object3DControlWidget::Object3DControlWidget(QWidget *parent) :
 
 void Object3DControlWidget::setControlledObject(lcf::Object3D *object_3d)
 {
-    if (m_controlled_object) {
-        disconnect(m_controlled_object->signalSender(), &lcf::SignalSender::transformUpdated, this, &Object3DControlWidget::updateTexts);
-    }
+    // if (m_controlled_object) {
+    //     disconnect(m_controlled_object->signalSender(), &lcf::SignalSender::transformUpdated, this, &Object3DControlWidget::updateTexts);
+    // }
     m_controlled_object = object_3d;
     this->updateControlArea();
     if (not object_3d) { return; }
-    connect(m_controlled_object->signalSender(), &lcf::SignalSender::transformUpdated, this, &Object3DControlWidget::updateTexts);
+    // connect(m_controlled_object->signalSender(), &lcf::SignalSender::transformUpdated, this, &Object3DControlWidget::updateTexts);
 }
 
 void Object3DControlWidget::updateControlArea()

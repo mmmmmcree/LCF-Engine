@@ -34,7 +34,7 @@ lcf::Skeleton::Matrices lcf::Skeleton::boneMatrices() const
 {
     Matrices matrices(m_offset_matrices->size());
     for (int i = 0; i < m_offset_matrices->size(); ++i) {
-        matrices[i] = m_bones[i]->worldMatrix() * m_offset_matrices->at(i);
+        matrices[i] = m_bones[i]->getWorldMatrix() * m_offset_matrices->at(i);
     }
     return matrices;
 }

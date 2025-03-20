@@ -9,18 +9,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_definitions(-DSOURCE_DIR="${CMAKE_SOURCE_DIR}")
 if(MSVC)
     add_compile_options(/std:c++20)  # MSVC 的 C++20 标志
-endif()
-file(GLOB libs "./lib/*" "./Engine/lib/*")  
-        
+endif() 
+file(GLOB libs "./lib/*" "./Engine/lib/*")   
+             
 file(COPY ${libs} DESTINATION ${CMAKE_BINARY_DIR}/Release)
 find_package(Qt6 COMPONENTS Widgets REQUIRED) 
 include_directories(./include/Ela Engine/include Engine)
-aux_source_directory(./src srcs)
-add_subdirectory(Engine)  
+aux_source_directory(./src srcs) 
+add_subdirectory(Engine)   
 # Specify MSVC UTF-8 encoding 
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-                    
+                         
 add_executable(${PROJECT_NAME}
     WIN32 # If you need a terminal for debug, please comment this statement 
     ${srcs}

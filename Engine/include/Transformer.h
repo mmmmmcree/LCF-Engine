@@ -1,11 +1,26 @@
 #pragma once
 
 #include "Matrix.h"
+#include "bullet/LinearMath/btTransform.h"
+#include <memory>
 
 namespace lcf {
     class Transformer
     {
     public:
+        using UniquePtr = std::unique_ptr<Transformer>;
+        static UniquePtr createUnique();
+        enum UpdateType
+        {
+            None = 0,
+            Translated = 1,
+            Rotated = 1 << 1,
+            Scaled = 1 << 2,
+            TranslatedAndRotated = Translated | Rotated,
+            TranslatedAndScaled = Translated | Scaled,
+            RotatedAndScaled = Rotated | Scaled,
+            All = Translated | Rotated | Scaled, 
+        };
         Transformer() = default;
         Transformer(const Transformer &other);
         Transformer &operator=(const Transformer &other);
@@ -40,13 +55,20 @@ namespace lcf {
         const Quaternion &getRotation() const;
         const Vector3D &getScale() const;
         bool isUpdated() const;
+        btTransform toBtTransform() const;
     protected:
-        virtual void requireUpdate();
+        virtual void requireUpdate(UpdateType type);
+        void updateAll();
+    private:
+        void decompose(const Matrix4x4 &matrix);
     protected:
-        bool m_need_update = true;
+        int m_need_update = UpdateType::All;
         Vector3D m_position;
+        Vector3D m_delta_translation;
         Quaternion m_rotation;
-        Vector3D m_scale = Vector3D(1.0f, 1.0f, 1.0f);
+        Quaternion m_delta_rotation;
+        Vector3D m_scale = {1.0f, 1.0f, 1.0f};
+        Vector3D m_delta_scale = {1.0f, 1.0f, 1.0f};
         Matrix4x4 m_matrix;
     };
 }

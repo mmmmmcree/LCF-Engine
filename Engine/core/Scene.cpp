@@ -6,15 +6,12 @@
 #include "GlobalCamera.h"
 #include "DirectionalLight.h"
 #include "Constants.h"
+#include "SignalSender.h"
+#include "bullet/btBulletDynamicsCommon.h"
 
-lcf::Scene::Scene() : Object3D()
+lcf::Scene::Scene()
 {
     m_timer.setInterval(1000 / 60);
-}
-
-lcf::Object3DType lcf::Scene::type() const
-{
-    return Object3DType::Scene;
 }
 
 lcf::LightArray &lcf::Scene::lights()
@@ -43,9 +40,7 @@ void lcf::Scene::addModel(const Model::SharedPtr &model)
         if (model == existing_model) { return; }
     }
     m_models.emplace_back(model);
-    if (m_signal_sender) {
-        m_signal_sender->sendModelsUpdatedSignal(model.get());
-    }
+    SignalSender::instance()->sendModelAddedSignal(model.get());
 }
 
 void lcf::Scene::addMesh(const Mesh::SharedPtr &mesh)
@@ -66,10 +61,6 @@ void lcf::Scene::addGroup(const Object3D::SharedPtr &group)
 
 void lcf::Scene::addObject3D(const Object3D::SharedPtr &object3d)
 {
-    if (not object3d) { return; }
-    if (not object3d->parent()) {
-        object3d->setParent(this);
-    }
     switch (object3d->type()) {
         case Object3DType::Group : {
             this->addGroup(std::static_pointer_cast<Object3D>(object3d));
@@ -87,18 +78,32 @@ void lcf::Scene::addObject3D(const Object3D::SharedPtr &object3d)
     }
 }
 
-void lcf::Scene::draw()
+void lcf::Scene::render()
 {
+    this->update();
+
     auto gl = QOpenGLContext::currentContext()->extraFunctions();
     gl->glEnable(GL_DEPTH_TEST);
     this->shadowPass();
     m_environment.bind();
-    Object3D::draw();
+    for (auto mesh : m_renderable_list) {
+        mesh->draw();
+    }
+    for (auto &light : m_lights) {
+        light->draw();
+    }
     m_environment.release();
     gl->glDepthFunc(GL_LEQUAL); 
     m_environment.drawSkybox();
     gl->glDepthFunc(GL_LESS);
     gl->glDisable(GL_DEPTH_TEST);
+}
+
+void lcf::Scene::activatePhysicalWorld(bool active)
+{
+    if (not active and not m_physical_world) { return; }
+    if (not m_physical_world) { m_physical_world = PhysicalWorld::createUnique(); }
+    m_physical_world->activate(active);
 }
 
 lcf::Environment *lcf::Scene::environment()
@@ -122,12 +127,32 @@ const lcf::Scene::ModelList &lcf::Scene::models() const
     return m_models;
 }
 
+void lcf::Scene::update()
+{
+    if (m_physical_world) { m_physical_world->stepSimulation(1.0f / 60.0f, 10); }
+    m_culler.setFrustumPlanes(GlobalCamera::instance()->getProjectionViewMatrix());
+    m_renderable_list.clear();
+    for (auto &model : m_models) {
+        model->update(1.0f / 60.0f);
+        for (auto &mesh : model->meshes()) {
+            if (m_culler.isCulled(mesh->getBoundingShape<Sphere>())) { continue; }
+            m_renderable_list.emplace_back(mesh.get());
+        }
+    }
+    for (auto &mesh : m_meshes) {
+        if (m_culler.isCulled(mesh->getBoundingShape<Sphere>())) { continue; }
+        m_renderable_list.emplace_back(mesh.get());
+    }
+}
+
 void lcf::Scene::shadowPass()
 {
     for (auto &light : m_lights) {
-        if (not light->castShadow()) { continue; }
+        if (not light->isCastShadow()) { continue; }
         light->bind();
-        Object3D::drawShadow(light->lightType());
+        for (auto mesh : m_renderable_list) {
+            mesh->drawShadow(light->lightType());
+        }
         light->release();
     }
 }
