@@ -14,12 +14,10 @@ void lcf::Camera::bind()
         m_ubo.create();
     }
     if (m_transformer.isUpdated()) { return; }
-    m_view.setToIdentity();
-    Vector3D position = this->worldPosition();
-    m_view.lookAt(position, position + this->front(), m_up);
-    m_projection_view = m_projection_provider.projectionMatrix() * m_view;
+    Vector3D position = this->getWorldPosition();
+    m_projection_view = m_projection_provider.projectionMatrix() * this->getViewMatrix();
     m_ubo.bind();
-    m_ubo.updateData(0, m_view.constData());
+    m_ubo.updateData(0, this->getViewMatrix().constData());
     m_ubo.updateData(1, m_projection_provider.projectionMatrix().constData());
     m_ubo.updateData(2, &position);
     m_ubo.updateData(3, m_projection_view.constData());
@@ -28,27 +26,17 @@ void lcf::Camera::bind()
 
 lcf::Vector3D lcf::Camera::front()
 {
-    return Vector3D::crossProduct(m_up, m_right);
+    return -m_transformer.getZAxis();
 }
 
-void lcf::Camera::setUp(const Vector3D &up)
+lcf::Vector3D lcf::Camera::up() const
 {
-    m_up = up.normalized();
+    return m_transformer.getYAxis();
 }
 
-const lcf::Vector3D &lcf::Camera::up() const
+lcf::Vector3D lcf::Camera::right() const
 {
-    return m_up;
-}
-
-void lcf::Camera::setRight(const Vector3D &right)
-{
-    m_right = right.normalized();
-}
-
-const lcf::Vector3D &lcf::Camera::right() const
-{
-    return m_right;
+    return m_transformer.getXAxis();
 }
 
 void lcf::Camera::setProjectionType(ProjectionType type)
@@ -63,7 +51,7 @@ void lcf::Camera::setViewport(int width, int height)
 
 const lcf::Matrix4x4 &lcf::Camera::getViewMatrix() const
 {
-    return m_view;
+    return this->getInversedWorldMatrix();
 }
 
 const lcf::Matrix4x4 &lcf::Camera::getProjectionMatrix() const

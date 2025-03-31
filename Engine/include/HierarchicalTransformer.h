@@ -8,21 +8,20 @@ namespace lcf {
     {
     public:
         using UniquePtr = std::unique_ptr<HierarchicalTransformer>;
+        using Parent = Hierarchical *;
         using Children = std::vector<HierarchicalTransformer *>;
         HierarchicalTransformer() = default;
         HierarchicalTransformer(const HierarchicalTransformer &other);
         HierarchicalTransformer &operator=(const HierarchicalTransformer &other);
-        const Matrix4x4 &getHierarchialMatrix();
-        const Matrix4x4 &getInvertedHierarchialMatrix();
-        Matrix3x3 getNormalMatrix();
-        Vector3D getHierarchialPosition();
-        Vector3D getHierarchialScale();
+        const Matrix4x4 &getWorldMatrix() const;
+        Vector3D getWorldPosition() const;
+        Vector3D getWorldScale() const;
         void attachTo(HierarchicalTransformer *parent);
+        const Children &getChildrenTransformer() const;
+        Parent getRootTransformer() const;
     protected:
-        void requireUpdate(UpdateType type) override;
+        void requireUpdate() override;
     private:
-        bool m_inverted_need_update = true;
-        Matrix4x4 m_hierarchial_matrix;
-        Matrix4x4 m_inverted_hierarchial_matrix;
+        mutable Matrix4x4 m_hierarchial_matrix;
     };
 }

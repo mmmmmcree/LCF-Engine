@@ -7,7 +7,7 @@ lcf::Vector3D lcf::toVector3D(const btVector3 &vec)
 
 btVector3 lcf::toBtVector3(const Vector3D &vec)
 {
-    return btVector3(vec.x(), vec.y(), vec.z());
+    return btVector3(vec.getX(), vec.getY(), vec.getZ());
 }
 
 lcf::Vector3D lcf::toVector3D(const aiVector3D & ai_vec)

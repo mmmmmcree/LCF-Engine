@@ -132,6 +132,9 @@ void lcf::Scene::update()
     if (m_physical_world) { m_physical_world->stepSimulation(1.0f / 60.0f, 10); }
     m_culler.setFrustumPlanes(GlobalCamera::instance()->getProjectionViewMatrix());
     m_renderable_list.clear();
+    for (auto &light : m_lights) {
+        light->update();
+    }
     for (auto &model : m_models) {
         model->update(1.0f / 60.0f);
         for (auto &mesh : model->meshes()) {

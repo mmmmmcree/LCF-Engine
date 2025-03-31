@@ -6,6 +6,7 @@
 #include "SingleUniform.h"
 #include "Hierarchical.h"
 #include "HierarchicalTransformer.h"
+#include "Object3DHierarchicalTransformer.h"
 #include <QObject>
 #include "Bone.h"
 
@@ -22,41 +23,40 @@ namespace lcf {
         virtual Object3DType type() const;
         void attachTo(Object3D* parent);
         void setLocalMatrix(const Matrix4x4 &matrix);
-        void translate(float x, float y, float z);
-        void translateX(float x);
-        void translateY(float y);
-        void translateZ(float z);
-        void translate(const Vector3D &translation);
-        void setTranslation(float x, float y, float z);
-        void setTranslation(const Vector3D &position);
-        void rotate(const Quaternion &rotation);
-        void rotate(float angle_deg, float x, float y, float z);
-        void setRotation(float angle_deg, float x, float y, float z);
+        void translateWorld(float x, float y, float z);
+        void translateWorld(const Vector3D &translation);
+        void translateLocalXAxis(float x);
+        void translateLocalYAxis(float y);
+        void translateLocalZAxis(float z);
+        void setTranslation(const Vector3D &translation);
         void setRotation(const Quaternion &rotation);
-        void rotateX(float angle_deg);
-        void setRotationX(float angle_deg);
-        void rotateY(float angle_deg);
-        void setRotationY(float angle_deg);
-        void rotateZ(float angle_deg);
-        void setRotationZ(float angle_deg);
+        void setRotation(float angle_deg, float x, float y, float z);
+        void setScale(float x, float y, float z);
+        void setScale(const Vector3D &scale);
+        void rotateLocal(const Quaternion &rotation);
+        void rotateLocal(float angle_deg, float x, float y, float z);
+        void rotateLocalXAxis(float angle_deg);
+        void rotateLocalYAxis(float angle_deg);
+        void rotateLocalZAxis(float angle_deg);
+        void rotateAround(const Quaternion &rotation, const Vector3D &position);
+        void rotateAroundOrigin(const Quaternion &rotation);
+        void rotateAroundSelf(const Quaternion &rotation);
         void scale(float x, float y, float z);
         void scale(float factor);
         void scale(const Vector3D &scale);
-        void setScale(float x, float y, float z);
-        void setScale(const Vector3D &scale);
-        void setScale(float factor);
-        const Vector3D &localPosition() const;
-        Vector3D worldPosition();
-        const Vector3D &translation() const;
-        const Quaternion &rotation() const;
-        const Vector3D &scale() const;
-        const Matrix4x4 &worldMatrix();
-        const Matrix4x4  &inversedWorldMatrix();
-        Matrix3x3 normalMatrix();
+        Vector3D getLocalPosition() const;
+        Vector3D getWorldPosition() const;
+        Vector3D translation() const;
+        Quaternion rotation() const;
+        Vector3D scale() const;
+        const Matrix4x4 &getWorldMatrix() const;
+        const Matrix4x4  &getInversedWorldMatrix() const;
+        Matrix3x3 getNormalMatrix() const;
         virtual void setName(std::string_view name);
-        const std::string &name() const;
+        const std::string &getName() const;
+        Object3DHierarchicalTransformer &getTransformer();
     protected:
         std::string m_name;
-        HierarchicalTransformer m_transformer;
+        Object3DHierarchicalTransformer m_transformer;
     };
 }

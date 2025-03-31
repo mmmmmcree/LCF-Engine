@@ -20,6 +20,8 @@ void lcf::UniformBufferObject::setBindingPoint(unsigned int binding_point)
 void lcf::UniformBufferObject::setDataSizes(const SizeList &sizes)
 {
     m_sizes = sizes;
+    m_offsets.clear();
+    m_total_size = 0;
     for (auto size : sizes) {
         m_offsets.push_back(m_total_size);
         m_total_size += size;

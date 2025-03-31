@@ -31,19 +31,21 @@ void lcf::Renderer::initialize(QOpenGLContext *context)
     m_hdr_enabled.setName("hdr_enabled");
     m_hdr_exposure.setName("exposure");
     m_bloomer = Bloomer::createUnique(2048, 2048);
-    this->enableGammaCorrection(true);
     this->enableHDR(true);
     this->enableMSAA(m_msaa_enabled);
     this->enableBloom(m_bloom_enabled);
     m_color_grading_lut_size.setName("color_grading_lut_size");
     m_color_grading_enabled.setName("color_grading_enabled");
-
+    m_resolution.setName("resolution");
+    m_fxaa_enabled.setName("fxaa_enabled");
+    this->enableFXAA(m_fxaa_enabled.value());
 }
 
 void lcf::Renderer::setRenderSize(int width, int height)
 {
     m_msaa_fbo->resize(width, height);
     m_post_process_fbo->resize(width, height);
+    m_resolution.setValue(Vector2D(width, height));
 }
 
 void lcf::Renderer::render(Scene *scene)
@@ -115,13 +117,26 @@ bool lcf::Renderer::isGammaCorrectionEnabled() const
 
 void lcf::Renderer::enableColorGrading(bool enable)
 {
-    m_color_grading_enabled.setValue(enable and m_color_grading_lut.isValid());
+    enable = enable and m_color_grading_lut.isValid();
+    m_color_grading_enabled.setValue(enable);
+    emit ColorGradingEnabledChanged(enable);
 }
 
 void lcf::Renderer::setColorGradingLUT(TextureWrapper lut)
 {
     m_color_grading_lut_size.setValue(lut.width());
     m_color_grading_lut = lut;
+}
+
+void lcf::Renderer::enableFXAA(bool enable)
+{
+    m_fxaa_enabled.setValue(enable);
+    emit FXAAEnabledChanged(enable);
+}
+
+bool lcf::Renderer::isFXAAEnabled() const
+{
+    return m_fxaa_enabled.value();
 }
 
 void lcf::Renderer::updateRenderPassProcedure()

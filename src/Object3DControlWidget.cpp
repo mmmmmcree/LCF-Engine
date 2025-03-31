@@ -95,7 +95,7 @@ Object3DControlWidget::Object3DControlWidget(QWidget *parent) :
 
         auto object_3d = m_controlled_object;
         if (not object_3d) { return; }
-        QVector3D translation;
+        lcf::Vector3D translation;
         for (int i = 0; i < 3; ++i) {
             translation[i] = m_translation_group[i]->value();
         }
@@ -128,7 +128,7 @@ Object3DControlWidget::Object3DControlWidget(QWidget *parent) :
     connect(set_name_button, &QPushButton::clicked, [this] {
         if (not m_controlled_object) { return; }
         m_controlled_object->setName(m_object_name_edit->text().toStdString());
-        emit currentObjectNameChanged(m_controlled_object->name());
+        emit currentObjectNameChanged(m_controlled_object->getName());
     });
 }
 
@@ -146,9 +146,9 @@ void Object3DControlWidget::setControlledObject(lcf::Object3D *object_3d)
 
 void Object3DControlWidget::updateControlArea()
 {
-    QVector3D translation;
-    QVector4D rotation{0.0f, 1.0f, 0.0f, 0.0f};
-    QVector3D scale{1.0f, 1.0f, 1.0f};
+    lcf::Vector3D translation;
+    lcf::Vector4D rotation{0.0f, 1.0f, 0.0f, 0.0f};
+    lcf::Vector3D scale{1.0f, 1.0f, 1.0f};
     if (m_controlled_object) {
         translation = m_controlled_object->translation();
         m_controlled_object->rotation().getAxisAndAngle(&rotation[0], &rotation[1], &rotation[2], &rotation[3]);
@@ -185,8 +185,8 @@ void Object3DControlWidget::updateTexts()
         world_pos_text = world_pos_text.arg("0.00").arg("0.00").arg("0.00");
         scale_text = scale_text.arg("1.00").arg("1.00").arg("1.00");
     } else {
-        object_name = m_controlled_object->name().c_str();
-        const auto &world_pos = m_controlled_object->worldPosition();
+        object_name = m_controlled_object->getName().c_str();
+        const auto &world_pos = m_controlled_object->getWorldPosition();
         for (int i = 0; i < 3; ++i) {
             world_pos_text = world_pos_text.arg(QString::number(world_pos[i], 'f', 2));
         }

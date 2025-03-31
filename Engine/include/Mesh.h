@@ -60,6 +60,6 @@ inline Shape lcf::Mesh::getBoundingShape()
         return Shape();
     }
     auto shape = *shape_ptr;
-    shape.transform(m_transformer.getHierarchialPosition(), m_transformer.getHierarchialScale());
+    shape.transform(m_transformer.getWorldPosition(), m_transformer.getWorldScale());
     return shape;
 }

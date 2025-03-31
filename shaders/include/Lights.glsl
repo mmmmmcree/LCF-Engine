@@ -6,6 +6,9 @@ struct DirectionalLight
     int index;
     sampler2D shadow_map;
     bool cast_shadow;
+    float near_plane;
+    float light_size;
+    float frustum_size;
 };
 
 struct PointLight

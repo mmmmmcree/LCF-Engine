@@ -53,6 +53,40 @@ float directionalPoissonPCF(const sampler2D depth_map, const in vec4 light_space
     return shadow / float(samples_num);
 }
 
+float findBlockerDepth(const sampler2D shadow_map, vec2 uv, float light_size_n, float near_plane, float view_depth, float proj_depth)
+{
+    poissonDiskSamples2D(uv);
+    float radius = (-view_depth - near_plane) / (-view_depth) * light_size_n;
+    float blocker_sum_depth = 0.0;
+    float blocker_num = 0.00001;
+    for (int i = 0; i < samples_num; i++) {
+        float closest_depth = texture(shadow_map, uv + disk_2d[i] * radius).r;
+        float is_blocker = step(closest_depth, proj_depth);
+        blocker_num += is_blocker;
+        blocker_sum_depth += closest_depth * is_blocker;
+    }
+    float blocker_depth = mix(-1.0, blocker_sum_depth / blocker_num, blocker_num != 0.00001);
+    return blocker_depth;
+}
+
+float directionalPCSS(const sampler2D depth_map, const in vec4 light_space_coord, float light_size_n, float near_plane, float view_depth, float bias, float pcf_radius)
+{
+    vec3 proj_coord = light_space_coord.xyz / light_space_coord.w;
+    proj_coord = proj_coord * 0.5 + 0.5;
+    vec2 uv = proj_coord.xy;
+    float current_depth = proj_coord.z;
+    current_depth -= bias;
+    float blocker_depth = findBlockerDepth(depth_map, uv, light_size_n, near_plane, view_depth, current_depth);
+    float penumbra = (current_depth - blocker_depth) / blocker_depth * light_size_n;
+    float shadow = 0.0;
+    pcf_radius = max(pcf_radius, penumbra * 0.011);
+    for(int i = 0; i < samples_num; i++) {
+        float closest_depth = texture(depth_map, uv + disk_2d[i] * pcf_radius).r;
+        shadow += step(closest_depth, current_depth);
+    }
+    return shadow / float(samples_num);
+}
+
 struct DirectionalLightData {
     mat4 light_matrix;
     mat4 light_view_matrix;
@@ -68,6 +102,13 @@ float calcDirectionalLightShadow(const in DirectionalLight light, vec3 normal, v
     vec3 light_direction = normalize(light.direction);
     vec4 light_space_coord = directional_light_data[light.index].light_matrix * vec4(world_position, 1.0);
     float bias = calcBias(normal, light_direction);
-    float shadow = directionalPoissonPCF(light.shadow_map, light_space_coord, bias, pcf_radius);
+
+    float light_view_depth = (directional_light_data[light.index].light_view_matrix * vec4(world_position, 1.0)).z;
+    float light_size_n = light.light_size / light.frustum_size;
+    float near_plane = light.near_plane;
+    
+    // float shadow = directionalPoissonPCF(light.shadow_map, light_space_coord, bias, pcf_radius);
+    float shadow = directionalPCSS(light.shadow_map, light_space_coord, light_size_n, near_plane, light_view_depth, bias, pcf_radius);
+
     return shadow;
 }

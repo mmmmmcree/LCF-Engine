@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(window LANGUAGES CXX)
+project(window LANGUAGES CXX)  
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -11,7 +11,7 @@ if(MSVC)
     add_compile_options(/std:c++20)  # MSVC 的 C++20 标志
 endif() 
 file(GLOB libs "./lib/*" "./Engine/lib/*")   
-             
+                    
 file(COPY ${libs} DESTINATION ${CMAKE_BINARY_DIR}/Release)
 find_package(Qt6 COMPONENTS Widgets REQUIRED) 
 include_directories(./include/Ela Engine/include Engine)
@@ -26,7 +26,7 @@ add_executable(${PROJECT_NAME}
     ${srcs}
     res.qrc
     ./include/Ela/ElaWidgetTools.qrc
-) 
+)   
 target_link_libraries( 
     ${PROJECT_NAME} PRIVATE Qt6::Widgets
     ${CMAKE_CURRENT_SOURCE_DIR}/lib/elawidgettools.lib

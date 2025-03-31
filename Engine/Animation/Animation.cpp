@@ -37,8 +37,6 @@ void lcf::Animation::update(float time) const
         auto bone = m_controlled_bones[i];
         const auto &track = m_tracks->at(i);
         auto result = track.evaluate(time);
-        bone->setPosition(result.position);
-        bone->setScale(result.scale);
-        bone->setRotation(result.rotation);
+        bone->setTRS(result.position, result.rotation, result.scale);
     }
 }

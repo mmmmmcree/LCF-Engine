@@ -8,7 +8,7 @@ ProjectionProvider::ProjectionProvider() :
 {
 }
 
-const QMatrix4x4 &ProjectionProvider::projectionMatrix() const
+const lcf::Matrix4x4 &ProjectionProvider::projectionMatrix() const
 {
     return m_projection;
 }
@@ -77,4 +77,26 @@ void ProjectionProvider::increaseScale(float delta)
 const float & ProjectionProvider::farPlane() const
 {
     return m_far;
+}
+
+const float & ProjectionProvider::nearPlane() const
+{
+    return m_near;
+}
+
+float ProjectionProvider::nearPlaneWidth() const
+{
+    float width = 0.0f;
+    switch (m_type) {
+        case Perspective: {
+            float fov_rad = qDegreesToRadians(m_fov);
+            float tan_half_fov = tanf(fov_rad / 2.0f);
+            width = 2.0f * m_near * tan_half_fov;
+        } break;
+        case Orthographic : {
+            float scale = qPow(2.0f, m_scale);
+            width = 2.0f * m_ortho_size * scale;
+        } break;
+    }
+    return width;
 }

@@ -160,6 +160,11 @@ void lcf::SceneManager::makeGrassLand()
     // });
 }
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+
 void lcf::SceneManager::makeTestScene()
 {
     static QString scene_name = "test";
@@ -181,39 +186,40 @@ void lcf::SceneManager::makeTestScene()
 
     PointLight::SharedPtr point_light0 = PointLight::createShared();
     point_light0->setColor({100.0f, 100.0f, 100.0f});
-    point_light0->setTranslation({1.8f, 0.0f, 0.0f});
+    point_light0->translateWorld({1.8f, 3.0f, 0.0f});
     point_light0->scale(0.3f);
     point_light0->setCastShadow(true);
     scene->addObject3D(point_light0);
 
-    // DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
-    // directional_light->setTranslation({0.0f, 3.0f, 0.0f});
-    // directional_light->rotateX(-90.0f);
-    // directional_light->setColor({10.0f, 10.0f, 10.0f});
-    // directional_light->setCastShadow(true);
-    // scene->addObject3D(directional_light);
+    DirectionalLight::SharedPtr directional_light = DirectionalLight::createShared();
+    directional_light->translateWorld({0.0f, 5.0f, 0.0f});
+    directional_light->rotateLocalXAxis(-90.0f);
+    directional_light->setColor({10.0f, 10.0f, 10.0f});
+    directional_light->setCastShadow(true);
+    scene->addObject3D(directional_light);
 
-    // Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
-    // // room->scale(3.0f);
-    // room->translateY(1.92f);
-    // room->setMaterialType(MaterialType::Phong);
-    // scene->addObject3D(room);
+    Model::SharedPtr room = ModelManager::instance()->load(path::source_dir + "models/original_backrooms.glb");
+    room->scale(3.0f);
+    room->translateLocalYAxis(-0.5f);
+    room->setMaterialType(MaterialType::Phong);
+    scene->addObject3D(room);
+    room->setCastShadow(true);
 
-    Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
-    robot->translate(3.0f, 3.0f, 0.0f);
-    robot->setMaterialType(MaterialType::PBR);
-    robot->setCastShadow(true);
-    scene->addObject3D(robot);
+    // Model::SharedPtr robot = ModelManager::instance()->load(path::source_dir + "models/nuirter_real-time.glb");
+    // robot->translate(0.0f, 0.0f, 0.0f);
+    // robot->setMaterialType(MaterialType::PBR);
+    // robot->setCastShadow(true);
+    // scene->addObject3D(robot);
 
-    Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
-    helmet->scale(0.3f);
-    helmet->translate(3.0f, 10.0f, 0.0f);
-    helmet->setMaterialType(MaterialType::PBR);
-    helmet->setCastShadow(true);
-    scene->addObject3D(helmet);
+    // Model::SharedPtr helmet = ModelManager::instance()->load(path::source_dir + "models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb");
+    // helmet->scale(0.3f);
+    // helmet->translate(3.0f, 0.0f, 0.0f);
+    // helmet->setMaterialType(MaterialType::PBR);
+    // helmet->setCastShadow(true);
+    // scene->addObject3D(helmet);
 
     Model::SharedPtr dinosaur = ModelManager::instance()->load(path::source_dir + "models/dinosaur/source/Rampaging T-Rex.glb");
-    dinosaur->translate(0.0f, 3.0f, 0.0f);
+    dinosaur->translateWorld(0.0f, .0f, 0.0f);
     dinosaur->scale(0.3f);
     dinosaur->setCastShadow(true);
     scene->addObject3D(dinosaur);
@@ -225,12 +231,14 @@ void lcf::SceneManager::makeTestScene()
     // scene->addObject3D(dinosaur2);
     // dinosaur2->playAnimation(1, 1.0f);
 
+
     connect(scene->timer(), &QTimer::timeout, this, [=] {
         static float d = 0;
-        // helmet->translateX(qSin(d) * 0.1f);
+        // directional_light->translateZ(qCos(d) * 0.035f);
+        // helmet->translateY(qSin(d) * 0.035f);
         // point_light0->translateY(qSin(d) * 0.1f);
-        dinosaur->translate(0.01f, 0.0f, 0.0f);
-        // dinosaur->rotateY(1.0f);
+        dinosaur->rotateLocalYAxis(2.0f);
+        dinosaur->translateLocalZAxis(0.3f);
         d += 0.02f;
     });
 }

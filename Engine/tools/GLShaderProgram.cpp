@@ -6,6 +6,7 @@
 #include "GLHelper.h"
 #include "TextureDispatcher.h"
 #include "Uniform.h"
+#include "GLFunctions.h"
 
 lcf::GLShaderProgram::GLShaderProgram(QObject *parent) : QOpenGLShaderProgram(parent)
 {
@@ -79,14 +80,109 @@ void lcf::GLShaderProgram::release()
     m_binding_textures.clear();
 }
 
+void lcf::GLShaderProgram::setUniformValue(const char *name, const GLMVector3D &value)
+{
+    this->setUniformValue(this->uniformLocation(name), value);
+}
+
+void lcf::GLShaderProgram::setUniformValue(int location, const GLMVector3D &value)
+{
+    if (location < 0) { return; }
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    gl->glUniform3fv(location, 1, reinterpret_cast<const GLfloat*>(&value));
+}
+
+void lcf::GLShaderProgram::setUniformValueArray(const char *name, const GLMVector3D *values, int count)
+{
+    this->setUniformValueArray(this->uniformLocation(name), values, count);
+}
+
+void lcf::GLShaderProgram::setUniformValueArray(int location, const GLMVector3D *values, int count)
+{
+    if (location < 0) { return; }
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    gl->glUniform3fv(location, count, reinterpret_cast<const GLfloat*>(values));
+}
+
+void lcf::GLShaderProgram::setUniformValue(const char *name, const GLMVector4D &value)
+{
+    this->setUniformValue(this->uniformLocation(name), value);
+}
+
+void lcf::GLShaderProgram::setUniformValue(int location, const GLMVector4D &value)
+{
+    if (location < 0) { return; }
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    gl->glUniform4fv(location, 1, reinterpret_cast<const GLfloat*>(&value));
+}
+
+void lcf::GLShaderProgram::setUniformValueArray(const char *name, const GLMVector4D *values, int count)
+{
+    this->setUniformValueArray(this->uniformLocation(name), values, count);
+}
+
+void lcf::GLShaderProgram::setUniformValueArray(int location, const GLMVector4D *values, int count)
+{
+    if (location < 0) { return; }
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    gl->glUniform4fv(location, count, reinterpret_cast<const GLfloat*>(values));
+}
+
+void lcf::GLShaderProgram::setUniformValue(const char *name, const GLMMatrix3x3 &value)
+{
+    this->setUniformValue(this->uniformLocation(name), value);
+}
+
+void lcf::GLShaderProgram::setUniformValue(int location, const GLMMatrix3x3 &value)
+{
+    if (location < 0) { return; }
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    gl->glUniformMatrix3fv(location, 1, GL_FALSE, reinterpret_cast<const GLfloat*>(&value));
+}
+
+void lcf::GLShaderProgram::setUniformValueArray(const char *name, const GLMMatrix3x3 *values, int count)
+{
+    this->setUniformValueArray(this->uniformLocation(name), values, count);
+}
+
+void lcf::GLShaderProgram::setUniformValueArray(int location, const GLMMatrix3x3 *values, int count)
+{
+    if (location < 0) { return; }
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    gl->glUniformMatrix3fv(location, count, GL_FALSE, reinterpret_cast<const GLfloat*>(values));
+}
+
+void lcf::GLShaderProgram::setUniformValue(const char *name, const GLMMatrix4x4 &value)
+{
+    this->setUniformValue(this->uniformLocation(name), value);
+}
+
+void lcf::GLShaderProgram::setUniformValue(int location, const GLMMatrix4x4 & value)
+{
+    if (location < 0) { return; }
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    gl->glUniformMatrix4fv(location, 1, GL_FALSE, value.constData());
+}
+
+void lcf::GLShaderProgram::setUniformValueArray(const char *name, const GLMMatrix4x4 *values, int count)
+{
+    this->setUniformValueArray(this->uniformLocation(name), values, count);
+}
+
+void lcf::GLShaderProgram::setUniformValueArray(int location, const GLMMatrix4x4 *values, int count)
+{
+    if (location < 0) { return; }
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    gl->glUniformMatrix4fv(location, count, GL_FALSE, reinterpret_cast<const GLfloat*>(values));
+}
+
 void lcf::GLShaderProgram::assignDefaultValueToUniform(const char *uniform_name, unsigned int uniform_type)
 {
     switch (uniform_type) {
         case GL_FLOAT: { this->setUniformValue(uniform_name, 0.0f);  } break;
-        case GL_FLOAT_VEC2: { this->setUniformValue(uniform_name, Vector2D(0.0f, 0.0f)); } break;
+        // case GL_FLOAT_VEC2: { this->setUniformValue(uniform_name, Vector2D(0.0f, 0.0f)); } break;
         case GL_FLOAT_VEC3: { this->setUniformValue(uniform_name, Vector3D(0.0f, 0.0f, 0.0f)); } break;
         case GL_FLOAT_VEC4: { this->setUniformValue(uniform_name, Vector4D(0.0f, 0.0f, 0.0f, 0.0f)); } break;
-        case GL_FLOAT_MAT2: { this->setUniformValue(uniform_name, Matrix2x2()); } break;
         case GL_FLOAT_MAT3: { this->setUniformValue(uniform_name, Matrix3x3()); } break;
         case GL_FLOAT_MAT4: { this->setUniformValue(uniform_name, Matrix4x4()); } break;
         default: { this->setUniformValue(uniform_name, 0); } break;

@@ -18,5 +18,6 @@ namespace lcf {
         float m_delta_front = 0.0f;
         float m_delta_pitch = 0.0f;
         float m_delta_yaw = 0.0f;
+        Vector3D m_center;
     };
 }

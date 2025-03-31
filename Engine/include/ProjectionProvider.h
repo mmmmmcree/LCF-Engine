@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QMatrix4x4>
+#include "Matrix.h"
 
 class ProjectionProvider
 {
@@ -11,7 +11,7 @@ public:
     };
     ProjectionProvider();
     ProjectionProvider(const ProjectionProvider &other) = default;
-    const QMatrix4x4 &projectionMatrix() const;
+    const lcf::Matrix4x4 &projectionMatrix() const;
     void setType(Type type);
     void setOrthoSize(float size);
     void setNearPlane(float near_plane);
@@ -22,10 +22,12 @@ public:
     void setAspect(int width, int height);
     void increaseScale(float delta);
     const float &farPlane() const;
+    const float &nearPlane() const;
+    float nearPlaneWidth() const;
 private:
     Type m_type;
     float m_fov, m_aspect, m_near, m_far;
     float m_ortho_size;
     float m_scale, m_scale_speed;
-    QMatrix4x4 m_projection;
+    lcf::Matrix4x4 m_projection;
 };

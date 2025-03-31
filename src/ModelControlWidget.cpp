@@ -118,13 +118,13 @@ ModelControlWidget::ModelControlWidget(QWidget *parent) :
         model_select_box->clear();
         model_select_box->addItem("None");
         for (auto model : scene->models()) {
-            model_select_box->addItem(model->name().c_str());
+            model_select_box->addItem(model->getName().c_str());
         }
         model_select_box->setCurrentIndex(0);
     });
 
     connect(lcf::SignalSender::instance(), &lcf::SignalSender::modelAdded, [model_select_box] (lcf::Model *model) {
-        model_select_box->addItem(model->name().c_str());
+        model_select_box->addItem(model->getName().c_str());
     });
 
     connect(lcf::ControlManager::instance(), &lcf::ControlManager::currentModelChanged, [=](lcf::Model *model) {

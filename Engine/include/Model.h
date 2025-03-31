@@ -43,6 +43,7 @@ namespace lcf {
         C *getComponent() const;
         template <>
         AnimationPlayer *getComponent() const;
+        void setCastShadow(bool cast_shadow) override;
     private:
         void processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const;
         void addMesh(MeshPtr &&mesh);

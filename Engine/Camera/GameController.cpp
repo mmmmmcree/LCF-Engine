@@ -10,9 +10,9 @@ lcf::GameController::GameController()
 void lcf::GameController::update(Camera *camera)
 {
     this->processInput(camera);
-    this->updateCameraPitch(camera, m_delta_pitch);
     this->updateCameraYaw(camera, m_delta_yaw);
-    camera->translate(m_direction * m_move_speed);
+    this->updateCameraPitch(camera, m_delta_pitch);
+    camera->translateWorld(m_direction * m_move_speed);
     m_delta_pitch = m_delta_yaw = 0.0f;
 }
 
@@ -33,12 +33,11 @@ void lcf::GameController::updateCameraPitch(Camera *camera, float angle_deg)
     if (temp_pitch > 89.0f or temp_pitch < -89.0f) { return; }
     m_pitch = temp_pitch;
     Quaternion pitch = Quaternion::fromAxisAndAngle(camera->right(), angle_deg);
-    camera->setUp(pitch * camera->up());
+    camera->rotateAroundSelf(pitch);
 }
 
 void lcf::GameController::updateCameraYaw(Camera *camera, float angle_deg)
 {
     Quaternion yaw = Quaternion::fromAxisAndAngle(Vector3D(0.0f, 1.0f, 0.0f), angle_deg);
-    camera->setRight(yaw * camera->right());
-    camera->setUp(yaw * camera->up());
+    camera->rotateAroundSelf(yaw);
 }

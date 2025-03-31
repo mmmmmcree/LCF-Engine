@@ -31,17 +31,17 @@ lcf::Vector3D lcf::Box::getCenter() const
 
 float lcf::Box::getWidth() const
 {
-    return m_max_position.x() - m_min_position.x();
+    return m_max_position.getX() - m_min_position.getX();
 }
 
 float lcf::Box::getHeight() const
 {
-    return m_max_position.y() - m_min_position.y();
+    return m_max_position.getY() - m_min_position.getY();
 }
 
 float lcf::Box::getDepth() const
 {
-    return m_max_position.z() - m_min_position.z();
+    return m_max_position.getZ() - m_min_position.getZ();
 }
 
 lcf::Vector3D lcf::Box::getDimensions() const

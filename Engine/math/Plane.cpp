@@ -28,7 +28,7 @@ void lcf::Plane::setParameters(const Vector3D &normal, float constant)
 
 void lcf::Plane::setParameters(const Vector4D &parameters)
 {
-    this->setParameters(parameters.toVector3D(), parameters.w());
+    this->setParameters(parameters.toVector3D(), parameters.getW());
 }
 
 float lcf::Plane::getDistanceToPoint(const Vector3D &point) const

@@ -16,25 +16,25 @@ float lcf::linear_interpolation_factor(float t, float a, float b)
 
 float lcf::max(const Vector3D &vec)
 {
-    return std::max(std::max(vec.x(), vec.y()), vec.z());
+    return std::max(std::max(vec.getX(), vec.getY()), vec.getZ());
 }
 
 lcf::Vector3D lcf::max(const Vector3D &a, const Vector3D &b)
 {
-    return Vector3D(std::max(a.x(), b.x()), std::max(a.y(), b.y()), std::max(a.z(), b.z()));
+    return Vector3D(std::max(a.getX(), b.getX()), std::max(a.getX(), b.getX()), std::max(a.getX(), b.getX()));
 }
 
 lcf::Vector3D lcf::max(const Vector3D &a, float value)
 {
-    return Vector3D(std::max(a.x(), value), std::max(a.y(), value), std::max(a.z(), value));
+    return Vector3D(std::max(a.getX(), value), std::max(a.getY(), value), std::max(a.getZ(), value));
 }
 
 lcf::Vector3D lcf::min(const Vector3D &a, const Vector3D &b)
 {
-    return Vector3D(std::min(a.x(), b.x()), std::min(a.y(), b.y()), std::min(a.z(), b.z()));
+    return Vector3D(std::min(a.getX(), b.getX()), std::min(a.getY(), b.getY()), std::min(a.getZ(), b.getZ()));
 }
 
 lcf::Vector3D lcf::min(const Vector3D &a, float value)
 {
-    return Vector3D(std::min(a.x(), value), std::min(a.y(), value), std::min(a.z(), value));
+    return Vector3D(std::min(a.getX(), value), std::min(a.getY(), value), std::min(a.getZ(), value));
 }

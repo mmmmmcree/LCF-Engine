@@ -20,7 +20,7 @@ namespace lcf {
         void setShader(const GLShaderProgram::SharedPtr &shader);
         MaterialController *materialController();
         InstanceHelper *instanceHelper();
-        void setCastShadow(bool cast_shadow);
+        virtual void setCastShadow(bool cast_shadow);
         bool isCastShadow() const;
     protected:
         void setMaterialController(const MaterialController::SharedPtr &material_controller);

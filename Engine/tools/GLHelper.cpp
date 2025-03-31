@@ -4,7 +4,7 @@
 #include "GLFunctions.h"
 
 
-void lcf::GLHelper::setShaderUniform(QOpenGLShaderProgram *shader, const UniformInfo &uniform)
+void lcf::GLHelper::setShaderUniform(GLShaderProgram *shader, const UniformInfo &uniform)
 {
     shader->bind();
     std::visit([&](auto &&value) {
@@ -13,7 +13,7 @@ void lcf::GLHelper::setShaderUniform(QOpenGLShaderProgram *shader, const Uniform
     shader->release();
 }
 
-void lcf::GLHelper::setShaderUniforms(QOpenGLShaderProgram *shader, const UniformInfos &uniform_infos)
+void lcf::GLHelper::setShaderUniforms(GLShaderProgram *shader, const UniformInfos &uniform_infos)
 {
     shader->bind();
     for (const auto &[name, uniform] : uniform_infos) {
@@ -22,6 +22,38 @@ void lcf::GLHelper::setShaderUniforms(QOpenGLShaderProgram *shader, const Unifor
         }, uniform);
     }
     shader->release();
+}
+
+lcf::NativeTextureWrapper lcf::GLHelper::generateTexture(int target, int width, int height, int depth, int internal_format, int pixel_format, int pixel_type, const void *data)
+{
+    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
+    unsigned int texture;
+    gl->glGenTextures(1, &texture);
+    gl->glBindTexture(target, texture);
+    switch (target) {
+        case GL_TEXTURE_2D: {
+            gl->glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, pixel_format, pixel_type, data);
+        } break;
+        case GL_TEXTURE_3D: {
+            gl->glTexImage3D(GL_TEXTURE_3D, 0, internal_format, width, height, depth, 0, pixel_format, pixel_type, data);
+        } break;
+        case GL_TEXTURE_CUBE_MAP: {
+            for (unsigned int i = 0; i < 6; i++) {
+                gl->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, width, width, 0, pixel_format, pixel_type, data);
+            }
+        } break;
+    }
+    gl->glBindTexture(target, 0);
+    NativeTextureWrapper texture_wrapper(static_cast<GLTexture::Target>(target), texture);
+    if (isDepthTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format))) {
+        texture_wrapper.setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
+        texture_wrapper.setBorderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        texture_wrapper.setWrapMode(GLTexture::ClampToBorder);
+    } else {
+        texture_wrapper.setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
+        texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
+    }
+    return texture_wrapper;
 }
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateMSAATexture(int width, int height, int samples, GLTextureFormat format)
@@ -45,25 +77,7 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMapAttachment(int width, GL
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateCubeMap(int width, int internal_format, int pixel_format, int pixel_data_type, const void *data)
 {
-    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
-    unsigned int texture;
-    gl->glGenTextures(1, &texture);
-    gl->glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
-    for (unsigned int i = 0; i < 6; i++) {
-        gl->glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0,
-            internal_format, width, width, 0, pixel_format, pixel_data_type, data);
-    }
-    gl->glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-    NativeTextureWrapper texture_wrapper(GLTexture::TargetCubeMap, texture);
-    if (isDepthTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format))) {
-        texture_wrapper.setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-        texture_wrapper.setBorderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        texture_wrapper.setWrapMode(GLTexture::ClampToBorder);
-    } else {
-        texture_wrapper.setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
-        texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
-    }
-    return texture_wrapper;
+    return generateTexture(GL_TEXTURE_CUBE_MAP, width, width, 0, internal_format, pixel_format, pixel_data_type, data);
 }
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateTexture2DAttachment(int width, int height, GLTexture::TextureFormat internal_format)
@@ -75,42 +89,12 @@ lcf::NativeTextureWrapper lcf::GLHelper::generateTexture2DAttachment(int width, 
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateTexture2D(int width, int height, int internal_format, int pixel_format, int pixel_type, const void *data)
 {
-    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
-    unsigned int texture;
-    gl->glGenTextures(1, &texture);
-    gl->glBindTexture(GL_TEXTURE_2D, texture);
-    gl->glTexImage2D(GL_TEXTURE_2D, 0, internal_format, width, height, 0, pixel_format, pixel_type, data);
-    gl->glBindTexture(GL_TEXTURE_2D, 0);
-    NativeTextureWrapper texture_wrapper(GLTexture::Target2D, texture);
-    if (isDepthTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format))) {
-        texture_wrapper.setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-        texture_wrapper.setBorderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        texture_wrapper.setWrapMode(GLTexture::ClampToBorder);
-    } else {
-        texture_wrapper.setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
-        texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
-    }
-    return texture_wrapper;
+    return generateTexture(GL_TEXTURE_2D, width, height, 0, internal_format, pixel_format, pixel_type, data);
 }
 
 lcf::NativeTextureWrapper lcf::GLHelper::generateTexture3D(int width, int height, int depth, int internal_format, int pixel_format, int pixel_type, const void *data)
 {
-    auto gl = GLFunctions::getGLFunctionsFromCurrentContext();
-    unsigned int texture;
-    gl->glGenTextures(1, &texture);
-    gl->glBindTexture(GL_TEXTURE_3D, texture);
-    gl->glTexImage3D(GL_TEXTURE_3D, 0, internal_format, width, height, depth, 0, pixel_format, pixel_type, data);
-    gl->glBindTexture(GL_TEXTURE_3D, 0);
-    NativeTextureWrapper texture_wrapper(GLTexture::Target3D, texture);
-    if (isDepthTextureFormat(static_cast<GLTexture::TextureFormat>(internal_format))) {
-        texture_wrapper.setMinMagFilters(GLTexture::Nearest, GLTexture::Nearest);
-        texture_wrapper.setBorderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        texture_wrapper.setWrapMode(GLTexture::ClampToBorder);
-    } else {
-        texture_wrapper.setMinMagFilters(GLTexture::Linear, GLTexture::Linear);
-        texture_wrapper.setWrapMode(GLTexture::ClampToEdge);
-    }
-    return texture_wrapper;
+    return generateTexture(GL_TEXTURE_3D, width, height, depth, internal_format, pixel_format, pixel_type, data);
 }
 
 lcf::SharedGLTexturePtr lcf::GLHelper::generateTextureByTextureType(TextureType type, const Image &image)

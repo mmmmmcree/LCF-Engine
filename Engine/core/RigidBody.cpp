@@ -46,10 +46,10 @@ void lcf::RigidBody::checkUpdateFromTransformer()
 void lcf::RigidBody::applyUpdateToTransformer()
 {
     const auto &transform = m_impl->getWorldTransform();
-    Vector3D delta_translation = toVector3D(transform.getOrigin()) - m_controlled_transformer->getPosition();
+    Vector3D delta_translation = toVector3D(transform.getOrigin()) - m_controlled_transformer->getTranslation();
     Quaternion delta_rotation = toQuaternion(transform.getRotation()).inverted() * m_controlled_transformer->getRotation();
-    m_controlled_transformer->translate(delta_translation);
-    m_controlled_transformer->rotate(delta_rotation);
+    m_controlled_transformer->translateWorld(delta_translation);
+    m_controlled_transformer->rotateLocal(delta_rotation);
 }
 
 void lcf::RigidBody::setMass(float mass)

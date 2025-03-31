@@ -3,6 +3,7 @@
 #include "Light.h"
 #include "DepthCubeMapFBO.h"
 #include <array>
+#include "ShaderStorageBufferObject.h"
 
 namespace lcf {
     class PointLight : public Light
@@ -13,12 +14,11 @@ namespace lcf {
         static SharedPtr createShared();
         void draw() override;
         LightType lightType() const override;
+        void update() override;
         void bind() override;
         void release() override;
         int index() const;
         void setName(std::string_view name) override;
-    protected:
-        // void updateWorldMatrix() override;
     private:
         void updateLightMatrices();
     private:
@@ -26,10 +26,8 @@ namespace lcf {
         std::array<Matrix4x4, 6> m_light_matrices;
         SingleUniform<float> m_constant, m_linear, m_quadratic, m_far_plane;
         int m_light_index = 0;
-        bool m_ssbo_need_update = true;
-        inline static unsigned int s_ssbo = 0;
-        inline static int s_ssbo_size = 0;
         inline static int s_light_count = 0;
+        inline static ShaderStorageBufferObject s_ssbo;
     };
 }
 /*

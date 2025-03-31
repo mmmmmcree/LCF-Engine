@@ -9,20 +9,9 @@
 RenderSettingsPanel::RenderSettingsPanel(QWidget *parent) :
     ElaScrollPage(parent)
 {
-    // ElaScrollPageArea *render_area = new ElaScrollPageArea(this);
-
     QVBoxLayout *vlayout = nullptr;
     QHBoxLayout *hlayout = nullptr;
 
-
-
-
-    // ElaCheckBox *bloom_checkbox = new ElaCheckBox("Bloom", this);
-    // ElaCheckBox *msaa_checkbox = new ElaCheckBox("MSAA", this);
-    // // vlayout->addWidget(hdr_checkbox);
-    // vlayout->addWidget(bloom_checkbox);
-    // vlayout->addWidget(msaa_checkbox);
-    // vlayout->addStretch();
 
     ElaScrollPageArea *gamma_area = new ElaScrollPageArea(this);
     vlayout = new QVBoxLayout(gamma_area);
@@ -100,6 +89,38 @@ RenderSettingsPanel::RenderSettingsPanel(QWidget *parent) :
         lcf::Renderer::instance()->enableMSAA(state == Qt::Checked);
     });
 
+    ElaScrollPageArea *fxaa_area = new ElaScrollPageArea(this);
+    vlayout = new QVBoxLayout(fxaa_area);
+    ElaText *fxaa_text = new ElaText(" FXAA ", 13, this);
+    ElaCheckBox *fxaa_checkbox = new ElaCheckBox(this);
+    hlayout = new QHBoxLayout();
+    hlayout->addWidget(fxaa_text);
+    hlayout->addWidget(fxaa_checkbox);
+    hlayout->addStretch();
+    vlayout->addLayout(hlayout);
+    connect(lcf::Renderer::instance(), &lcf::Renderer::FXAAEnabledChanged, [fxaa_checkbox] (bool enabled) {
+        fxaa_checkbox->setChecked(enabled);
+    });
+    connect(fxaa_checkbox, &QCheckBox::stateChanged, [] (int state) {
+        lcf::Renderer::instance()->enableFXAA(state == Qt::Checked);
+    });
+
+    ElaScrollPageArea *color_grading_area = new ElaScrollPageArea(this);
+    vlayout = new QVBoxLayout(color_grading_area);
+    ElaText *color_grading_text = new ElaText(" Color Grading ", 13, this);
+    ElaCheckBox *color_grading_checkbox = new ElaCheckBox(this);
+    hlayout = new QHBoxLayout();
+    hlayout->addWidget(color_grading_text);
+    hlayout->addWidget(color_grading_checkbox);
+    hlayout->addStretch();
+    vlayout->addLayout(hlayout);
+    connect(lcf::Renderer::instance(), &lcf::Renderer::ColorGradingEnabledChanged, [color_grading_checkbox] (bool enabled) {
+        color_grading_checkbox->setChecked(enabled);
+    });
+    connect(color_grading_checkbox, &QCheckBox::stateChanged, [] (int state) {
+        lcf::Renderer::instance()->enableColorGrading(state == Qt::Checked);
+    });
+
     QWidget *central_widget = new QWidget(this);
     central_widget->setWindowTitle("Render Settings Panel");
     vlayout = new QVBoxLayout(central_widget);
@@ -107,6 +128,8 @@ RenderSettingsPanel::RenderSettingsPanel(QWidget *parent) :
     vlayout->addWidget(hdr_area);
     vlayout->addWidget(bloom_area);
     vlayout->addWidget(msaa_area);
+    vlayout->addWidget(fxaa_area);
+    vlayout->addWidget(color_grading_area);
     vlayout->addStretch();
     vlayout->setContentsMargins(0, 3, 14, 3);
     vlayout->setSpacing(10);

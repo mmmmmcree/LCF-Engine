@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QOpenGLShaderProgram>
+#include "GLShaderProgram.h"
 #include <variant>
 #include <QList>
 #include <QVector4D>
@@ -13,17 +13,21 @@
 #include "GLTexture.h"
 #include "Image.h"
 #include "LImage.h"
+#include "GLMVector.h"
+#include "GLMMatrix.h"
 
 
 namespace lcf {
     struct GLHelper
     {
-        using Uniform = std::variant<int, float, QVector2D, QVector3D, QColor, QVector4D, QMatrix2x2, QMatrix3x3, QMatrix4x4>;
+        using Uniform = std::variant<int, float, QVector2D, QVector3D, QColor, QVector4D, QMatrix2x2, QMatrix3x3, QMatrix4x4,
+            GLMVector3D, GLMVector4D, GLMMatrix3x3, GLMMatrix4x4>;
         using UniformInfo = std::pair<QString, Uniform>;
         using UniformInfos = std::vector<UniformInfo>;
 
-        static void setShaderUniform(QOpenGLShaderProgram * shader, const UniformInfo &uniform_info);
-        static void setShaderUniforms(QOpenGLShaderProgram * shader, const UniformInfos &uniform_infos);
+        static void setShaderUniform(GLShaderProgram * shader, const UniformInfo &uniform_info);
+        static void setShaderUniforms(GLShaderProgram * shader, const UniformInfos &uniform_infos);
+
 
         static NativeTextureWrapper generateMSAATexture(int width, int height, int samples, GLTextureFormat format);
 
@@ -47,5 +51,7 @@ namespace lcf {
         static bool isFloatingPointTextureFormat(GLTexture::TextureFormat texture_format);
         static bool isDepthTextureFormat(GLTextureFormat texture_format);
         static bool isSampler(int uniform_type);
+    private:
+        static NativeTextureWrapper generateTexture(int target, int width, int height, int depth, int internal_format, int pixel_format, int pixel_type, const void *data = nullptr);
     };
 }

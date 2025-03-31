@@ -11,9 +11,12 @@ lcf::TrackballController::TrackballController() : CameraController()
 void lcf::TrackballController::update(Camera *camera)
 {
     this->processInput();
+    Vector3D delta_center = camera->right() * m_delta_right + camera->up() * m_delta_up;
+    m_center += delta_center;
+    camera->translateWorld(delta_center);
     this->updateCameraYaw(camera, m_delta_yaw);
     this->updateCameraPitch(camera, m_delta_pitch);
-    camera->translate(camera->right() * m_delta_right + camera->up() * m_delta_up + camera->front() * m_delta_front);
+    camera->translateLocalZAxis(-m_delta_front);
     m_delta_yaw = m_delta_pitch = m_delta_up = m_delta_right = m_delta_front = 0.0f;
 }
 
@@ -35,14 +38,11 @@ void lcf::TrackballController::processInput()
 void lcf::TrackballController::updateCameraPitch(Camera *camera, float angle_deg)
 {
     Quaternion pitch = Quaternion::fromAxisAndAngle(camera->right(), angle_deg);
-    camera->setUp(pitch * camera->up());
-    camera->translate(pitch * camera->localPosition() - camera->localPosition());
+    camera->rotateAround(pitch, m_center);
 }
 
 void lcf::TrackballController::updateCameraYaw(Camera *camera, float angle_deg)
 {
     Quaternion yaw = Quaternion::fromAxisAndAngle({0.0f, 1.0f, 0.0f}, angle_deg);
-    camera->setUp(yaw * camera->up());
-    camera->setRight(yaw * camera->right());
-    camera->translate(yaw * camera->localPosition() - camera->localPosition());
+    camera->rotateAround(yaw, m_center);
 }

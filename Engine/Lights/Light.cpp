@@ -11,16 +11,22 @@ void lcf::Light::draw()
 {
     static auto shader = ShaderManager::instance()->get(ShaderManager::GeometryDebug);
     shader->bindWithTextures();
-    shader->setUniformValue("model", this->worldMatrix());
-    shader->setUniformValue("normal_matrix", this->normalMatrix());
+    shader->setUniformValue("model", this->getWorldMatrix());
+    shader->setUniformValue("normal_matrix", this->getNormalMatrix());
     Geometry::quad()->draw();
     shader->release();
 }
 
-void lcf::Light::bind()
+void lcf::Light::update()
 {
     m_direction.setValue(this->orientation());
-    m_position.setValue(this->worldPosition());
+    m_position.setValue(this->getWorldPosition());
+}
+
+void lcf::Light::bind()
+{
+    // m_direction.setValue(this->orientation());
+    // m_position.setValue(this->getWorldPosition());
 }
 
 void lcf::Light::setColor(const Vector3D &color)
@@ -35,7 +41,7 @@ void lcf::Light::setIntensity(float intensity)
 
 lcf::Vector3D lcf::Light::orientation()
 {
-    return -this->worldMatrix().column(2).toVector3D().normalized();
+    return -this->getWorldMatrix().column(2).toVector3D().normalized();
 }
 
 void lcf::Light::setName(std::string_view name)
@@ -60,5 +66,5 @@ bool lcf::Light::isCastShadow() const
 
 std::string lcf::Light::uniformName(const std::string &name) const
 {
-    return this->name() + "." + name;
+    return this->getName() + "." + name;
 }

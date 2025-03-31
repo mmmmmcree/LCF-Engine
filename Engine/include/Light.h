@@ -16,6 +16,7 @@ namespace lcf {
         Object3DType type() const override;
         void draw() override;
         virtual LightType lightType() const = 0;
+        virtual void update();
         virtual void bind();
         virtual void release() { }
         void setColor(const Vector3D& color);

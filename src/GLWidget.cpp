@@ -39,8 +39,8 @@ void GLWidget::initializeGL()
     // SceneManager::instance()->testShaderToy();
     SceneManager::instance()->makeTestScene();
     auto renderer = Renderer::instance();
-    // auto lut = TextureManager::instance()->loadColorGradingLUT(lcf::path::res_prefix + "Color Grading LUT/color_grading_lut_02.png");
-    // renderer->setColorGradingLUT(lut);
+    auto lut = TextureManager::instance()->loadColorGradingLUT(lcf::path::res_prefix + "Color Grading LUT/color_grading_lut_02.png");
+    renderer->setColorGradingLUT(lut);
     // renderer->enableColorGrading(true);
 }
 

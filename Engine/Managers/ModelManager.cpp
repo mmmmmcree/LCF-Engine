@@ -45,7 +45,7 @@ lcf::Model::UniquePtr lcf::ModelManager::clone(Model *model, std::string name)
 {
     Model::UniquePtr cloned = std::make_unique<Model>();
     if (name.empty()) {
-        name = model->name() + "_clone";
+        name = model->getName() + "_clone";
     }
     cloned->setName(name);
     if (model->isCreated()) {

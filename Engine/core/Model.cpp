@@ -60,7 +60,7 @@ void lcf::Model::create()
     auto rigid_body = ComponentFactory::createUnique<RigidBody>();
     rigid_body->setControlledTransformer(&m_transformer);
     rigid_body->setBoxHalfExtents(box.getDimensions() / 2.0f);
-    m_components.emplace_back(std::move(rigid_body));
+    // m_components.emplace_back(std::move(rigid_body));
 // //todo
 }
 
@@ -98,7 +98,7 @@ void lcf::Model::addAnimation(AnimationPlayer::AnimationPtr &&animation)
 lcf::Bone *lcf::Model::getRootBone() const
 {
     if (m_bones.empty()) { return nullptr; }
-    return m_bones.begin()->second->getRoot();
+    return static_cast<Bone *>(m_bones.begin()->second->getRootTransformer());
 }
 
 void lcf::Model::passSettingsToMeshes()
@@ -155,12 +155,20 @@ const lcf::AnimationPlayer::AnimationList &lcf::Model::animations()
     return this->getComponent<AnimationPlayer>()->playList();
 }
 
+void lcf::Model::setCastShadow(bool cast_shadow)
+{
+    RenderableObject3D::setCastShadow(cast_shadow);
+    for (auto &mesh : m_meshes) {
+        mesh->setCastShadow(cast_shadow);
+    }
+}
+
 void lcf::Model::processSkeleton(BoneMap &bone_map, Bone *parent, Bone *others_parent) const
 {
     Bone *bone = new Bone(*others_parent);
     bone_map.insert(std::make_pair(bone->getName(), bone));
     bone->attachTo(parent);
-    for (auto child : others_parent->getChildren()) {
-        this->processSkeleton(bone_map, bone, child);
+    for (auto child : others_parent->getChildrenTransformer()) {
+        this->processSkeleton(bone_map, bone, static_cast<Bone *>(child));
     }
 }

@@ -205,7 +205,7 @@ lcf::Bone *lcf::AssimpLoader::processSkeleton(aiNode *node, const aiScene *scene
     bone->attachTo(parent);
     bone->setName(node->mName.C_Str());
     // bone->setLocalMatrix(toMatrix4x4(node->mTransformation));
-    bone->setMatrix(toMatrix4x4(node->mTransformation));
+    bone->setLocalMatrix(toMatrix4x4(node->mTransformation));
     // bone_map.insert(std::make_pair(bone->name(), bone));
     bone_map.insert(std::make_pair(bone->getName(), bone));
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {

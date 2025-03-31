@@ -12,10 +12,9 @@ namespace lcf {
             std::is_same_v<T, bool> or
             std::is_same_v<T, int> or
             std::is_same_v<T, float> or
-            std::is_same_v<T, Vector2D> or
             std::is_same_v<T, Vector3D> or
             std::is_same_v<T, Vector4D> or
-            std::is_same_v<T, Matrix2x2> or
+            std::is_same_v<T, Vector2D> or
             std::is_same_v<T, Matrix3x3> or
             std::is_same_v<T, Matrix4x4>,
             "Invalid type for SingleUniform"

@@ -30,8 +30,10 @@ void lcf::PhysicalWorld::activate(bool active)
 {
     if (active) {
         connect(SignalSender::instance(), &SignalSender::rigidBodyCreated, this, &lcf::PhysicalWorld::addRigidBody);
+        connect(SignalSender::instance(), &SignalSender::rigidBodyDestroyed, this, &lcf::PhysicalWorld::removeRigidBody);
     } else {
         disconnect(SignalSender::instance(), &SignalSender::rigidBodyCreated, this, nullptr);
+        disconnect(SignalSender::instance(), &SignalSender::rigidBodyDestroyed, this, nullptr);
     }
 }
 
@@ -53,4 +55,12 @@ void lcf::PhysicalWorld::addRigidBody(RigidBody *rigid_body)
     if (iter != m_rigid_bodies.end()) { return; }
     m_rigid_bodies.emplace_back(rigid_body);
     m_world->addRigidBody(rigid_body->m_impl);
+}
+
+void lcf::PhysicalWorld::removeRigidBody(RigidBody *rigid_body)
+{
+    auto iter = std::ranges::find(m_rigid_bodies, rigid_body);
+    if (iter == m_rigid_bodies.end()) { return; }
+    m_rigid_bodies.erase(iter);
+    m_world->removeRigidBody(rigid_body->m_impl);
 }

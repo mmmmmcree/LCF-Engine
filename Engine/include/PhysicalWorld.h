@@ -24,6 +24,7 @@ namespace lcf {
         void activate(bool active);
         int stepSimulation(float time_step, int max_sub_steps = 1, float fixed_time_step = 1.0f / 60.0f);
         void addRigidBody(RigidBody *rigid_body);
+        void removeRigidBody(RigidBody *rigid_body);
     private:
         CollisionConfiguration *m_collision_config = nullptr;
         Dispatcher *m_dispatcher = nullptr;

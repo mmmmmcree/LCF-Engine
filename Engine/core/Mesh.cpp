@@ -50,8 +50,6 @@ bool lcf::Mesh::isCreated() const
     return m_geometry->isCreated() and m_material_controller->isCreated();
 }
 
-#include "Culler.h"
-#include "GlobalCamera.h"
 
 void lcf::Mesh::draw()
 {
@@ -109,7 +107,7 @@ void lcf::Mesh::setTextures(const MaterialController::TextureInfoMap & texture_i
 
 void lcf::Mesh::_draw(GLShaderProgram * shader)
 {
-    shader->setUniformValue("model", m_transformer.getHierarchialMatrix());
+    shader->setUniformValue("model", m_transformer.getWorldMatrix());
     shader->setUniformValue("normal_matrix", m_transformer.getNormalMatrix());
     if (this->animated()) {
         const auto &bone_matrices = m_skeleton->boneMatrices();

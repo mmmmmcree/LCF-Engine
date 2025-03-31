@@ -26,6 +26,34 @@ uniform PhongMaterial material;
 
 const float pcf_radius = 0.0018;
 
+layout(std140, binding = 0) uniform Matrices {
+    mat4 view;
+    mat4 projection;
+    vec3 camera_position;
+    mat4 projection_view;
+};
+
+// vec3 f(vec3 world_position)
+// {
+//     vec3 color = vec3(0.0);
+//     float near = 0.1;
+//     float far = 1000.0;
+//     int layer_count = 5;
+//     vec3 view_position = (view * vec4(world_position, 1.0)).xyz;
+//     float depth = -view_position.z;
+//     int layer = int(layer_count * (log(depth / near) / log(far / near)));
+//     layer = clamp(layer, 0, layer_count);
+//     switch (layer) {
+//         case 0 : color = vec3(1.0, 0.0, 0.0); break;
+//         case 1 : color = vec3(0.0, 1.0, 0.0); break;
+//         case 2 : color = vec3(0.0, 0.0, 1.0); break;
+//         case 3 : color = vec3(0.0, 1.0, 1.0); break;
+//         case 4 : color = vec3(1.0, 1.0, 0.0); break;
+//         case 5 : color = vec3(0.0, 0.0, 0.0); break;
+//     }
+//     return color;
+// }
+
 void main() {
     mat3 TBN = mat3(normalize(fs_in.T), normalize(fs_in.B), normalize(fs_in.normal));
     vec3 object_color = texture(material.diffuse_map, fs_in.uv).rgb;
